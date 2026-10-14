@@ -8,8 +8,8 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 
 ## Features
 
-- Three nights of branching story, with nine endings.
-- Walk through a furnished house, courtyard, and garden shed.
+- Three nights of branching story, with twelve endings.
+- Walk through a furnished house, courtyard, and garden shed, with detailed plants, paving, a stone well, and gardening puzzles.
 - Wall-mounted mirror with a planar reflection and writing on the glass.
 - Six hidden sticky notes and optional puzzles involving a music box, well, telephone, and fuse box.
 - Jumping, furniture collision, sprinting, and stamina.
@@ -52,6 +52,7 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/secrets.js` | Exploration clues, additional endings, and movement |
 | `dist/sanity.js` | Sanity, food recovery, deferred effects, and vertical collision |
 | `dist/garden.js` | Outdoor spaces, sticky notes, mirror reflection, and new endings |
+| `dist/realism.js` | Detailed garden, natural movement, and three additional ending paths |
 | `dist/favicon.svg` | Custom door-and-keyhole icon |
 
 Scripts load in the order listed. They currently share global state; treat this as a prototype rather than a finished engine.
