@@ -8,8 +8,10 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 
 ## Features
 
-- Three nights of branching story, with twelve endings.
-- Walk through a furnished house, courtyard, and garden shed, with detailed plants, paving, a stone well, and gardening puzzles.
+- An optional three-night house story and six city landmarks, with 24 endings in total.
+- Explore the house, courtyard, shed, and six city landmarks.
+- City chunks reshuffle on each new game using a saved seed; continuing a save preserves its layout.
+- Choose twelve city endings locally and keep a persistent ending journal across restarts.
 - Wall-mounted mirror with a planar reflection and writing on the glass.
 - Six hidden sticky notes and optional puzzles involving a music box, well, telephone, and fuse box.
 - Jumping, furniture collision, sprinting, and stamina.
@@ -53,6 +55,7 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/sanity.js` | Sanity, food recovery, deferred effects, and vertical collision |
 | `dist/garden.js` | Outdoor spaces, sticky notes, mirror reflection, and new endings |
 | `dist/realism.js` | Detailed garden, natural movement, and three additional ending paths |
+| `dist/city.js` | Seeded city chunks, local endings, sandbox map, and ending journal |
 | `dist/favicon.svg` | Custom door-and-keyhole icon |
 
 Scripts load in the order listed. They currently share global state; treat this as a prototype rather than a finished engine.
