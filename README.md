@@ -18,6 +18,9 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 - Sanity that drains during active play and after disturbing discoveries. Reading-related losses apply after the popup closes.
 - Kitchen sandwiches restore 12 percentage points of sanity, capped at 100%, and refill after two minutes.
 - Object highlights, task checklist, fullscreen mode, optional audio, and local progress saving.
+- A twelve-minute day/night cycle that advances during active play and persists with the save.
+- Six walking city residents with conversations and collision.
+- An interactive cinema projector showing Mother opening the spare-room door.
 
 ## Controls
 
@@ -56,6 +59,7 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/garden.js` | Outdoor spaces, sticky notes, mirror reflection, and new endings |
 | `dist/realism.js` | Detailed garden, natural movement, and three additional ending paths |
 | `dist/city.js` | Seeded city chunks, local endings, sandbox map, and ending journal |
+| `dist/living-city.js` | World clock, resident rendering, conversations, and animated projector |
 | `dist/favicon.svg` | Custom door-and-keyhole icon |
 
 Scripts load in the order listed. They currently share global state; treat this as a prototype rather than a finished engine.
