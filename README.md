@@ -1,6 +1,6 @@
 # The Spare Room
 
-A first-person psychological horror game about a house that remembers someone else wearing your face.
+A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
 **[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)**
 
@@ -8,7 +8,7 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 
 ## Features
 
-- An optional three-night house story and six city landmarks, with 24 endings in total.
+- An optional three-night house story and six city landmarks, with 28 endings in total.
 - Explore the house, courtyard, shed, and six city landmarks.
 - City chunks reshuffle on each new game using a saved seed; continuing a save preserves its layout.
 - Choose twelve city endings locally and keep a persistent ending journal across restarts.
@@ -16,11 +16,21 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 - Six hidden sticky notes and optional puzzles involving a music box, well, telephone, and fuse box.
 - Jumping, furniture collision, sprinting, and stamina.
 - Sanity that drains during active play and after disturbing discoveries. Reading-related losses apply after the popup closes.
-- Kitchen sandwiches restore 12 percentage points of sanity, capped at 100%, and refill after two minutes.
+- Kitchen sandwiches restore sanity up to 100%; the amount and refill depend on difficulty.
 - Object highlights, task checklist, fullscreen mode, optional audio, and local progress saving.
 - A twelve-minute day/night cycle that advances during active play and persists with the save.
 - Six walking city residents with conversations and collision.
 - An interactive cinema projector showing Mother opening the spare-room door.
+
+## Difficulty modes
+
+Choose a mode on the title screen. Continuing preserves the current run; starting a new game creates a new city seed. All 28 endings remain available.
+
+| Mode | Sanity loss | Sprint cost | Sandwich recovery | Refill | Hints |
+| --- | --- | --- | --- | --- | --- |
+| Easy | 55% of normal | 65% of normal | 15% | 90 seconds | On |
+| Intermediate | Normal | Normal | 12% | 120 seconds | On |
+| Hard | 150% of normal | 145% of normal | 10% | 150 seconds | Reduced |
 
 ## Controls
 
@@ -32,6 +42,7 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 | Interact | Left click or E |
 | Jump | Space |
 | Sprint | Hold Shift while moving |
+| Title screen / modes | Menu button |
 | Fullscreen | Fullscreen button |
 | Room navigation | Map button |
 | Progress the night | End Day button |
@@ -60,6 +71,8 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/realism.js` | Detailed garden, natural movement, and three additional ending paths |
 | `dist/city.js` | Seeded city chunks, local endings, sandbox map, and ending journal |
 | `dist/living-city.js` | World clock, resident rendering, conversations, and animated projector |
+| `dist/advanced.js` | Three.js scene rendering, textures, lighting, joint animation, fuse details, title screen, modes, and four additional endings |
+| `dist/vendor/` | Bundled Three.js r160 and planar reflector, with third-party licence |
 | `dist/favicon.svg` | Custom door-and-keyhole icon |
 
 Scripts load in the order listed. They currently share global state; treat this as a prototype rather than a finished engine.
@@ -79,3 +92,9 @@ Automated state and geometry checks have covered story gates, movement, mirror g
 ## Licence
 
 MIT — see [LICENSE](LICENSE). This allows reuse and modification, including commercial use, while retaining the copyright and licence notice.
+
+## Rendering and third-party code
+
+The primary renderer is Three.js r160, bundled locally with its MIT licence in `dist/vendor/THREE-LICENSE.txt`. It uses merged textured geometry, lighting, soft shadows, a planar mirror, extended camera range, and articulated AnimationMixer character rigs. The old renderer is retained as a compatibility fallback if advanced graphics cannot initialize. Modern WebGL support is needed for the advanced view.
+
+New rendering and mode behaviour has automated scene-construction and projection checks; live browser visual QA is still required before calling this a stable release.
