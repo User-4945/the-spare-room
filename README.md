@@ -98,3 +98,7 @@ MIT — see [LICENSE](LICENSE). This allows reuse and modification, including co
 The primary renderer is Three.js r160, bundled locally with its MIT licence in `dist/vendor/THREE-LICENSE.txt`. It uses merged textured geometry, lighting, soft shadows, a planar mirror, extended camera range, and articulated AnimationMixer character rigs. The old renderer is retained as a compatibility fallback if advanced graphics cannot initialize. Modern WebGL support is needed for the advanced view.
 
 New rendering and mode behaviour has automated scene-construction and projection checks; live browser visual QA is still required before calling this a stable release.
+
+
+### Upstairs expansion
+Exterior stairs lead to a study, nursery and records room. Each contains a hidden note and an interactive clue, unlocking three additional endings (31 total). Named 3D signs identify city buildings and upstairs rooms. Continuous terrain and foundation skirts cover the garden and city wall bases.
