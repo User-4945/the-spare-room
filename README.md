@@ -1,4 +1,4 @@
-# The Spare Room
+# The Spare Room v1.5.1
 
 A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
@@ -8,8 +8,8 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 
 ## Features
 
-- An optional three-night house story and six city landmarks, with 28 endings in total.
-- Explore the house, courtyard, shed, and six city landmarks.
+- An optional three-night house story and twenty city locations, with 31 endings in total.
+- Explore the house, courtyard, shed, upstairs rooms, and twenty city locations.
 - City chunks reshuffle on each new game using a saved seed; continuing a save preserves its layout.
 - Choose twelve city endings locally and keep a persistent ending journal across restarts.
 - Wall-mounted mirror with a planar reflection and writing on the glass.
@@ -24,7 +24,7 @@ You return to your childhood home to care for Mother. An unfamiliar room contain
 
 ## Difficulty modes
 
-Choose a mode on the title screen. Continuing preserves the current run; starting a new game creates a new city seed. All 28 endings remain available.
+Choose a mode on the title screen. Continuing preserves the current run; starting a new game creates a new city seed. All 31 endings remain available.
 
 | Mode | Sanity loss | Sprint cost | Sandwich recovery | Refill | Hints |
 | --- | --- | --- | --- | --- | --- |
@@ -69,6 +69,7 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/sanity.js` | Sanity, food recovery, deferred effects, and vertical collision |
 | `dist/garden.js` | Outdoor spaces, sticky notes, mirror reflection, and new endings |
 | `dist/realism.js` | Detailed garden, natural movement, and three additional ending paths |
+| `dist/city-generation.js` | Twenty-chunk deterministic generation, world codes and themed scenery |
 | `dist/city.js` | Seeded city chunks, local endings, sandbox map, and ending journal |
 | `dist/living-city.js` | World clock, resident rendering, conversations, and animated projector |
 | `dist/advanced.js` | Three.js scene rendering, textures, lighting, joint animation, fuse details, title screen, modes, and four additional endings |
@@ -102,3 +103,9 @@ New rendering and mode behaviour has automated scene-construction and projection
 
 ### Upstairs expansion
 Exterior stairs lead to a study, nursery and records room. Each contains a hidden note and an interactive clue, unlocking three additional endings (31 total). Named 3D signs identify city buildings and upstairs rooms. Continuous terrain and foundation skirts cover the garden and city wall bases.
+
+## v1.5.1 city generation
+
+Twenty chunks occupy a connected 5 × 4 layout, with six ending landmarks and fourteen exploration locations. Each seed determines placement, facade height, palette, trees, props and eerie details through separate random streams. Use Map → House, garden and city → World generation code to view or reuse a `SPARE-2-XXXXXXXX` code. Starting from a code resets the current run while keeping the ending journal. Existing saves keep progress but adopt the expanded layout.
+
+Run `node tests/game-smoke.cjs` for the automated mechanics and generation checks. This uses a simulated DOM and renderer; it does not replace browser visual testing. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for this release. GitHub Actions publishes the version in `release.json` with a browser-build ZIP when that file changes on main. The ZIP is not a Windows installer.

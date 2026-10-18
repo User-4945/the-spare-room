@@ -1,0 +1,44 @@
+name: Publish game release
+on:
+  push:
+    branches: [main]
+    paths: [release.json, .github/workflows/release.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  statuses: write
+concurrency:
+  group: spare-room-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check game scripts and mechanics
+        run: |
+          for script in dist/*.js; do node --check "$script"; done
+          node tests/game-smoke.cjs
+      - name: Package browser build
+        run: python3 scripts/package-release.py
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG=$(node -p "require('./release.json').tag")
+          TITLE=$(node -p "require('./release.json').name")
+          if gh release view "$TAG" --json tagName >/dev/null 2>&1; then
+            echo "Release already exists; leaving it unchanged."
+          else
+            gh release create "$TAG" release-build/*.zip --target "$GITHUB_SHA" --title "$TITLE" --notes-file RELEASE_NOTES.md
+          fi
+          RELEASE_URL=$(gh release view "$TAG" --json url --jq .url)
+          gh api "repos/$GH_REPO/statuses/$GITHUB_SHA" -f state=success -f context="release/$TAG" -f description="GitHub release published" -f target_url="$RELEASE_URL"
+      - name: Report release failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: gh api "repos/$GH_REPO/statuses/$GITHUB_SHA" -f state=failure -f context="release/$(node -p "require('./release.json').tag")" -f description="Release workflow failed; inspect the run" -f target_url="$RUN_URL"
