@@ -22,15 +22,18 @@ function selectRelease(release,current,prerelease=false,confirmedStable=''){
  const checksum=(release.assets||[]).find(a=>a.name==='SHA256SUMS.txt'&&a.state==='uploaded'&&Number.isSafeInteger(a.id));
  return {id:release.id,version,tag:release.tag_name,name:String(release.name||release.tag_name),notes:String(release.body||'No release notes were supplied.').slice(0,60000),asset,checksum};
 }
-// Only these GitHub hosts receive requests. A private-repository token is sent
+// Public updates need no token. An optional token is sent
 // solely to this repository's API; it is stripped before every CDN redirect.
 function createTransport(getToken=()=>'',request=https.get){
- async function response(url,accept='application/vnd.github+json',hops=0){
+ async function response(url,accept='application/vnd.github+json',hops=0,anonymous=false){
   if(!allowedURL(url)||hops>5)throw Error('Untrusted update download address');
   const headers={'User-Agent':'The-Spare-Room-Updater','Accept':accept,'X-GitHub-Api-Version':'2022-11-28'};
-  if(url.startsWith(API+'/')){const token=getToken();if(token)headers.Authorization='Bearer '+token;}
+  if(!anonymous&&url.startsWith(API+'/')){const token=getToken();if(token)headers.Authorization='Bearer '+token;}
   const res=await new Promise((resolve,reject)=>{const req=request(url,{headers,timeout:30000},resolve);req.on('error',reject);req.on('timeout',()=>req.destroy(Error('Connection timed out')))});
-  if([301,302,303,307,308].includes(res.statusCode)){const next=new URL(res.headers.location,url).href;res.resume();return response(next,accept,hops+1)}
+  // A token saved while the repository was private may have expired. Retry
+  // anonymously once, including subsequent redirects, to keep public updates usable.
+  if([401,403].includes(res.statusCode)&&headers.Authorization){res.resume();return response(url,accept,hops,true)}
+  if([301,302,303,307,308].includes(res.statusCode)){const next=new URL(res.headers.location,url).href;res.resume();return response(next,accept,hops+1,anonymous)}
   if(res.statusCode!==200){res.resume();const e=Error('GitHub request failed');e.status=res.statusCode;throw e}
   return res;
  }
@@ -72,7 +75,7 @@ class UpdateService extends EventEmitter{
    this.saved.lastChecked=this.now();this.persist();this.candidate=selectRelease(release,this.version,this.prerelease,this.saved.confirmedStable);
    if(this.candidate)return this.publish('available','A new release is available.',{release:this.publicCandidate()});
    return this.publish('current','You are up to date with the latest stable release. Prereleases are not offered.');
-  }catch(error){if(error.status){this.saved.lastChecked=this.now();this.persist()}this.candidate=null;return this.publish([401,403,404].includes(error.status)?'access':'error',[401,403,404].includes(error.status)?'GitHub access is needed, or its request limit was reached. Add a token with Contents: read access to User-4945/the-spare-room, or open the latest release in your browser.':'Could not reach GitHub. Keep playing and try again when your connection is available.');}
+  }catch(error){if(error.status){this.saved.lastChecked=this.now();this.persist()}this.candidate=null;return this.publish([401,403,404].includes(error.status)?'access':'error',[401,403,404].includes(error.status)?'GitHub could not provide the release, or its request limit was reached. Public updates do not require a login. Try again later or open the latest release in your browser.':'Could not reach GitHub. Keep playing and try again when your connection is available.');}
   finally{this.busy=false}
  }
  publicCandidate(){if(!this.candidate)return null;let c=this.candidate;return {version:c.version,name:c.name,notes:c.notes,canInstall:!!c.asset}}

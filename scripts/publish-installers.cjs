@@ -11,10 +11,17 @@ for(let directory of fs.readdirSync(root)){
  // The renamed prerelease must not retain a download carrying the old version.
  for(let asset of release.assets)if(asset.name.endsWith('.exe')&&asset.name!==exe)api('repos/'+repo+'/releases/assets/'+asset.id,'DELETE');
  const marker='<!-- desktop-updater-start -->',end='<!-- desktop-updater-end -->';
- const note=marker+'\n## Desktop installer refresh · 18 October 2026\n\nThe Windows installer has been rebuilt with daily and manual checks for GitHub’s latest stable release, verified downloads, automatic reopening after installation and closeable release notes. Prereleases are excluded. Game version '+manifest.game_version+' is preserved. Already-installed or previously downloaded copies require a one-time reinstall to gain the updater. Because this repository is private, configure a read-only GitHub token in the app’s GitHub access settings, or use Open latest release. Installer build details are attached in INSTALLER_BUILD.json.\n'+end;
+ const note=marker+'\n## Desktop installer refresh · 18 October 2026\n\nThe Windows installer has been rebuilt with daily and manual checks for GitHub’s latest stable release, verified downloads, automatic reopening after installation and closeable release notes. Prereleases are excluded. Game version '+manifest.game_version+' is preserved. Already-installed or previously downloaded copies require a one-time reinstall to gain the updater. The repository and releases are public: no GitHub account or token is needed. The refreshed update window and documentation explain public access, and rejected saved tokens fall back automatically. Open latest release remains available as a browser fallback. Installer build details are attached in INSTALLER_BUILD.json.\n'+end;
  const body=release.body.includes(marker)?release.body.replace(/<!-- desktop-updater-start -->[\s\S]*?<!-- desktop-updater-end -->/,note):release.body+'\n\n'+note;
  api('repos/'+repo+'/releases/'+release.id,'PATCH',{body,prerelease:release.prerelease});results.push(tag);
 }
 const all=api('repos/'+repo+'/releases?per_page=100').filter(r=>!r.draft&&r.assets.some(a=>a.name.endsWith('.exe')));
 if(all.some(r=>!results.includes(r.tag_name)))throw Error('A release installer was not refreshed');
+// Keep the active prerelease source archive aligned with the verified refresh.
+// Historical stable tags retain their original game source and attached provenance.
+const current=require('../release.json');
+if(current.prerelease){
+ const release=api('repos/'+repo+'/releases/tags/'+encodeURIComponent(current.tag));
+ if(release.prerelease)api('repos/'+repo+'/git/refs/tags/'+encodeURIComponent(current.tag),'PATCH',{sha:process.env.GITHUB_SHA,force:false});
+}
 console.log('Refreshed every release installer: '+results.join(', '));

@@ -8,7 +8,7 @@
 - Prereleases and drafts are rejected. A newer prerelease is never offered as an automatic update, and an older stable release does not downgrade your app.
 - A new-release popup offers **Update**. The app downloads the Windows installer, verifies its size and SHA-256 checksum, saves progress, and runs the installer. The updated app reopens automatically with a closeable release-notes popup.
 - **Open latest release** provides a browser fallback if automatic installation is unavailable.
-- The repository is private. Configure a GitHub token with **Contents: read** access to `User-4945/the-spare-room` in the app’s **GitHub access** settings to enable checks and downloads on that PC. Credentials are protected by Windows and are never included in an installer.
+- The repository and downloads are now public. No GitHub account or token is needed. The update window and installer instructions reflect public access, and rejected saved credentials automatically fall back to anonymous requests. Optional tokens remain protected by Windows on the player’s PC.
 - Previously installed or downloaded copies cannot change remotely. Install one refreshed download to gain the updater. Future stable updates can then be installed from the app.
 - Refreshed installers retain their app identity, save location and original game version. `INSTALLER_BUILD.json` records each installer’s game source and updater source.
 
@@ -49,7 +49,7 @@ The app and installer use version **2.1.0**. The GitHub tag is **v.2.1.0**. The 
 
 ## Verification and prerelease status
 
-Updater tests cover daily scheduling, offline recovery, manual checks, stable-only version selection, private access, redirect credential handling, download integrity and persistent release notes. Every refreshed Windows installer is installed and launched twice; a real upgrade between stable versions verifies automatic reopening, the release-notes popup and retained progress.
+Updater tests cover daily scheduling, offline recovery, manual checks, stable-only version selection, public access, rejected-token recovery, redirect credential handling, download integrity and persistent release notes. Every refreshed Windows installer is installed and launched twice; a real upgrade between stable versions verifies automatic reopening, the release-notes popup and retained progress.
 
 Automated checks cover sign proportions and text fitting, all eight encounters, once-only sanity damage, pauses, reset behaviour, reusable effect meshes, existing story gates, 200 deterministic city codes and reachable city entrances. The Windows workflow builds the installer, installs it and launches the installed app twice with network access blocked, checking actual canvas text metrics, rendering every encounter and confirming save persistence.
 

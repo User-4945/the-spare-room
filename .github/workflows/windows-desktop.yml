@@ -105,3 +105,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: node scripts/publish-installers.cjs
+      - name: Verify public updates without sign-in
+        run: node scripts/check-public-updates.cjs

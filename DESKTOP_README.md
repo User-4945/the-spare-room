@@ -8,7 +8,7 @@ Use **UPDATES** or **Game → Check for updates** for a manual check. The app al
 
 When a new stable release is available, select **Update**. The installer downloads, its size and SHA-256 checksum are checked, progress is saved, and the installer runs. The updated game reopens with release notes in a closeable popup. If installation cannot be completed automatically, **Open latest release** opens GitHub for a manual download.
 
-The repository is private. Under **GitHub access**, add a fine-grained personal access token with **Contents: read** permission for `User-4945/the-spare-room`. Create it in GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens. Choose only this repository and read access to Contents. The token is encrypted with Windows credential protection and never bundled into an installer. Remove access from the same settings panel at any time. Without a token, the browser fallback works with your GitHub login.
+The repository and releases are public. No GitHub account or token is needed to check for updates, download an installer or use the browser fallback. **Optional GitHub access** lets players add a read-only token if they encounter GitHub request limits. Saved tokens are protected by Windows on that PC and never bundled in an installer. Expired or rejected tokens fall back to public access; **Remove access** clears a saved token.
 
 Previously installed or downloaded copies need a one-time reinstall from a refreshed installer to gain the updater. Each historical installer retains its original game version. The installer is unsigned.
 
