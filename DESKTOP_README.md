@@ -1,17 +1,23 @@
-# The Spare Room v2.0.1 — prerelease — Windows desktop
+# The Spare Room v.2.1.0 — Windows prerelease
 
-This is the **v.2.0.1 bug-fix and anomalies prerelease**. It adds eight encounters and repairs sign typography. v2.0.0 is still the stable release.
+Install `The-Spare-Room-Setup-2.1.0-x64.exe` on Windows 10/11 x64, then launch from the desktop or Start menu. Gameplay works offline; all game assets and the runtime are included.
 
-1. Download `The-Spare-Room-Setup-2.0.1-x64.exe` from the GitHub release.
-2. Run the installer, choose a destination, and finish installation.
-3. Open **The Spare Room** from the desktop or Start menu. No browser, Python, or internet connection is needed to play.
+## Updates
 
-The installer includes the game, its assets and the Electron runtime. It targets 64-bit Windows 10/11. It is unsigned, so Windows may show an unrecognised-publisher warning. It includes no automatic updater, login, or online dependency. Use a future installer to update it.
+Use **UPDATES** or **Game → Check for updates** for a manual check. The app also checks once every 24 hours while running and connected. It uses GitHub’s latest stable release only; prereleases are excluded.
 
-WASD: walk. Shift: sprint. Space: jump. Click the game: capture mouse. E / click: interact. Esc: release mouse. F11 or the game toolbar: fullscreen. Ctrl+Q: quit.
+When a new stable release is available, select **Update**. The installer downloads, its size and SHA-256 checksum are checked, progress is saved, and the installer runs. The updated game reopens with release notes in a closeable popup. If installation cannot be completed automatically, **Open latest release** opens GitHub for a manual download.
 
-Progress saves on this PC under `%APPDATA%\The Spare Room`. The desktop app starts with its own save; browser progress is not automatically imported. Uninstalling preserves saved progress. Starting a new game resets that run but keeps the ending journal.
+The repository is private. Under **GitHub access**, add a fine-grained personal access token with **Contents: read** permission for `User-4945/the-spare-room`. Create it in GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens. Choose only this repository and read access to Contents. The token is encrypted with Windows credential protection and never bundled into an installer. Remove access from the same settings panel at any time. Without a token, the browser fallback works with your GitHub login.
 
-The release also contains a browser-build ZIP. That ZIP is separate from the installer. A SHA-256 checksum for the installer is included in `SHA256SUMS.txt`.
+Previously installed or downloaded copies need a one-time reinstall from a refreshed installer to gain the updater. Each historical installer retains its original game version. The installer is unsigned.
 
-Build from source: install Node.js 24, run `npm ci`, then `npm start` to play locally or `npm run desktop:win` on Windows to create the installer. `npm test` checks game mechanics and asset packaging. The Windows release workflow additionally installs the actual installer and launches the installed game twice to verify rendering, local assets, blocked networking, and saved progress after restart. These checks do not replace manual visual and gameplay testing on your PC.
+## Controls and saves
+
+WASD: walk. Shift: sprint. Space: jump. Click: capture mouse. E / click: interact. Esc: release mouse. F11: fullscreen. Ctrl+Q: quit.
+
+Saves and the ending journal remain under `%APPDATA%\The Spare Room`. Desktop and browser saves are separate. Updates and uninstalling preserve progress. Starting a new game replaces that run but keeps the ending journal.
+
+## Building
+
+Use Node.js 24. Run `npm ci`, then `npm start` or `npm run desktop:win` on Windows. `npm test` covers gameplay, packaging and update logic. The release workflow rebuilds every release installer and verifies a real installation, restart, release-notes popup and retained save. Installer provenance is attached as `INSTALLER_BUILD.json`.

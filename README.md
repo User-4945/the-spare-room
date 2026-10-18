@@ -1,10 +1,10 @@
-# The Spare Room v2.0.1 — prerelease
+# The Spare Room v2.1.0 — prerelease
 
 A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
-**[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)** · **[v.2.0.1 prerelease & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v.2.0.1)**
+**[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)** · **[v.2.1.0 prerelease & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v.2.1.0)**
 
-This bug-fix and atmosphere update repairs stretched sign text, gives city venues individual sign designs and introduces eight timed anomalies. A silent watcher, floating doll, impossible door, fresh footprints and synchronised stares make familiar places less trustworthy. See [release notes](RELEASE_NOTES.md) for details. v2.0.0 remains the stable GitHub release.
+This prerelease adds desktop updates and includes the sign fixes and eight timed anomalies from the renamed v.2.0.1 release. A silent watcher, floating doll, impossible door, fresh footprints and synchronised stares make familiar places less trustworthy. See [release notes](RELEASE_NOTES.md) for details. v2.0.0 remains the stable GitHub release.
 
 You return to your childhood home to care for Mother. An unfamiliar room contains a diary predicting your next day. Decide whether to obey it, protect your memories, and investigate what the house is hiding.
 
@@ -121,4 +121,12 @@ Run `node tests/game-smoke.cjs` for the automated mechanics and generation check
 
 ## Offline Windows app
 
-The Windows x64 installer is attached to the [v.2.0.1 prerelease](https://github.com/User-4945/the-spare-room/releases/tag/v.2.0.1). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.0.1.
+The Windows x64 installer is attached to the [v.2.1.0 prerelease](https://github.com/User-4945/the-spare-room/releases/tag/v.2.1.0). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.1.0.
+
+## Desktop update checks
+
+Use **UPDATES** or **Game → Check for updates**. Automatic checks run once every 24 hours while open and online, against GitHub’s `/releases/latest` endpoint. Prereleases are excluded. Update downloads are verified before installation; the app reopens with release notes and preserves progress. A browser fallback opens the latest stable release.
+
+This GitHub repository is private. In the update window, expand **GitHub access** and add your own fine-grained token with Contents: read permission for this repository. It is encrypted with Windows credential protection and stays on that PC. The game itself remains playable offline; no saves are uploaded. Without repository access, use the browser fallback while signed into GitHub.
+
+All release installers have been refreshed with this updater while retaining their original game version. Existing downloaded or installed copies require a one-time reinstall from a refreshed installer. Future stable releases can be installed from the app. A prerelease build stays on its current version until an eligible stable release becomes available.

@@ -1,48 +1,36 @@
-name: Publish game release
+name: Publish game and refreshed installers
 on:
   push:
     branches: [main]
-    paths: [release.json, .github/workflows/release.yml]
+    paths: [release.json, dist/**, desktop/**, scripts/**, tests/**, package.json, package-lock.json, RELEASE_NOTES.md, .github/workflows/release.yml, .github/workflows/windows-desktop.yml]
   workflow_dispatch:
 permissions:
   contents: write
-  statuses: write
 concurrency:
   group: spare-room-release
   cancel-in-progress: false
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.publish.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check game scripts and mechanics
+      - name: Check current game and updater
         run: |
-          for script in dist/*.js; do node --check "$script"; done
-          node tests/game-smoke.cjs
+          for script in dist/*.js desktop/*.cjs desktop/*.js scripts/*.cjs; do node --check "$script"; done
+          npm test
       - name: Package browser build
         run: python3 scripts/package-release.py
-      - name: Publish GitHub release
+      - name: Rename prerelease and prepare installer inventory
+        id: publish
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          TAG=$(node -p "require('./release.json').tag")
-          TITLE=$(node -p "require('./release.json').name")
-          if gh release view "$TAG" --json tagName >/dev/null 2>&1; then
-            echo "Release already exists; leaving it unchanged."
-          else
-            RELEASE_FLAGS=()
-            if [ "$(node -p "require('./release.json').prerelease === true")" = "true" ]; then
-              RELEASE_FLAGS+=(--prerelease --latest=false)
-            fi
-            gh release create "$TAG" release-build/*.zip --target "$GITHUB_SHA" --title "$TITLE" --notes-file RELEASE_NOTES.md "${RELEASE_FLAGS[@]}"
-          fi
-          RELEASE_URL=$(gh release view "$TAG" --json url --jq .url)
-          gh api "repos/$GH_REPO/statuses/$GITHUB_SHA" -f state=success -f context="release/$TAG" -f description="GitHub release published" -f target_url="$RELEASE_URL"
-      - name: Report release failure
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: gh api "repos/$GH_REPO/statuses/$GITHUB_SHA" -f state=failure -f context="release/$(node -p "require('./release.json').tag")" -f description="Release workflow failed; inspect the run" -f target_url="$RUN_URL"
+        run: node scripts/publish-release.cjs
+  installers:
+    needs: release
+    uses: ./.github/workflows/windows-desktop.yml
+    with:
+      matrix: ${{ needs.release.outputs.matrix }}
+    secrets: inherit
