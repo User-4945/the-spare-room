@@ -1,39 +1,44 @@
-# The Spare Room v2.0.0
+# The Spare Room v.2.0.1
 
-**The offline desktop edition.** The Spare Room now has a versioned Windows installer alongside the browser build. This release brings the existing expanded horror sandbox into a self-contained desktop app.
+**Bug fixes & anomalies — prerelease.** A scarier update for the browser and offline Windows editions of The Spare Room. This patch fixes stretched building signs and adds eight unsettling encounters to the house and city. It is marked as a prerelease while the new atmosphere and pacing receive player testing; v2.0.0 remains the stable release.
 
-## Offline Windows game
+## Bug fixes
 
-- Install with **The-Spare-Room-Setup-2.0.0-x64.exe** on 64-bit Windows 10/11.
-- Play without an internet connection, browser, Python, or separate runtime installation. All game assets and the Electron runtime are bundled.
-- Launch from desktop and Start menu shortcuts. Use F11 for fullscreen and Ctrl+Q to quit.
-- Keep progress and the ending journal locally under `%APPDATA%\The Spare Room`.
-- The app and installer now identify themselves as version 2.0.0.
+- Building labels now use textures with the same proportions as their physical signs. Text is measured and fitted at its natural proportions, with room for borders and line spacing.
+- Signs face outward so their lettering cannot appear reversed through the back of a board.
+- Each city venue has its own sign colours, border style and font: a cinema marquee, archive plaques, clinic signage, railway lettering, workshop plates and more. House, upstairs and fuse-box labels also use the corrected text layout.
+- New encounter positions are checked against walls, walkable space and floor height. Footprints sit above the ground; upstairs encounters stay on the upper floor.
 
-## Included game content
+## More things that should not be there
 
-- 20 explorable city locations, including the cinema, station, archives, cafe, hotel, laundry, bookshop, glasshouse and pump house.
-- Seeded location placement, facade heights, colours, props, trees and creepy discoveries. Reuse a `SPARE-2-XXXXXXXX` world code to revisit a layout.
-- 31 endings across the house, garden, upstairs rooms and city.
-- Easy, Intermediate and Hard modes; sanity, food recovery, sprinting and jumping.
-- Day/night cycles, walking residents, a reflective mirror and an animated cinema projector.
-- An upstairs study, nursery and records room with hidden notes and secret endings.
+- A tall, silent watcher that disappears if you stare at it.
+- Wet, barefoot prints appearing behind you.
+- A floating doll whose head turns independently.
+- Nearby residents freezing and turning to face you together.
+- Writing and handprints forming on the uncovered mirror while its reflection remains active.
+- Six answering knocks, with optional sound and a caption.
+- A slow dip in the house lights while your torch remains usable.
+- An impossible door with a plate reading **YOUR ROOM**.
+
+The **ANOMALIES** journal records the kinds of encounters you actually notice. Encounters pause while menus or reading popups are open, have a grace period at the start of a run, and leave breathing room between appearances. Easy mode gives longer breaks; Hard makes encounters more frequent. A disturbing encounter can reduce sanity only once. Reading-related sanity losses still apply after closing the popup.
 
 ## Downloads
 
-- **The-Spare-Room-Setup-2.0.0-x64.exe** — offline Windows installer.
-- **The-Spare-Room-v2.0.0-web.zip** — browser build for local serving or web hosting.
+- **The-Spare-Room-Setup-2.0.1-x64.exe** — self-contained offline installer for 64-bit Windows 10/11.
+- **The-Spare-Room-v2.0.1-web.zip** — browser build for local serving or hosting.
 - **SHA256SUMS.txt** — installer checksum.
-- **DESKTOP_README.md** — installation instructions, controls and save information.
+- **DESKTOP_README.md** — installation, controls and save information.
 
-Browser version: https://the-spare-room.sunsetjelly6.chatgpt.site
+Play in a browser: https://the-spare-room.sunsetjelly6.chatgpt.site
 
-## Saves and compatibility
+## Saves and existing content
 
-Desktop saves are separate from browser saves and are not automatically imported. The desktop edition uses the same application identity and save folder as the earlier v1.5.1 desktop build. Uninstalling preserves saved progress. World generation remains version 2, so existing `SPARE-2` codes keep their layouts.
+The 20 city locations, 31 endings, three difficulty modes, upstairs rooms and day/night cycle remain available. Existing saves load without a reset. Generation remains version 2, so `SPARE-2-XXXXXXXX` codes retain their city layout. The anomaly journal belongs to the current run; the ending journal survives starting again.
 
-## Validation and known limitations
+The app and installer use version **2.0.1**. The GitHub tag is **v.2.0.1**, matching the requested release name. The Windows app keeps the same application identity and `%APPDATA%\The Spare Room` save folder as v2.0.0. Desktop and browser saves remain separate.
 
-Release checks cover game mechanics, 200 deterministic world codes, reachable entrances across eight layouts, complete local assets, and a Windows installation followed by two launches to check rendering, blocked network requests and save persistence.
+## Verification and prerelease status
 
-The installer is unsigned, so Windows may display an unknown-publisher warning. This is a prototype; automated checks do not replace manual visual and gameplay testing. Updates require downloading a newer installer.
+Automated checks cover sign proportions and text fitting, all eight encounters, once-only sanity damage, pauses, reset behaviour, reusable effect meshes, existing story gates, 200 deterministic city codes and reachable city entrances. The Windows workflow builds the installer, installs it and launches the installed app twice with network access blocked, checking actual canvas text metrics, rendering every encounter and confirming save persistence.
+
+Manual visual and gameplay testing on different graphics hardware is still needed, especially for encounter pacing and lighting. The Windows installer is unsigned and updates are installed manually. Please include your difficulty, location, world code and reproduction steps when reporting an issue.

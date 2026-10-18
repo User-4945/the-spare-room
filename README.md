@@ -1,12 +1,17 @@
-# The Spare Room v2.0.0
+# The Spare Room v2.0.1 — prerelease
 
 A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
-**[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)**
+**[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)** · **[v.2.0.1 prerelease & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v.2.0.1)**
+
+This bug-fix and atmosphere update repairs stretched sign text, gives city venues individual sign designs and introduces eight timed anomalies. A silent watcher, floating doll, impossible door, fresh footprints and synchronised stares make familiar places less trustworthy. See [release notes](RELEASE_NOTES.md) for details. v2.0.0 remains the stable GitHub release.
 
 You return to your childhood home to care for Mother. An unfamiliar room contains a diary predicting your next day. Decide whether to obey it, protect your memories, and investigate what the house is hiding.
 
 ## Features
+
+- Eight timed anomalies, an encounter journal, and difficulty-based pacing. Visual encounters respect walls and floors; disturbing encounters cost sanity once and pause while reading.
+- Proportional, measured sign text with venue-specific fonts, colours and borders.
 
 - An optional three-night house story and twenty city locations, with 31 endings in total.
 - Explore the house, courtyard, shed, upstairs rooms, and twenty city locations.
@@ -45,6 +50,7 @@ Choose a mode on the title screen. Continuing preserves the current run; startin
 | Title screen / modes | Menu button |
 | Fullscreen | Fullscreen button |
 | Room navigation | Map button |
+| Recorded encounters | Anomalies button |
 | Progress the night | End Day button |
 
 Touch controls support movement, jumping, sprinting, and dragging to look.
@@ -72,11 +78,14 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/city-generation.js` | Twenty-chunk deterministic generation, world codes and themed scenery |
 | `dist/city.js` | Seeded city chunks, local endings, sandbox map, and ending journal |
 | `dist/living-city.js` | World clock, resident rendering, conversations, and animated projector |
+| `dist/signage.js` | Proportional canvas text and themed building signs |
 | `dist/advanced.js` | Three.js scene rendering, textures, lighting, joint animation, fuse details, title screen, modes, and four additional endings |
+| `dist/upstairs.js` | Upper rooms, stairs, signs, notes and three endings |
+| `dist/anomalies.js` | Timed scares, pooled 3D effects and the anomaly journal |
 | `dist/vendor/` | Bundled Three.js r160 and planar reflector, with third-party licence |
 | `dist/favicon.svg` | Custom door-and-keyhole icon |
 
-Scripts load in the order listed. They currently share global state; treat this as a prototype rather than a finished engine.
+The local Three.js vendor scripts load before signage and the advanced renderer. They currently share global state; treat this as a prototype rather than a finished engine.
 
 ## Progress and privacy
 
@@ -112,4 +121,4 @@ Run `node tests/game-smoke.cjs` for the automated mechanics and generation check
 
 ## Offline Windows app
 
-The Windows x64 installer is attached to the [v2.0.0 release](https://github.com/User-4945/the-spare-room/releases/tag/v2.0.0). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.0.0.
+The Windows x64 installer is attached to the [v.2.0.1 prerelease](https://github.com/User-4945/the-spare-room/releases/tag/v.2.0.1). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.0.1.

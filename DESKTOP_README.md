@@ -1,6 +1,8 @@
-# The Spare Room v2.0.0 — Windows desktop
+# The Spare Room v2.0.1 — prerelease — Windows desktop
 
-1. Download `The-Spare-Room-Setup-2.0.0-x64.exe` from the GitHub release.
+This is the **v.2.0.1 bug-fix and anomalies prerelease**. It adds eight encounters and repairs sign typography. v2.0.0 is still the stable release.
+
+1. Download `The-Spare-Room-Setup-2.0.1-x64.exe` from the GitHub release.
 2. Run the installer, choose a destination, and finish installation.
 3. Open **The Spare Room** from the desktop or Start menu. No browser, Python, or internet connection is needed to play.
 

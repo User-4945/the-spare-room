@@ -20,12 +20,28 @@ if(typeof THREE==='undefined'||!advancedEngine||advancedEngine.failed)throw Erro
 if(cityWorld().length!==20||advancedEngine.actors.length!==6)throw Error('World content missing');
 if(!Array.from(document.scripts).filter(s=>s.src).every(s=>s.src.startsWith('file:')))throw Error('Remote script dependency');
 renderAdvanced();if(advancedEngine.failed)throw Error('World failed to render');
+let signs=[];advancedEngine.world.traverse(m=>{if(m.userData.sign)signs.push(m)});
+for(let mesh of signs){let q=mesh.userData.sign,g=mesh.material.map.image.getContext('2d');g.font=q.layout.font;
+ if(Math.abs(q.width/q.height-q.worldWidth/q.worldHeight)/(q.worldWidth/q.worldHeight)>.02)throw Error('Stretched sign texture');
+ if(q.lines.some(line=>g.measureText(line).width>q.layout.maxWidth+.1))throw Error('Sign text clipped with installed fonts');
+}
+// Render the new geometry in the installed app, with its actual canvas and WebGL context.
+function prepareEncounter(){reset();close();s.started=true;s.difficulty='intermediate';house.x=0;house.z=3;house.a=0;house.pitch=0;house.jumpHeight=0;house.jumpVelocity=0;buildHouse();}
+for(let id of ['watcher','footprints','toy','door','brownout','knocks','mirror','stare']){
+ prepareEncounter();
+ if(id==='mirror'){flags().mirror=true;house.x=4.2;house.z=5;house.a=Math.PI;buildHouse();}
+ if(id==='stare'){s.cityOpen=true;buildHouse();let p=residents()[0];house.x=p.x;house.z=p.z+3;house.a=Math.PI;}
+ if(!startAnomaly(id))throw Error('Cannot start installed encounter: '+id);
+ advanceAnomalies(.1);renderAdvanced();
+ if(advancedEngine.failed||!advancedEngine.anomalies.groups[id].visible)throw Error('Encounter did not render: '+id);
+}
+reset();renderAdvanced();
 let persisted=localStorage.getItem('desktop-smoke-save');
 if(${verifySave}&&persisted!==${JSON.stringify(version)})throw Error('Save did not survive restart');
 localStorage.setItem('desktop-smoke-save',${JSON.stringify(version)});
 let networkBlocked=false;try{await fetch('https://example.com/')}catch{networkBlocked=true}
 if(!networkBlocked)throw Error('Network requests are not blocked');
-return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,networkBlocked,saveVerified:${verifySave}};
+return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,signsChecked:signs.length,encountersRendered:8,networkBlocked,saveVerified:${verifySave}};
 })()`);await session.defaultSession.flushStorageData();report(result,0)}catch(error){report({ok:false,error:String(error)},1)}}
 app.whenReady().then(async()=>{
 const ses=session.defaultSession;

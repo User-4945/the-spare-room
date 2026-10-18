@@ -1,6 +1,7 @@
 {
-  "name": "The Spare Room v2.0.0",
-  "version": "2.0.0",
-  "tag": "v2.0.0",
-  "generation_version": 2
+  "name": "The Spare Room v.2.0.1",
+  "version": "2.0.1",
+  "tag": "v.2.0.1",
+  "generation_version": 2,
+  "prerelease": true
 }
