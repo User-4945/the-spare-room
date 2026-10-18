@@ -1,28 +1,39 @@
-# The Spare Room v1.5.1
+# The Spare Room v2.0.0
 
-The city now has **20 explorable locations**, up from six, across a connected five-column, four-row layout.
+**The offline desktop edition.** The Spare Room now has a versioned Windows installer alongside the browser build. This release brings the existing expanded horror sandbox into a self-contained desktop app.
 
-- Added a cafe, laundry, dead letter office, clock workshop, florist, bakery, apartments, hotel, market, glasshouse, pump house, garage, bookshop and playroom. Each has an unsettling discovery and themed interior props.
-- Added independently seeded generation for location placement, facade heights, palettes, street props, trees and eerie details.
-- Added reusable `SPARE-2-XXXXXXXX` world codes through Map → House, garden and city → World generation code. Starting from a code replaces the current run while keeping the ending journal.
-- Expanded continuous terrain, roads, border walls, foundation coverage, building signs and map destinations to cover the larger city.
-- Kept street lighting to a pool of eight nearby lights as the city grows.
-- Preserved all 31 endings, difficulty modes, upstairs rooms, residents, day/night cycle and projector sequence.
+## Offline Windows game
 
-## Play
+- Install with **The-Spare-Room-Setup-2.0.0-x64.exe** on 64-bit Windows 10/11.
+- Play without an internet connection, browser, Python, or separate runtime installation. All game assets and the Electron runtime are bundled.
+- Launch from desktop and Start menu shortcuts. Use F11 for fullscreen and Ctrl+Q to quit.
+- Keep progress and the ending journal locally under `%APPDATA%\The Spare Room`.
+- The app and installer now identify themselves as version 2.0.0.
 
-https://the-spare-room.sunsetjelly6.chatgpt.site
+## Included game content
 
-The attached **web** archive is a browser-game build, not an `.exe` installer. Extract it, then run `python3 -m http.server 8000 --directory dist` from the extracted folder and open http://localhost:8000. Its assets are bundled locally.
+- 20 explorable city locations, including the cinema, station, archives, cafe, hotel, laundry, bookshop, glasshouse and pump house.
+- Seeded location placement, facade heights, colours, props, trees and creepy discoveries. Reuse a `SPARE-2-XXXXXXXX` world code to revisit a layout.
+- 31 endings across the house, garden, upstairs rooms and city.
+- Easy, Intermediate and Hard modes; sanity, food recovery, sprinting and jumping.
+- Day/night cycles, walking residents, a reflective mirror and an animated cinema projector.
+- An upstairs study, nursery and records room with hidden notes and secret endings.
 
-Existing saves retain story progress and the ending journal. Their city layout updates to generation version 2. Start a new game for a fresh city, or reuse a world code to reproduce a layout.
+## Downloads
 
-## Validation
+- **The-Spare-Room-Setup-2.0.0-x64.exe** — offline Windows installer.
+- **The-Spare-Room-v2.0.0-web.zip** — browser build for local serving or web hosting.
+- **SHA256SUMS.txt** — installer checksum.
+- **DESKTOP_README.md** — installation instructions, controls and save information.
 
-Automated checks cover 200 deterministic world codes, connected routes to all 20 entrances across eight seeds, terrain coverage, doorway and stair collision, rendering/interaction camera alignment, ending gates, reset behaviour and existing game systems. Browser visual QA was unavailable in this environment; this remains a prototype release.
+Browser version: https://the-spare-room.sunsetjelly6.chatgpt.site
 
-## Offline Windows desktop installer
+## Saves and compatibility
 
-Download **The-Spare-Room-Setup-1.5.1-x64.exe** from the assets below. It installs a self-contained Windows 10/11 x64 app that plays offline, with desktop/Start menu shortcuts, fullscreen and local saves. No browser or Python is needed. The installer is unsigned. Browser saves are separate from desktop saves. See DESKTOP_README.md for installation and controls, and SHA256SUMS.txt for the installer checksum.
+Desktop saves are separate from browser saves and are not automatically imported. The desktop edition uses the same application identity and save folder as the earlier v1.5.1 desktop build. Uninstalling preserves saved progress. World generation remains version 2, so existing `SPARE-2` codes keep their layouts.
 
-The installer was built on Windows and checked by installing it and launching it twice, verifying the 3D engine, local assets, blocked network requests and persistence after restart. Manual visual testing remains necessary.
+## Validation and known limitations
+
+Release checks cover game mechanics, 200 deterministic world codes, reachable entrances across eight layouts, complete local assets, and a Windows installation followed by two launches to check rendering, blocked network requests and save persistence.
+
+The installer is unsigned, so Windows may display an unknown-publisher warning. This is a prototype; automated checks do not replace manual visual and gameplay testing. Updates require downloading a newer installer.

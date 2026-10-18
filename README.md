@@ -1,4 +1,4 @@
-# The Spare Room v1.5.1
+# The Spare Room v2.0.0
 
 A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
@@ -112,4 +112,4 @@ Run `node tests/game-smoke.cjs` for the automated mechanics and generation check
 
 ## Offline Windows app
 
-The Windows x64 installer is attached to the [v1.5.1 release](https://github.com/User-4945/the-spare-room/releases/tag/v1.5.1). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Desktop files are built separately; the hosted browser game is unchanged.
+The Windows x64 installer is attached to the [v2.0.0 release](https://github.com/User-4945/the-spare-room/releases/tag/v2.0.0). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.0.0.

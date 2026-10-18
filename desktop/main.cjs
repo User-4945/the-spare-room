@@ -2,6 +2,7 @@ const {app,BrowserWindow,Menu,session,dialog}=require('electron');
 const path=require('node:path');
 const fs=require('node:fs');
 const {fileURLToPath}=require('node:url');
+const version=app.getVersion();
 const smoke=process.argv.includes('--smoke-test');
 const verifySave=process.argv.includes('--smoke-verify-save');
 const gameRoot=path.join(__dirname,'game');
@@ -20,11 +21,11 @@ if(cityWorld().length!==20||advancedEngine.actors.length!==6)throw Error('World 
 if(!Array.from(document.scripts).filter(s=>s.src).every(s=>s.src.startsWith('file:')))throw Error('Remote script dependency');
 renderAdvanced();if(advancedEngine.failed)throw Error('World failed to render');
 let persisted=localStorage.getItem('desktop-smoke-save');
-if(${verifySave}&&persisted!=='v1.5.1')throw Error('Save did not survive restart');
-localStorage.setItem('desktop-smoke-save','v1.5.1');
+if(${verifySave}&&persisted!==${JSON.stringify(version)})throw Error('Save did not survive restart');
+localStorage.setItem('desktop-smoke-save',${JSON.stringify(version)});
 let networkBlocked=false;try{await fetch('https://example.com/')}catch{networkBlocked=true}
 if(!networkBlocked)throw Error('Network requests are not blocked');
-return{ok:true,version:'1.5.1',locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,networkBlocked,saveVerified:${verifySave}};
+return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,networkBlocked,saveVerified:${verifySave}};
 })()`);await session.defaultSession.flushStorageData();report(result,0)}catch(error){report({ok:false,error:String(error)},1)}}
 app.whenReady().then(async()=>{
 const ses=session.defaultSession;
@@ -32,7 +33,7 @@ ses.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss
 ses.setPermissionRequestHandler((contents,permission,callback)=>callback(localGameURL(contents.getURL())&&['pointerLock','fullscreen'].includes(permission)));
 ses.setPermissionCheckHandler((contents,permission)=>!!contents&&localGameURL(contents.getURL())&&['pointerLock','fullscreen'].includes(permission));
 ses.on('will-download',event=>event.preventDefault());
-win=new BrowserWindow({width:1440,height:960,minWidth:960,minHeight:700,show:!smoke,backgroundColor:'#152019',title:'The Spare Room v1.5.1',icon:path.join(__dirname,'icon.ico'),webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,spellcheck:false}});
+win=new BrowserWindow({width:1440,height:960,minWidth:960,minHeight:700,show:!smoke,backgroundColor:'#152019',title:'The Spare Room v'+version,icon:path.join(__dirname,'icon.ico'),webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,spellcheck:false}});
 win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
 win.webContents.on('will-navigate',(event,url)=>{if(!localGameURL(url))event.preventDefault()});
 win.webContents.on('will-attach-webview',event=>event.preventDefault());

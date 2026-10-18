@@ -1,6 +1,6 @@
-# The Spare Room v1.5.1 — Windows desktop
+# The Spare Room v2.0.0 — Windows desktop
 
-1. Download `The-Spare-Room-Setup-1.5.1-x64.exe` from the GitHub release.
+1. Download `The-Spare-Room-Setup-2.0.0-x64.exe` from the GitHub release.
 2. Run the installer, choose a destination, and finish installation.
 3. Open **The Spare Room** from the desktop or Start menu. No browser, Python, or internet connection is needed to play.
 

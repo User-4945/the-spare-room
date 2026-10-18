@@ -1,6 +1,6 @@
 {
   "name": "the-spare-room",
-  "version": "1.5.1",
+  "version": "2.0.0",
   "private": true,
   "description": "An offline first-person psychological horror game",
   "author": "User-4945",
@@ -20,10 +20,25 @@
     "appId": "io.github.user4945.thespareroom",
     "productName": "The Spare Room",
     "asar": true,
-    "directories": { "output": "desktop-build" },
-    "files": ["desktop/main.cjs", "desktop/game/**/*", "desktop/icon.ico", "package.json", "LICENSE"],
+    "directories": {
+      "output": "desktop-build"
+    },
+    "files": [
+      "desktop/main.cjs",
+      "desktop/game/**/*",
+      "desktop/icon.ico",
+      "package.json",
+      "LICENSE"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "desktop/icon.ico",
       "artifactName": "The-Spare-Room-Setup-${version}-${arch}.${ext}"
     },
