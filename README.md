@@ -109,3 +109,7 @@ Exterior stairs lead to a study, nursery and records room. Each contains a hidde
 Twenty chunks occupy a connected 5 × 4 layout, with six ending landmarks and fourteen exploration locations. Each seed determines placement, facade height, palette, trees, props and eerie details through separate random streams. Use Map → House, garden and city → World generation code to view or reuse a `SPARE-2-XXXXXXXX` code. Starting from a code resets the current run while keeping the ending journal. Existing saves keep progress but adopt the expanded layout.
 
 Run `node tests/game-smoke.cjs` for the automated mechanics and generation checks. This uses a simulated DOM and renderer; it does not replace browser visual testing. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for this release. GitHub Actions publishes the version in `release.json` with a browser-build ZIP when that file changes on main. The ZIP is not a Windows installer.
+
+## Offline Windows app
+
+The Windows x64 installer is attached to the [v1.5.1 release](https://github.com/User-4945/the-spare-room/releases/tag/v1.5.1). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Desktop files are built separately; the hosted browser game is unchanged.

@@ -1,0 +1,41 @@
+{
+  "name": "the-spare-room",
+  "version": "1.5.1",
+  "private": true,
+  "description": "An offline first-person psychological horror game",
+  "author": "User-4945",
+  "license": "MIT",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "node scripts/prepare-desktop.cjs && electron .",
+    "test": "node tests/game-smoke.cjs && node tests/desktop-package.cjs",
+    "desktop:prepare": "node scripts/prepare-desktop.cjs",
+    "desktop:win": "npm run desktop:prepare && electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.9.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "io.github.user4945.thespareroom",
+    "productName": "The Spare Room",
+    "asar": true,
+    "directories": { "output": "desktop-build" },
+    "files": ["desktop/main.cjs", "desktop/game/**/*", "desktop/icon.ico", "package.json", "LICENSE"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "desktop/icon.ico",
+      "artifactName": "The-Spare-Room-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "The Spare Room",
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": null
+  }
+}

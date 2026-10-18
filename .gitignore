@@ -1,1 +1,4 @@
 release-build/
+node_modules/
+desktop/game/
+desktop-build/

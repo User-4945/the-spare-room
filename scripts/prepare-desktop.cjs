@@ -1,0 +1,12 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const dest=path.join(root,'desktop','game');
+fs.rmSync(dest,{recursive:true,force:true});
+fs.cpSync(path.join(root,'dist'),dest,{recursive:true});
+const htmlPath=path.join(dest,'index.html');
+let html=fs.readFileSync(htmlPath,'utf8').replace(/href="\/(favicon[^" ]*|apple-touch-icon\.png)"/g,'href="$1"');
+const policy="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
+html=html.replace('<head>','<head><meta http-equiv="Content-Security-Policy" content="'+policy+'">');
+fs.writeFileSync(htmlPath,html);
+console.log('Prepared offline game files in desktop/game');

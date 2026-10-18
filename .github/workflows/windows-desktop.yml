@@ -1,0 +1,70 @@
+name: Windows offline installer
+on:
+  push:
+    branches: [main]
+    paths: [desktop/**, scripts/prepare-desktop.cjs, tests/desktop-package.cjs, package.json, package-lock.json, .github/workflows/windows-desktop.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: spare-room-windows
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install pinned build dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check game and desktop assets
+        run: npm test
+      - name: Build self-contained Windows x64 installer
+        run: npm run desktop:win
+      - name: Install and launch twice with network access blocked
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem desktop-build/*Setup*.exe | Select-Object -First 1
+          if (!$installer) { throw 'Installer missing' }
+          $installDir = Join-Path $env:RUNNER_TEMP 'spare-room-installed'
+          $p = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Installer failed: $($p.ExitCode)" }
+          $exe = Join-Path $installDir 'The Spare Room.exe'
+          if (!(Test-Path $exe)) { throw 'Installed executable missing' }
+          $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-room-profile'
+          foreach ($attempt in 1,2) {
+            $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP "desktop-smoke-$attempt.json"
+            $appArgs = @('--smoke-test')
+            if ($attempt -eq 2) { $appArgs += '--smoke-verify-save' }
+            $game = Start-Process -FilePath $exe -ArgumentList $appArgs -PassThru
+            if (!$game.WaitForExit(90000)) { $game.Kill(); throw 'Desktop launch timed out' }
+            if (!(Test-Path $env:SPARE_ROOM_SMOKE_REPORT)) { throw 'Desktop did not produce a smoke report' }
+            $report = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+            $report | ConvertTo-Json
+            if ($game.ExitCode -ne 0 -or !$report.ok) { throw 'Installed game smoke test failed' }
+            if ($attempt -eq 2 -and !$report.saveVerified) { throw 'Save persistence failed' }
+          }
+      - name: Create checksum
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem desktop-build/*Setup*.exe | Select-Object -First 1
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLower()
+          "$hash  $($installer.Name)" | Set-Content desktop-build/SHA256SUMS.txt -Encoding ascii
+      - name: Attach installer to v1.5.1
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $tag = node -p "require('./release.json').tag"
+          $installer = Get-ChildItem desktop-build/*Setup*.exe | Select-Object -First 1
+          gh release upload $tag $installer.FullName desktop-build/SHA256SUMS.txt DESKTOP_README.md --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
+          gh release edit $tag --notes-file RELEASE_NOTES_DESKTOP.md
+          if ($LASTEXITCODE -ne 0) { throw 'Release notes update failed' }
