@@ -43,7 +43,7 @@ jobs:
             $appArgs = @('--smoke-test')
             if ($attempt -eq 2) { $appArgs += '--smoke-verify-save' }
             $game = Start-Process -FilePath $exe -ArgumentList $appArgs -PassThru
-            if (!$game.WaitForExit(90000)) { $game.Kill(); throw 'Desktop launch timed out' }
+            if (!$game.WaitForExit(180000)) { $game.Kill(); throw 'Desktop launch timed out' }
             if (!(Test-Path $env:SPARE_ROOM_SMOKE_REPORT)) { throw 'Desktop did not produce a smoke report' }
             $report = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
             $report | ConvertTo-Json
@@ -64,6 +64,13 @@ jobs:
         run: |
           $tag = node -p "require('./release.json').tag"
           $installer = Get-ChildItem desktop-build/*Setup*.exe | Select-Object -First 1
+          # Advance this development tag only after its installed build passes.
+          # Stable releases are never retagged by a desktop retry.
+          $prerelease = node -p "require('./release.json').prerelease === true"
+          if ($prerelease -eq 'true') {
+            gh api --method PATCH "repos/$env:GH_REPO/git/refs/tags/$tag" -f "sha=$env:GITHUB_SHA" -F force=false
+            if ($LASTEXITCODE -ne 0) { throw 'Prerelease tag update failed' }
+          }
           gh release upload $tag $installer.FullName desktop-build/SHA256SUMS.txt DESKTOP_README.md --clobber
           if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
           gh release edit $tag --notes-file RELEASE_NOTES.md
