@@ -1,11 +1,15 @@
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {createTransport,selectRelease,verifyInstaller,API}=require('../desktop/updater-core.cjs');
+const {createTransport,selectRelease,selectLatest,verifyInstaller,API}=require('../desktop/updater-core.cjs');
 // Exercise the shipped HTTPS transport without reading GH_TOKEN or any saved credentials.
 async function main(){
  const transport=createTransport(),repo=await transport.json(API);
  if(repo.private!==false)throw Error('The update repository is not public');
  const data=await transport.json(API+'/releases/latest'),release=selectRelease(data,'0.0.0');
  if(!release?.asset)throw Error('No public stable Windows installer is available');
+ const previews=await transport.json(API+'/releases?per_page=100&page=1');
+ const preview=selectLatest(previews,release.version,false,'',true);
+ if(preview?.prerelease&&selectRelease(data,preview.version,true))throw Error('Prerelease would downgrade to stable');
+ console.log('PASS: opt-in selects '+(preview?.tag||release.tag)+'; stable-only cannot downgrade a newer prerelease.');
  const manifest=data.assets.find(a=>a.name==='INSTALLER_BUILD.json'&&a.state==='uploaded');
  if(!manifest)throw Error('Installer build manifest is missing');
  const build=JSON.parse(await transport.text(API+'/releases/assets/'+manifest.id));

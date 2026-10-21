@@ -1,1 +1,1 @@
-if(window.spareUpdates){const updateButton=document.createElement('button');updateButton.textContent='UPDATES';updateButton.onclick=()=>window.spareUpdates.open();if(typeof toolbar!=='undefined')toolbar.append(updateButton);}
+if(window.spareUpdates){const updateButton=document.createElement('button');updateButton.textContent='SETTINGS';updateButton.onclick=()=>window.spareUpdates.open();if(typeof toolbar!=='undefined')toolbar.append(updateButton);}

@@ -2,7 +2,7 @@ name: Publish game and refreshed installers
 on:
   push:
     branches: [main]
-    paths: [release.json, dist/**, desktop/**, scripts/**, tests/**, package.json, package-lock.json, RELEASE_NOTES.md, .github/workflows/release.yml, .github/workflows/windows-desktop.yml]
+    paths: [release.json, dist/**, RELEASE_NOTES.md]
   workflow_dispatch:
 permissions:
   contents: write

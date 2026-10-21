@@ -46,13 +46,14 @@ jobs:
           $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-room-profile'
           foreach ($attempt in 1,2) {
             $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP "desktop-smoke-$attempt.json"
+            $env:SPARE_ROOM_SMOKE_SCREENSHOT = Join-Path $env:RUNNER_TEMP "settings-$attempt.png"
             $appArgs = @('--smoke-test')
             if ($attempt -eq 2) { $appArgs += '--smoke-verify-save' }
             $game = Start-Process -FilePath $exe -ArgumentList $appArgs -PassThru
             if (!$game.WaitForExit(180000)) { $game.Kill(); throw 'Desktop launch timed out' }
             $report = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
             $report | ConvertTo-Json
-            if ($game.ExitCode -ne 0 -or !$report.ok -or !$report.updatePanel -or !$report.updateControls) { throw 'Installed game failed verification' }
+            if ($game.ExitCode -ne 0 -or !$report.ok -or !$report.updatePanel -or !$report.updateControls -or !$report.settingsPreferences) { throw 'Installed game failed verification' }
             if ($attempt -eq 2 -and !$report.saveVerified) { throw 'Save persistence failed' }
           }
       - name: Package verified installer and checksum
@@ -65,6 +66,15 @@ jobs:
           "$hash  $($installer.Name)" | Set-Content installer-output/SHA256SUMS.txt -Encoding ascii
           Copy-Item DESKTOP_README.md installer-output/
           Copy-Item installer-build.json installer-output/INSTALLER_BUILD.json
+      - name: Package matching desktop source
+        run: python scripts/package-desktop-source.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: settings-check-${{ matrix.version }}
+          path: |
+            ${{ runner.temp }}/settings-*.png
+            ${{ runner.temp }}/desktop-smoke-*.json
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: installer-${{ matrix.version }}
@@ -74,7 +84,10 @@ jobs:
     name: Verify installation, reopening and release notes
     needs: build
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        channel: [stable, prerelease]
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -89,7 +102,7 @@ jobs:
           path: installer-artifacts
       - name: Test a real upgrade between stable versions
         shell: pwsh
-        run: ./scripts/test-windows-upgrade.ps1
+        run: ./scripts/test-windows-upgrade.ps1 -Channel '${{ matrix.channel }}'
   publish:
     name: Replace every release installer
     needs: upgrade

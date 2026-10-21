@@ -50,14 +50,52 @@ localStorage.setItem('desktop-smoke-save',${JSON.stringify(version)});
 if(${verifyUpgrade}&&localStorage.getItem('desktop-upgrade-save')!=='retained')throw Error('Update lost saved progress');
 let networkBlocked=false;try{await fetch('https://example.com/')}catch{networkBlocked=true}
 if(!networkBlocked)throw Error('Network requests are not blocked');
-if(!window.spareUpdates||!Array.from(toolbar.children).some(b=>b.textContent==='UPDATES'))throw Error('Desktop update controls missing');
+if(!window.spareUpdates||!Array.from(toolbar.children).some(b=>b.textContent==='SETTINGS'))throw Error('Desktop update controls missing');
 return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,signsChecked:signs.length,encountersRendered:encounters.length,updateControls:true,networkBlocked,saveVerified:${verifySave},upgradeSaveVerified:${verifyUpgrade}};
-})()`);await updates.open(false);let panel=updates.getWindow();result.updatePanel=await panel.webContents.executeJavaScript("!!(window.spareUpdates&&document.getElementById('check')&&document.getElementById('install')&&document.getElementById('notes'))");if(!result.updatePanel)throw Error('Update window failed to load');panel.close();await session.defaultSession.flushStorageData();report(result,0)}catch(error){report({ok:false,error:String(error)},1)}}
+})()`);await updates.open(false);let panel=updates.getWindow();
+result.updatePanel=await panel.webContents.executeJavaScript(`(async()=>{
+ const api=window.spareUpdates,$=id=>document.getElementById(id);
+ if(!api||!$('check')||!$('install')||!$('notes')||!$('prereleases')||!$('save-preferences'))throw Error('Settings controls missing');
+ const initial=await api.state();
+ if(${verifySave}&&!initial.preferences.allowPrereleases)throw Error('Preferences did not survive restart');
+ if(${verifyUpgrade}&&initial.preferences.allowPrereleases!==${process.env.SPARE_ROOM_SMOKE_TARGET_PRERELEASE==='true'})throw Error('Upgrade lost update preferences');
+ async function saveChoice(value){
+  if($('prereleases').checked!==value)$('prereleases').click();
+  const before=await api.state();
+  if(before.preferences.allowPrereleases!==initialSaved)throw Error('Unsaved checkbox changed channel');
+  $('save-preferences').click();
+  for(let n=0;n<300&&$('save-preferences').disabled;n++)await new Promise(r=>setTimeout(r,10));
+  const after=await api.state();if(after.preferences.allowPrereleases!==value||!after.lastChecked||$('save-preferences').disabled)throw Error('Save preferences did not apply and check');
+  initialSaved=value;
+ }
+ let initialSaved=initial.preferences.allowPrereleases;
+ await saveChoice(false);await saveChoice(true);
+ $('check').click();await new Promise(r=>setTimeout(r,50));
+ if(!(await api.state()).preferences.allowPrereleases)throw Error('Manual check lost preferences');
+ return true;
+})()`);
+if(!result.updatePanel)throw Error('Settings window failed to load');
+if(!smokeRequests.includes('/releases/latest')||!smokeRequests.includes('/releases?per_page=100&page=1'))throw Error('Settings did not check both channels');
+result.settingsPreferences=true;result.settingsChannels=smokeRequests;
+if(process.env.SPARE_ROOM_SMOKE_SCREENSHOT)fs.writeFileSync(process.env.SPARE_ROOM_SMOKE_SCREENSHOT,(await panel.webContents.capturePage()).toPNG());
+panel.close();await session.defaultSession.flushStorageData();report(result,0)}catch(error){report({ok:false,error:String(error)},1)}}
+const smokeRequests=[];
+function settingsFixture(){
+ const {API}=require('./updater-core.cjs');
+ return {json:async url=>{
+  smokeRequests.push(url.replace(API,''));
+  const stable={id:990,tag_name:'v'+version,name:'Settings test',prerelease:false,draft:false,body:'Settings test release notes.',assets:[]};
+  if(url===API+'/releases/latest')return stable;
+  if(url===API+'/releases?per_page=100&page=1')return [stable,{...stable,id:991,tag_name:'v99.0.0',prerelease:true}];
+  throw Error('Unexpected settings endpoint');
+ }};
+}
 function upgradeFixture(){
- const {createHash}=require('node:crypto'),{API}=require('./updater-core.cjs'),file=process.env.SPARE_ROOM_SMOKE_INSTALLER,target=process.env.SPARE_ROOM_SMOKE_TARGET_VERSION;
+ const {createHash}=require('node:crypto'),{API}=require('./updater-core.cjs'),file=process.env.SPARE_ROOM_SMOKE_INSTALLER,target=process.env.SPARE_ROOM_SMOKE_TARGET_VERSION,prerelease=process.env.SPARE_ROOM_SMOKE_TARGET_PRERELEASE==='true';
  if(!smokeUpgrade||!file||!/^\d+\.\d+\.\d+$/.test(target||''))throw Error('Invalid upgrade test fixture');
  const size=fs.statSync(file).size,digest=createHash('sha256').update(fs.readFileSync(file)).digest('hex');
- return {json:async url=>{if(url!==API+'/releases/latest')throw Error('Unexpected update endpoint');return {id:991,tag_name:'v'+target,name:'Test stable '+target,prerelease:false,draft:false,body:'Upgrade integration test: release notes after automatic restart.',assets:[{id:992,name:'The-Spare-Room-Setup-'+target+'-x64.exe',state:'uploaded',size,digest:'sha256:'+digest}]}},download:async(url,dest,expected,progress)=>{if(url!==API+'/releases/assets/992'||expected!==size)throw Error('Unexpected installer');fs.copyFileSync(file,dest);progress(100)}};
+ const release={id:991,tag_name:'v'+target,name:'Test update '+target,prerelease,draft:false,body:'Upgrade integration test: release notes after automatic restart.',assets:[{id:992,name:'The-Spare-Room-Setup-'+target+'-x64.exe',state:'uploaded',size,digest:'sha256:'+digest}]};
+ return {json:async url=>{if(prerelease&&url===API+'/releases?per_page=100&page=1')return [release];if(!prerelease&&url===API+'/releases/latest')return release;throw Error('Unexpected update endpoint')},download:async(url,dest,expected,progress)=>{if(url!==API+'/releases/assets/992'||expected!==size)throw Error('Unexpected installer');fs.copyFileSync(file,dest);progress(100)}};
 }
 app.whenReady().then(async()=>{
 const ses=session.defaultSession;
@@ -69,9 +107,9 @@ win=new BrowserWindow({width:smoke?960:1440,height:smoke?700:960,minWidth:960,mi
 win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
 win.webContents.on('will-navigate',(event,url)=>{if(!localGameURL(url))event.preventDefault()});
 win.webContents.on('will-attach-webview',event=>event.preventDefault());
-updates=setupUpdates({app,BrowserWindow,ipcMain,safeStorage,net,shell,win,profile,version,smoke,transport:smokeUpgrade?upgradeFixture():undefined});
-Menu.setApplicationMenu(Menu.buildFromTemplate([{label:'Game',submenu:[{label:'Fullscreen',accelerator:'F11',click:()=>win.setFullScreen(!win.isFullScreen())},{label:'Check for updates…',click:()=>updates.open(true)},{type:'separator'},{label:'Quit',accelerator:'Ctrl+Q',click:()=>app.quit()}]}]));
+updates=setupUpdates({app,BrowserWindow,ipcMain,safeStorage,net,shell,win,profile,version,smoke,transport:smokeUpgrade?upgradeFixture():smoke?settingsFixture():undefined});
+Menu.setApplicationMenu(Menu.buildFromTemplate([{label:'Game',submenu:[{label:'Fullscreen',accelerator:'F11',click:()=>win.setFullScreen(!win.isFullScreen())},{label:'Settings…',click:()=>updates.open(false)},{label:'Check for updates…',click:()=>updates.open(true)},{type:'separator'},{label:'Quit',accelerator:'Ctrl+Q',click:()=>app.quit()}]}]));
 if(smoke){let timer=setTimeout(()=>report({ok:false,error:'Desktop smoke test timed out',stage:smokeStage},1),150000);timer.unref()}
-try{await win.loadFile(path.join(gameRoot,'index.html'));if(smokeUpgrade){await win.webContents.executeJavaScript("localStorage.setItem('desktop-upgrade-save','retained')");await updates.service.check(true);if(updates.state().phase!=='available')throw Error('Stable update not offered');await updates.service.install();if(updates.state().phase!=='installing')throw Error('Upgrade could not start');}else if(smoke)await checkDesktop();else await updates.start()}catch(error){if(smoke)report({ok:false,error:String(error)},1);else dialog.showErrorBox('The Spare Room could not start',String(error))}
+try{await win.loadFile(path.join(gameRoot,'index.html'));if(smokeUpgrade){await win.webContents.executeJavaScript("localStorage.setItem('desktop-upgrade-save','retained')");await updates.service.savePreferences({allowPrereleases:process.env.SPARE_ROOM_SMOKE_TARGET_PRERELEASE==='true'});if(updates.state().phase!=='available')throw Error('Selected update not offered');await updates.service.install();if(updates.state().phase!=='installing')throw Error('Upgrade could not start');}else if(smoke)await checkDesktop();else await updates.start()}catch(error){if(smoke)report({ok:false,error:String(error)},1);else dialog.showErrorBox('The Spare Room could not start',String(error))}
 });
 app.on('window-all-closed',()=>app.quit());

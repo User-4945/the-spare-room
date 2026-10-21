@@ -1,0 +1,32 @@
+name: Refresh Windows settings in every release
+on:
+  push:
+    branches: [main]
+    paths: [desktop/**, tests/updater.cjs, tests/desktop-package.cjs, package.json, package-lock.json, scripts/installer-inventory.cjs, scripts/desktop-settings-notes.cjs, scripts/prepare-release-installer.cjs, scripts/prepare-desktop.cjs, scripts/package-desktop-source.py, scripts/publish-installers.cjs, scripts/test-windows-upgrade.ps1, scripts/check-public-updates.cjs, .github/workflows/desktop-refresh.yml, .github/workflows/windows-desktop.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: spare-room-release
+  cancel-in-progress: false
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.inventory.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: node --test tests/updater.cjs
+      - id: inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/installer-inventory.cjs
+  installers:
+    needs: inventory
+    uses: ./.github/workflows/windows-desktop.yml
+    with:
+      matrix: ${{ needs.inventory.outputs.matrix }}
+    secrets: inherit

@@ -18,3 +18,47 @@ test('public access needs no credentials; rejected saved tokens retry anonymousl
  const denied=server([401,403]);await assert.rejects(createTransport(()=>'expired-fixture-token',denied.request).json(API+'/releases/latest'),{status:403});assert.equal(denied.calls.length,2);
  const limited=server([403]);await assert.rejects(createTransport(undefined,limited.request).json(API+'/releases/latest'),{status:403});assert.equal(limited.calls.length,1);
 });
+test('saved opt-in chooses the highest version, stable wins ties, and pagination ignores drafts',async t=>{
+ const f=fixture(t,{version:'2.0.5'}),calls=[];
+ const pre={...release('2.1.0'),prerelease:true,id:21};
+ f.transport.json=async url=>{calls.push(url);if(url===API+'/releases/latest')return release('2.0.5');if(url.endsWith('page=1'))return Array.from({length:100},()=>({...release('9.0.0'),draft:true}));if(url.endsWith('page=2'))return [release('2.0.0'),pre,release('2.0.5')];throw Error('Wrong endpoint')};
+ assert.equal(f.service.state().preferences.allowPrereleases,false);
+ await f.service.check(true);assert.equal(f.service.state().phase,'current');
+ await f.service.savePreferences({allowPrereleases:true});assert.equal(f.service.state().release.version,'2.1.0');assert.equal(f.service.state().release.prerelease,true);
+ assert.deepEqual(calls.slice(-2),[API+'/releases?per_page=100&page=1',API+'/releases?per_page=100&page=2']);
+ const restarted=new UpdateService(f.options);assert.equal(restarted.state().preferences.allowPrereleases,true);await restarted.check();assert.equal(calls.length,3);
+ const {selectLatest}=require('../desktop/updater-core.cjs');assert.equal(selectLatest([pre,release('2.1.0')],'2.0.5',false,'',true).prerelease,false);
+ assert.equal(selectLatest([pre],'2.1.0',false,'',true),null);assert.equal(selectLatest([pre],'2.1.0',true,'',true),null);
+});
+test('opting out checks only latest stable and never downgrades a newer installed prerelease',async t=>{
+ const f=fixture(t,{version:'2.1.0',prerelease:true}),urls=[];
+ f.transport.json=async url=>{urls.push(url);return url.endsWith('/latest')?release('2.0.5'):[{...release('2.2.0'),prerelease:true}]};
+ await f.service.savePreferences({allowPrereleases:true});assert.equal(f.service.state().phase,'available');
+ await f.service.savePreferences({allowPrereleases:false});assert.equal(urls.at(-1),API+'/releases/latest');assert.equal(f.service.state().phase,'current');assert.equal(f.service.candidate,null);
+ await f.service.install();assert.equal(f.installs,0);assert.equal(new UpdateService(f.options).state().preferences.allowPrereleases,false);
+});
+test('prerelease installation preserves opt-in, shows notes, and can later graduate to stable',async t=>{
+ const f=fixture(t,{version:'2.0.5'}),pre={...release('2.1.0'),prerelease:true};
+ f.transport.json=async url=>{assert(url.includes('/releases?'));return [pre]};
+ await f.service.savePreferences({allowPrereleases:true});await f.service.install();assert.equal(f.installs,1);assert.equal(f.service.saved.pendingUpdate.prerelease,true);
+ const next=new UpdateService({...f.options,version:'2.1.0',prerelease:true});assert.equal(next.state().currentPrerelease,true);assert.equal(next.saved.confirmedStable,undefined);assert.equal(next.state().notes.body,pre.body);
+ assert.equal(next.state().preferences.allowPrereleases,true);
+ f.transport.json=async url=>{assert.equal(url,API+'/releases/latest');return release('2.1.0')};
+ await next.savePreferences({allowPrereleases:false});assert.equal(next.state().phase,'available');await next.install();
+ const stable=new UpdateService({...f.options,version:'2.1.0',prerelease:false});assert.equal(stable.saved.confirmedStable,'2.1.0');assert.equal(stable.state().currentPrerelease,false);await stable.check(true);assert.equal(stable.state().phase,'current');
+});
+test('saving offline persists the preference and checks the chosen feed on reconnect',async t=>{
+ const f=fixture(t);f.setOnline(false);await f.service.savePreferences({allowPrereleases:true});assert.equal(f.service.state().phase,'offline');assert.equal(f.service.saved.allowPrereleases,true);assert.equal(f.calls,0);
+ f.transport.json=async url=>{assert(url.includes('/releases?'));return [{...release('2.1.0'),prerelease:true}]};f.setOnline(true);await f.service.check();assert.equal(f.service.state().release.version,'2.1.0');
+});
+test('preference changes are rejected during checks and withdrawn prereleases cannot install',async t=>{
+ const f=fixture(t);let resolve;f.transport.json=()=>new Promise(r=>resolve=r);const check=f.service.check(true);
+ await assert.rejects(f.service.savePreferences({allowPrereleases:true}),/Wait/);assert.equal(f.service.saved.allowPrereleases,false);resolve(release());await check;
+ f.transport.json=async()=>[{...release('2.1.0'),prerelease:true}];await f.service.savePreferences({allowPrereleases:true});
+ f.transport.json=async()=>[];await f.service.install();assert.equal(f.installs,0);assert.equal(f.service.state().phase,'current');
+ await assert.rejects(f.service.savePreferences({allowPrereleases:'true'}),/Invalid/);
+});
+test('failed channel check clears stale candidates and fallback links match the selected release',async t=>{
+ const f=fixture(t);f.transport.json=async()=>[{...release('2.1.0'),prerelease:true}];await f.service.savePreferences({allowPrereleases:true});assert(f.service.state().latestPage.endsWith('/tag/v.2.1.0'));
+ f.transport.json=async()=>{throw Error('offline')};await f.service.check(true);assert.equal(f.service.candidate,null);await f.service.install();assert.equal(f.installs,0);
+});

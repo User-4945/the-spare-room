@@ -1,3 +1,4 @@
+param([ValidateSet('stable','prerelease')][string]$Channel = 'stable')
 $ErrorActionPreference = 'Stop'
 $builds = @(Get-ChildItem installer-artifacts -Filter INSTALLER_BUILD.json -Recurse | ForEach-Object {
   $meta = Get-Content $_.FullName -Raw | ConvertFrom-Json
@@ -7,10 +8,15 @@ $stable = @($builds | Where-Object { !$_.Pre } | Sort-Object Version)
 if ($stable.Count -lt 2) { throw 'Two stable installers are required for this upgrade check' }
 $old = $stable[0]
 $new = $stable[-1]
+if ($Channel -eq 'prerelease') {
+  $old = $stable[-1]
+  $new = @($builds | Where-Object { $_.Pre } | Sort-Object Version)[-1]
+  if (!$new -or $new.Version -le $old.Version) { throw 'A newer prerelease is required' }
+}
 $oldInstaller = (Get-ChildItem $old.Folder -Filter *.exe | Select-Object -First 1).FullName
 $newInstaller = (Get-ChildItem $new.Folder -Filter *.exe | Select-Object -First 1).FullName
 # Confirm GitHub's real latest-release endpoint still selects a stable release.
-node -e "const cp=require('node:child_process'),u=require('./desktop/updater-core.cjs');const r=JSON.parse(cp.execFileSync('gh',['api','repos/'+process.env.GH_REPO+'/releases/latest'],{encoding:'utf8'}));if(r.prerelease||r.draft||!u.selectRelease(r,process.argv[1]))throw Error('Stable GitHub feed failed');console.log('Verified stable feed: '+r.tag_name)" $old.Version.ToString()
+node -e "const cp=require('node:child_process'),u=require('./desktop/updater-core.cjs');const r=JSON.parse(cp.execFileSync('gh',['api','repos/'+process.env.GH_REPO+'/releases/latest'],{encoding:'utf8'}));if(r.prerelease||r.draft||!u.selectRelease(r,'0.0.0'))throw Error('Stable GitHub feed failed');console.log('Verified stable feed: '+r.tag_name)" $old.Version.ToString()
 if ($LASTEXITCODE -ne 0) { throw 'GitHub update feed failed verification' }
 $installDir = Join-Path $env:RUNNER_TEMP 'spare-room-upgrade'
 $p = Start-Process -FilePath $oldInstaller -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
@@ -20,6 +26,7 @@ $exe = Join-Path $installDir 'The Spare Room.exe'
 $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:APPDATA 'The Spare Room'
 $env:SPARE_ROOM_SMOKE_INSTALLER = $newInstaller
 $env:SPARE_ROOM_SMOKE_TARGET_VERSION = $new.Version.ToString()
+$env:SPARE_ROOM_SMOKE_TARGET_PRERELEASE = $new.Pre.ToString().ToLower()
 $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP 'upgrade-initial.json'
 $game = Start-Process -FilePath $exe -ArgumentList '--smoke-upgrade' -PassThru
 if (!$game.WaitForExit(180000)) { $game.Kill(); throw 'Old app did not hand off to its installer' }
@@ -33,6 +40,8 @@ while ((Get-Date) -lt $deadline) {
       $state = Get-Content $stateFile -Raw | ConvertFrom-Json
       if ($state.lastLaunchVersion -eq $new.Version.ToString() -and $state.notesShownVersion -eq $new.Version.ToString()) {
         if ($state.releaseNotes.body -ne 'Upgrade integration test: release notes after automatic restart.') { throw 'Wrong release notes after update' }
+        if ($state.allowPrereleases -ne $new.Pre) { throw 'Update preferences were lost' }
+        if ($new.Pre -and $state.confirmedStable -eq $new.Version.ToString()) { throw 'Prerelease was recorded as stable' }
         $reopened = $true
         break
       }

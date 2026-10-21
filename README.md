@@ -123,10 +123,14 @@ Run `node tests/game-smoke.cjs` for the automated mechanics and generation check
 
 The Windows x64 installer is attached to the [v.2.1.0 prerelease](https://github.com/User-4945/the-spare-room/releases/tag/v.2.1.0). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.1.0.
 
-## Desktop update checks
+## Windows Settings and updates
 
-Use **UPDATES** or **Game → Check for updates**. Automatic checks run once every 24 hours while open and online, against GitHub’s `/releases/latest` endpoint. Prereleases are excluded. Update downloads are verified before installation; the app reopens with release notes and preserves progress. A browser fallback opens the latest stable release.
+Open **SETTINGS** in the Windows game or **Game → Settings**. **Check for updates** uses your saved preference. **Include prerelease updates** is off by default; check it to also receive newer preview versions, then click **Save preferences** to save the choice and check immediately. Leaving it unchecked checks only GitHub’s latest stable release.
 
-This GitHub repository is public. Update checks and installer downloads work without a GitHub account or token. **Optional GitHub access** is available for players who encounter GitHub request limits; saved credentials are encrypted with Windows credential protection and stay on that PC. An expired or rejected token falls back to public access automatically. Use **Remove access** to clear a previously saved token. The game remains playable offline; no saves are uploaded.
+Automatic checks run once every 24 hours while open and online. A newer installed version is never downgraded, even after opting out of prereleases. Downloads are verified before installation; the app reopens with release notes and preserves progress and preferences. **Open release page** provides a browser fallback for the selected release.
 
-All release installers have been refreshed with this updater while retaining their original game version. Existing downloaded or installed copies require a one-time reinstall from a refreshed installer. Future stable releases can be installed from the app. A prerelease build stays on its current version until an eligible stable release becomes available.
+Updates are public and need no GitHub account or token. Optional GitHub access is available for request limits; Windows encrypts saved credentials on that PC, and rejected tokens fall back to public access. The game remains playable offline; no saves are uploaded.
+
+All four releases have refreshed Windows installers and matching desktop-source ZIPs. Each preserves its original game files, verified against its own tag; INSTALLER_BUILD.json records the game and updater commits. Browser ZIPs and original tags are unchanged. Existing copies need a one-time reinstall from a refreshed installer to receive Settings.
+
+Shared desktop changes use the desktop-refresh workflow. Game releases use the release workflow when dist, release.json or RELEASE_NOTES.md changes.

@@ -3,6 +3,7 @@ contextBridge.exposeInMainWorld('spareUpdates',Object.freeze({
  open:()=>ipcRenderer.invoke('updates:open'),
  state:()=>ipcRenderer.invoke('updates:state'),
  check:()=>ipcRenderer.invoke('updates:check'),
+ savePreferences:preferences=>ipcRenderer.invoke('updates:preferences',preferences),
  install:()=>ipcRenderer.invoke('updates:install'),
  openLatest:()=>ipcRenderer.invoke('updates:latest'),
  saveToken:token=>ipcRenderer.invoke('updates:token',token),
