@@ -85,6 +85,14 @@ jobs:
           node --test tests/pwa.cjs
           mkdir -p platform-output
           python3 -c "import shutil;shutil.make_archive('platform-output/The-Spare-Room-v${{ matrix.version }}-installable-web','zip','pwa-build')"
+      - name: Verify real offline mobile web reload
+        shell: bash
+        run: |
+          if [ '${{ matrix.platform }}' = 'linux' ]; then
+            xvfb-run -a npx electron --no-sandbox scripts/smoke-pwa.cjs
+          else
+            npx electron scripts/smoke-pwa.cjs
+          fi
       - name: Collect packages and provenance
         shell: bash
         run: |
