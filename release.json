@@ -1,6 +1,10 @@
 {
-  "name": "The Spare Room v2.0.0",
-  "version": "2.0.0",
-  "tag": "v2.0.0",
-  "generation_version": 2
+  "name": "The Spare Room v2.0.5",
+  "version": "2.0.5",
+  "tag": "v2.0.5",
+  "prerelease": false,
+  "generation_version": 2,
+  "base_game_tag": "v2.0.0",
+  "backported_from": "v.2.1.0",
+  "scope": "signage-only"
 }

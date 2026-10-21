@@ -1,44 +1,122 @@
-name: Publish game release
-on:
+name: Publish stable v2.0.5 signage fixes
+'on':
   push:
-    branches: [main]
-    paths: [release.json, .github/workflows/release.yml]
-  workflow_dispatch:
+    branches:
+    - release/v2.0.5
+  workflow_dispatch: null
 permissions:
-  contents: write
-  statuses: write
+  contents: read
 concurrency:
-  group: spare-room-release
+  group: spare-room-stable-v2.0.5
   cancel-in-progress: false
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  build:
+    name: Build and verify Windows v2.0.5
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     steps:
-      - uses: actions/checkout@v4
-      - name: Check game scripts and mechanics
-        run: |
-          for script in dist/*.js; do node --check "$script"; done
-          node tests/game-smoke.cjs
-      - name: Package browser build
-        run: python3 scripts/package-release.py
-      - name: Publish GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          TAG=$(node -p "require('./release.json').tag")
-          TITLE=$(node -p "require('./release.json').name")
-          if gh release view "$TAG" --json tagName >/dev/null 2>&1; then
-            echo "Release already exists; leaving it unchanged."
-          else
-            gh release create "$TAG" release-build/*.zip --target "$GITHUB_SHA" --title "$TITLE" --notes-file RELEASE_NOTES.md
-          fi
-          RELEASE_URL=$(gh release view "$TAG" --json url --jq .url)
-          gh api "repos/$GH_REPO/statuses/$GITHUB_SHA" -f state=success -f context="release/$TAG" -f description="GitHub release published" -f target_url="$RELEASE_URL"
-      - name: Report release failure
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: gh api "repos/$GH_REPO/statuses/$GITHUB_SHA" -f state=failure -f context="release/$(node -p "require('./release.json').tag")" -f description="Release workflow failed; inspect the run" -f target_url="$RUN_URL"
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: npm
+    - name: Install pinned build dependencies
+      run: npm ci --no-audit --no-fund
+    - name: Verify the sign-only backport and downgrade protection
+      run: node scripts/check-stable-scope.cjs
+    - name: Check release game and updater
+      run: npm test
+    - name: Build self-contained Windows installer
+      run: npm run desktop:win
+    - name: Install and launch twice
+      shell: pwsh
+      run: |
+        $installer = Get-ChildItem desktop-build/*Setup*.exe | Select-Object -First 1
+        $installDir = Join-Path $env:RUNNER_TEMP 'spare-room-installed'
+        $p = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
+        if ($p.ExitCode -ne 0) { throw 'Installer failed' }
+        $exe = Join-Path $installDir 'The Spare Room.exe'
+        $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-room-profile'
+        foreach ($attempt in 1,2) {
+          $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP "desktop-smoke-$attempt.json"
+          $appArgs = @('--smoke-test')
+          if ($attempt -eq 2) { $appArgs += '--smoke-verify-save' }
+          $game = Start-Process -FilePath $exe -ArgumentList $appArgs -PassThru
+          if (!$game.WaitForExit(180000)) { $game.Kill(); throw 'Desktop launch timed out' }
+          $report = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+          $report | ConvertTo-Json
+          if ($game.ExitCode -ne 0 -or !$report.ok -or !$report.updatePanel -or !$report.updateControls) { throw 'Installed game failed verification' }
+          if ($attempt -eq 2 -and !$report.saveVerified) { throw 'Save persistence failed' }
+        }
+    - name: Record verified build source
+      run: node scripts/prepare-stable-manifest.cjs
+    - name: Package stable browser build
+      run: python scripts/package-release.py
+    - name: Package verified installer and checksum
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory installer-output | Out-Null
+        $installer = Get-ChildItem desktop-build/*Setup*.exe | Select-Object -First 1
+        Copy-Item $installer.FullName installer-output/
+        $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLower()
+        "$hash  $($installer.Name)" | Set-Content installer-output/SHA256SUMS.txt -Encoding ascii
+        Copy-Item DESKTOP_README.md installer-output/
+        Copy-Item installer-build.json installer-output/INSTALLER_BUILD.json
+
+        Copy-Item release-build/*.zip installer-output/
+        $web = Get-ChildItem installer-output/*.zip | Select-Object -First 1
+        $webHash = (Get-FileHash $web.FullName -Algorithm SHA256).Hash.ToLower()
+        "$webHash  $($web.Name)" | Add-Content installer-output/SHA256SUMS.txt -Encoding ascii
+    - uses: actions/upload-artifact@v4
+      with:
+        name: installer-2.0.5
+        path: installer-output/*
+        retention-days: 7
+  upgrade:
+    name: Verify v2.0.0 to v2.0.5 upgrade
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: installer-*
+        path: installer-artifacts
+    - name: Download the published stable v2.0.0 baseline
+      shell: pwsh
+      run: |-
+        gh release download v2.0.0 --pattern 'The-Spare-Room-Setup-2.0.0-x64.exe' --pattern 'INSTALLER_BUILD.json' --dir installer-artifacts/installer-2.0.0
+        if ($LASTEXITCODE -ne 0) { throw 'Could not fetch the stable baseline' }
+    - name: Test a real upgrade between stable versions
+      shell: pwsh
+      run: ./scripts/test-windows-upgrade.ps1
+  publish:
+    name: Publish verified v2.0.5 as Latest
+    needs: upgrade
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: installer-2.0.5
+        path: installer-artifacts/installer-2.0.5
+    - name: Upload verified files and publish stable release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+      run: node scripts/publish-stable-release.cjs
+    - name: Verify public latest downloads without sign-in
+      run: node scripts/check-public-updates.cjs

@@ -9,9 +9,13 @@ assert.equal(pkg.version,require('../release.json').version);
 assert.equal(pkg.build.win.target[0].target,'nsis');
 assert.equal(pkg.build.nsis.perMachine,false);
 assert.equal(pkg.build.nsis.deleteAppDataOnUninstall,false);
+assert.equal(pkg.build.nsis.runAfterFinish,true);
+for(const asset of ['updater-core.cjs','updates-controller.cjs','preload.cjs','updates.html','updates-ui.js','updates.css','release-info.json'])assert(fs.existsSync(path.join(root,'desktop',asset)),'Missing updater asset: '+asset);
+assert.equal(JSON.parse(fs.readFileSync(path.join(root,'desktop','release-info.json'),'utf8')).version,pkg.version);
 const game=path.join(root,'desktop/game');
 const html=fs.readFileSync(path.join(game,'index.html'),'utf8');
 assert(html.includes("connect-src 'none'"));
+assert(html.includes('game-updates.js'));
 for(const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)){
  const asset=match[1].split('?')[0];
  assert(!/^(https?:|\/)/.test(asset),'Non-local asset: '+asset);

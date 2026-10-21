@@ -1,6 +1,6 @@
 {
   "name": "the-spare-room",
-  "version": "2.0.0",
+  "version": "2.0.5",
   "private": true,
   "description": "An offline first-person psychological horror game",
   "author": "User-4945",
@@ -8,7 +8,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "node scripts/prepare-desktop.cjs && electron .",
-    "test": "node tests/game-smoke.cjs && node tests/desktop-package.cjs",
+    "test": "node tests/game-smoke.cjs && node tests/desktop-package.cjs && node --test tests/updater.cjs",
     "desktop:prepare": "node scripts/prepare-desktop.cjs",
     "desktop:win": "npm run desktop:prepare && electron-builder --win nsis --x64 --publish never"
   },
@@ -24,7 +24,11 @@
       "output": "desktop-build"
     },
     "files": [
-      "desktop/main.cjs",
+      "desktop/*.cjs",
+      "desktop/*.html",
+      "desktop/*.css",
+      "desktop/*.js",
+      "desktop/release-info.json",
       "desktop/game/**/*",
       "desktop/icon.ico",
       "package.json",
@@ -49,7 +53,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "The Spare Room",
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
     },
     "publish": null
   }

@@ -1,12 +1,16 @@
-# The Spare Room v2.0.0
+# The Spare Room v2.0.5 — stable
 
 A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
-**[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)**
+**[v2.0.5 stable release & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v2.0.5)** · [v.2.1.0 prerelease](https://github.com/User-4945/the-spare-room/releases/tag/v.2.1.0)
+
+This stable release contains the v2.0.0 game with only the proportional text, outward-facing signs and venue-specific sign styling backported from v.2.1.0. It does not include the prerelease anomalies or encounter journal. See [release notes](RELEASE_NOTES.md).
 
 You return to your childhood home to care for Mother. An unfamiliar room contains a diary predicting your next day. Decide whether to obey it, protect your memories, and investigate what the house is hiding.
 
 ## Features
+
+- Proportional, measured sign text with venue-specific fonts, colours and borders.
 
 - An optional three-night house story and twenty city locations, with 31 endings in total.
 - Explore the house, courtyard, shed, upstairs rooms, and twenty city locations.
@@ -45,6 +49,7 @@ Choose a mode on the title screen. Continuing preserves the current run; startin
 | Title screen / modes | Menu button |
 | Fullscreen | Fullscreen button |
 | Room navigation | Map button |
+| Recorded encounters | Anomalies button |
 | Progress the night | End Day button |
 
 Touch controls support movement, jumping, sprinting, and dragging to look.
@@ -72,11 +77,14 @@ Open `http://localhost:8000`. Use a local server rather than opening the HTML fi
 | `dist/city-generation.js` | Twenty-chunk deterministic generation, world codes and themed scenery |
 | `dist/city.js` | Seeded city chunks, local endings, sandbox map, and ending journal |
 | `dist/living-city.js` | World clock, resident rendering, conversations, and animated projector |
+| `dist/signage.js` | Proportional canvas text and themed building signs |
 | `dist/advanced.js` | Three.js scene rendering, textures, lighting, joint animation, fuse details, title screen, modes, and four additional endings |
+| `dist/upstairs.js` | Upper rooms, stairs, signs, notes and three endings |
+| `dist/anomalies.js` | Timed scares, pooled 3D effects and the anomaly journal |
 | `dist/vendor/` | Bundled Three.js r160 and planar reflector, with third-party licence |
 | `dist/favicon.svg` | Custom door-and-keyhole icon |
 
-Scripts load in the order listed. They currently share global state; treat this as a prototype rather than a finished engine.
+The local Three.js vendor scripts load before signage and the advanced renderer. They currently share global state; treat this as a prototype rather than a finished engine.
 
 ## Progress and privacy
 
@@ -108,8 +116,16 @@ Exterior stairs lead to a study, nursery and records room. Each contains a hidde
 
 Twenty chunks occupy a connected 5 × 4 layout, with six ending landmarks and fourteen exploration locations. Each seed determines placement, facade height, palette, trees, props and eerie details through separate random streams. Use Map → House, garden and city → World generation code to view or reuse a `SPARE-2-XXXXXXXX` code. Starting from a code resets the current run while keeping the ending journal. Existing saves keep progress but adopt the expanded layout.
 
-Run `node tests/game-smoke.cjs` for the automated mechanics and generation checks. This uses a simulated DOM and renderer; it does not replace browser visual testing. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for this release. GitHub Actions publishes the version in `release.json` with a browser-build ZIP when that file changes on main. The ZIP is not a Windows installer.
+Run `node tests/game-smoke.cjs` for the automated mechanics and generation checks. This uses a simulated DOM and renderer; it does not replace browser visual testing. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for this release. The stable release workflow checks the sign-only scope, builds the browser ZIP and Windows installer, verifies installation and an update from v2.0.0, then publishes v2.0.5 as the latest stable release. The ZIP is not a Windows installer.
 
 ## Offline Windows app
 
-The Windows x64 installer is attached to the [v2.0.0 release](https://github.com/User-4945/the-spare-room/releases/tag/v2.0.0). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.0.0.
+The Windows x64 installer is attached to the [v2.0.5 stable release](https://github.com/User-4945/the-spare-room/releases/tag/v2.0.5). It bundles Electron and all game assets. See [DESKTOP_README.md](DESKTOP_README.md) for installation, controls, save locations and building from source. Both the desktop installer and browser build use version 2.0.5.
+
+## Desktop update checks
+
+Use **UPDATES** or **Game → Check for updates**. Automatic checks run once every 24 hours while open and online, against GitHub’s `/releases/latest` endpoint. Prereleases are excluded. Update downloads are verified before installation; the app reopens with release notes and preserves progress. A browser fallback opens the latest stable release.
+
+This GitHub repository is public. Update checks and installer downloads work without a GitHub account or token. **Optional GitHub access** is available for players who encounter GitHub request limits; saved credentials are encrypted with Windows credential protection and stay on that PC. An expired or rejected token falls back to public access automatically. Use **Remove access** to clear a previously saved token. The game remains playable offline; no saves are uploaded.
+
+All release installers have been refreshed with this updater while retaining their original game version. Existing downloaded or installed copies require a one-time reinstall from a refreshed installer. Future stable releases can be installed from the app. A prerelease build stays on its current version until an eligible stable release becomes available.

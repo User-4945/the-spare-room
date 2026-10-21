@@ -2,3 +2,5 @@ release-build/
 node_modules/
 desktop/game/
 desktop-build/
+desktop/release-info.json
+installer-artifacts/
