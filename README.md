@@ -134,3 +134,8 @@ Updates are public and need no GitHub account or token. Optional GitHub access i
 All four releases have refreshed Windows installers and matching desktop-source ZIPs. Each preserves its original game files, verified against its own tag; INSTALLER_BUILD.json records the game and updater commits. Browser ZIPs and original tags are unchanged. Existing copies need a one-time reinstall from a refreshed installer to receive Settings.
 
 Shared desktop changes use the desktop-refresh workflow. Game releases use the release workflow when dist, release.json or RELEASE_NOTES.md changes.
+
+
+## Mac, Linux and mobile installation
+
+All releases include universal Mac DMGs, Linux x64 AppImage/DEB packages and a matching installable-web ZIP. See [platform installation instructions](platforms/INSTALL.md). The [stable mobile app](https://the-spare-room.sunsetjelly6.chatgpt.site/stable/) and [preview mobile app](https://the-spare-room.sunsetjelly6.chatgpt.site/) install through the browser’s Add to Home Screen option on Android, iPhone and iPad and cache the game for offline play. They are web apps, not APK/IPA or store releases. Mac builds are ad-hoc signed, not Apple-notarized; Mac/Linux updates use the release-page fallback. Each package keeps its original release’s game content.

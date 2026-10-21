@@ -17,7 +17,7 @@ function render(state){
  $('install').hidden=state.phase!=='available'||!state.release?.canInstall;
  for(const id of ['install','check','save-token','clear-token','save-preferences','prereleases'])$(id).disabled=busy||saving;
  $('notes-section').hidden=!notes;$('notes').textContent=notes?.body||'';
- $('access-status').textContent=state.hasToken?'Optional GitHub access is saved on this PC.':'Using public updates. No login required.';
+ $('access-status').textContent=state.hasToken?'Optional GitHub access is saved on this device.':'Using public updates. No login required.';
  if(state.phase==='access')$('access').open=true;
 }
 async function action(fn){try{const state=await fn();if(state)render(state)}catch{$('status').textContent='That action could not finish. Please try again.'}}

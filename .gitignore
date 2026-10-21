@@ -4,3 +4,9 @@ desktop/game/
 desktop-build/
 desktop/release-info.json
 installer-artifacts/
+
+pwa-build/
+platform-build/
+platform-output/
+platform-artifacts/
+squashfs-root/

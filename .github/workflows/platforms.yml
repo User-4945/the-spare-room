@@ -1,0 +1,111 @@
+name: Build Mac Linux and mobile web apps
+on:
+  push:
+    branches: [main]
+    paths: [platforms/**, scripts/prepare-pwa.cjs, scripts/publish-platforms.cjs, tests/pwa.cjs, .github/workflows/platforms.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: spare-room-release
+  cancel-in-progress: false
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.inventory.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/platform-inventory.cjs
+  build:
+    needs: inventory
+    name: ${{ matrix.platform }} ${{ matrix.version }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.inventory.outputs.matrix) }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Restore this exact game version
+        run: node scripts/prepare-release-installer.cjs '${{ matrix.version }}' '${{ matrix.tag }}' '${{ matrix.ref }}' '${{ matrix.prerelease }}'
+      - run: npm test
+      - name: Build desktop package
+        run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --${{ matrix.platform }} --publish never
+      - name: Install Linux dependencies for launch verification
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y libasound2t64 libgtk-3-0t64 libnss3 libgbm1 xvfb
+      - name: Verify installed app twice
+        shell: bash
+        run: |
+          if [ '${{ matrix.platform }}' = 'mac' ]; then
+            APP='platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room'
+            codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+            lipo -info "$APP"
+          else
+            chmod +x platform-build/*.AppImage
+            platform-build/*.AppImage --appimage-extract >/dev/null
+            APP='./squashfs-root/the-spare-room'
+          fi
+          export SPARE_ROOM_SMOKE_PROFILE="$RUNNER_TEMP/spare-profile"
+          for attempt in 1 2; do
+            export SPARE_ROOM_SMOKE_REPORT="$RUNNER_TEMP/platform-smoke-$attempt.json"
+            EXTRA=''
+            if [ "$attempt" = 2 ]; then EXTRA='--smoke-verify-save'; fi
+            if [ '${{ matrix.platform }}' = 'linux' ]; then
+              xvfb-run -a "$APP" --no-sandbox --smoke-test $EXTRA
+            else
+              "$APP" --smoke-test $EXTRA
+            fi
+            cat "$SPARE_ROOM_SMOKE_REPORT"
+            node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences)process.exit(1)"
+          done
+      - name: Build matching installable mobile web archive
+        run: |
+          node scripts/prepare-pwa.cjs
+          node --test tests/pwa.cjs
+          mkdir -p platform-output
+          python3 -c "import shutil;shutil.make_archive('platform-output/The-Spare-Room-v${{ matrix.version }}-installable-web','zip','pwa-build')"
+      - name: Collect packages and provenance
+        shell: bash
+        run: |
+          cp platforms/INSTALL.md platform-output/INSTALL-PLATFORMS.md
+          cp installer-build.json platform-output/${{ matrix.platform }}-BUILD.json
+          find platform-build -maxdepth 1 -type f \( -name '*.dmg' -o -name '*.deb' -o -name '*.AppImage' \) -exec cp '{}' platform-output/ \;
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-${{ matrix.platform }}-${{ matrix.version }}
+          path: platform-output/*
+          retention-days: 7
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: platform-*
+          path: platform-artifacts
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/publish-platforms.cjs

@@ -13,18 +13,18 @@ function readJSON(file){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catc
 function writeJSON(file,value){fs.mkdirSync(path.dirname(file),{recursive:true});const temp=file+'.tmp';fs.writeFileSync(temp,JSON.stringify(value,null,2),{mode:0o600});fs.renameSync(temp,file)}
 function allowedURL(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&(['api.github.com','github.com','release-assets.githubusercontent.com','objects.githubusercontent.com'].includes(u.hostname))}catch{return false}}
 function assetURL(asset){return API+'/releases/assets/'+asset.id}
-function selectRelease(release,current,prerelease=false,confirmedStable='',allowPrereleases=false){
+function selectRelease(release,current,prerelease=false,confirmedStable='',allowPrereleases=false,platform='win32'){
  if(!release||typeof release.prerelease!=='boolean'||release.prerelease&&!allowPrereleases||release.draft!==false||!versionParts(release.tag_name))return null;
  const version=versionParts(release.tag_name).join('.'),comparison=compareVersions(version,current);
  if(comparison<0||comparison===0&&(release.prerelease||!prerelease||confirmedStable===version))return null;
- const name='The-Spare-Room-Setup-'+version+'-x64.exe';
+ const name=platform==='darwin'?'The-Spare-Room-'+version+'-mac-universal.dmg':platform==='linux'?'The-Spare-Room-'+version+'-linux-x64.AppImage':'The-Spare-Room-Setup-'+version+'-x64.exe';
  const asset=(release.assets||[]).find(a=>a.name===name&&a.state==='uploaded'&&Number.isSafeInteger(a.id)&&a.id>0&&a.size>0&&a.size<400*1024*1024);
  const checksum=(release.assets||[]).find(a=>a.name==='SHA256SUMS.txt'&&a.state==='uploaded'&&Number.isSafeInteger(a.id));
  return {id:release.id,version,prerelease:release.prerelease,page:'https://github.com/'+REPO+'/releases/tag/'+encodeURIComponent(release.tag_name),tag:release.tag_name,name:String(release.name||release.tag_name),notes:String(release.body||'No release notes were supplied.').slice(0,60000),asset,checksum};
 }
-function selectLatest(releases,current,prerelease=false,confirmedStable='',allowPrereleases=false){
+function selectLatest(releases,current,prerelease=false,confirmedStable='',allowPrereleases=false,platform='win32'){
  if(!Array.isArray(releases))throw Error('Invalid release list');
- return releases.map(r=>selectRelease(r,current,prerelease,confirmedStable,allowPrereleases)).filter(Boolean)
+ return releases.map(r=>selectRelease(r,current,prerelease,confirmedStable,allowPrereleases,platform)).filter(Boolean)
   .sort((a,b)=>compareVersions(b.version,a.version)||Number(a.prerelease)-Number(b.prerelease)||b.id-a.id)[0]||null;
 }
 // Public updates need no token. An optional token is sent
@@ -59,8 +59,8 @@ async function verifyInstaller(file,expected,size){
  const hash=crypto.createHash('sha256');for await(const part of fs.createReadStream(file))hash.update(part);if(hash.digest('hex').toLowerCase()!==expected.toLowerCase())throw Error('Installer checksum verification failed');
 }
 class UpdateService extends EventEmitter{
- constructor({profile,version,prerelease=false,notes='',transport,isOnline=()=>true,now=Date.now,runInstaller,prepareInstall=async()=>{}}){
-  super();Object.assign(this,{profile,version,prerelease,transport,isOnline,now,runInstaller,prepareInstall});this.file=path.join(profile,'updater-state.json');this.saved=readJSON(this.file);this.busy=false;this.candidate=null;this.status={phase:'idle',message:'Checks for updates once a day while the game is open and connected. Save your preferences to check a different update channel.',version};
+ constructor({profile,version,prerelease=false,platform='win32',notes='',transport,isOnline=()=>true,now=Date.now,runInstaller,prepareInstall=async()=>{}}){
+  super();Object.assign(this,{profile,version,prerelease,platform,transport,isOnline,now,runInstaller,prepareInstall});this.file=path.join(profile,'updater-state.json');this.saved=readJSON(this.file);this.busy=false;this.candidate=null;this.status={phase:'idle',message:'Checks for updates once a day while the game is open and connected. Save your preferences to check a different update channel.',version};
   const previous=this.saved.lastLaunchVersion,pending=this.saved.pendingUpdate;
   if(pending&&pending.version===version){this.saved.releaseNotes={version,body:pending.notes};if(pending.prerelease===false||pending.prerelease===undefined&&!prerelease)this.saved.confirmedStable=version;delete this.saved.pendingUpdate;}
   else if(previous&&previous!==version){this.saved.releaseNotes={version,body:notes||'The game has been updated.'};}
@@ -82,14 +82,14 @@ class UpdateService extends EventEmitter{
   if(!this.saved.allowPrereleases){
    const release=await this.transport.json(API+'/releases/latest');
    if(!release||release.prerelease!==false||release.draft!==false)throw Error('GitHub did not return a stable release');
-   return selectRelease(release,this.version,this.prerelease,this.saved.confirmedStable);
+   return selectRelease(release,this.version,this.prerelease,this.saved.confirmedStable,false,this.platform);
   }
   const releases=[];
   // GitHub sorts by publication date, not version. Read every page before selecting.
   for(let page=1;page<=100;page++){
    const batch=await this.transport.json(API+'/releases?per_page=100&page='+page);
    if(!Array.isArray(batch))throw Error('Invalid release list');releases.push(...batch);
-   if(batch.length<100)return selectLatest(releases,this.version,this.prerelease,this.saved.confirmedStable,true);
+   if(batch.length<100)return selectLatest(releases,this.version,this.prerelease,this.saved.confirmedStable,true,this.platform);
   }
   throw Error('Release list exceeded the supported size');
  }
@@ -105,9 +105,9 @@ class UpdateService extends EventEmitter{
   }catch(error){if(error.status){this.saved.lastChecked=this.now();this.persist()}this.candidate=null;return this.publish([401,403,404].includes(error.status)?'access':'error',[401,403,404].includes(error.status)?'GitHub could not provide the release, or its request limit was reached. Public updates do not require a login. Try again later or open the latest release in your browser.':'Could not reach GitHub. Keep playing and try again when your connection is available.');}
   finally{this.busy=false}
  }
- publicCandidate(){if(!this.candidate)return null;let c=this.candidate;return {version:c.version,name:c.name,notes:c.notes,prerelease:c.prerelease,canInstall:!!c.asset}}
+ publicCandidate(){if(!this.candidate)return null;let c=this.candidate;return {version:c.version,name:c.name,notes:c.notes,prerelease:c.prerelease,canInstall:this.platform==='win32'&&!!c.asset}}
  async install(){
-  if(this.busy||!this.candidate)return this.state();const chosen=this.candidate;if(!chosen.asset)return this.publish('fallback','This release has no Windows installer. Open its GitHub page to download it.',{release:this.publicCandidate()});
+  if(this.busy||!this.candidate)return this.state();if(this.platform!=='win32')return this.publish('fallback','Open the release page to install the update for your operating system.',{release:this.publicCandidate()});const chosen=this.candidate;if(!chosen.asset)return this.publish('fallback','This release has no Windows installer. Open its GitHub page to download it.',{release:this.publicCandidate()});
   this.busy=true;let directory;
   try{
    if(!this.isOnline())throw Error('offline');

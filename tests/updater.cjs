@@ -62,3 +62,10 @@ test('failed channel check clears stale candidates and fallback links match the 
  const f=fixture(t);f.transport.json=async()=>[{...release('2.1.0'),prerelease:true}];await f.service.savePreferences({allowPrereleases:true});assert(f.service.state().latestPage.endsWith('/tag/v.2.1.0'));
  f.transport.json=async()=>{throw Error('offline')};await f.service.check(true);assert.equal(f.service.candidate,null);await f.service.install();assert.equal(f.installs,0);
 });
+test('macOS and Linux select their own downloads and never execute a Windows installer',async t=>{
+ for(const [platform,name] of [['darwin','The-Spare-Room-2.0.0-mac-universal.dmg'],['linux','The-Spare-Room-2.0.0-linux-x64.AppImage']]){
+  const f=fixture(t,{platform});const r=release();r.assets.push({...r.assets[0],id:20,name});f.setData(r);
+  await f.service.check(true);assert.equal(f.service.candidate.asset.name,name);assert.equal(f.service.state().release.canInstall,false);
+  await f.service.install();assert.equal(f.installs,0);assert.equal(f.downloads,0);assert.equal(f.service.state().phase,'fallback');
+ }
+});
