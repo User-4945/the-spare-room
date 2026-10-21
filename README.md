@@ -2,9 +2,9 @@
 
 A Three.js-powered first-person psychological horror game about a house that remembers someone else wearing your face.
 
-**[Play the game](https://the-spare-room.sunsetjelly6.chatgpt.site)** · **[v.2.1.0 prerelease & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v.2.1.0)**
+**[Latest stable v2.0.5 & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v2.0.5)** · **[v.2.1.0 prerelease & downloads](https://github.com/User-4945/the-spare-room/releases/tag/v.2.1.0)** · [Play the prerelease online](https://the-spare-room.sunsetjelly6.chatgpt.site)
 
-This prerelease adds desktop updates and includes the sign fixes and eight timed anomalies from the renamed v.2.0.1 release. A silent watcher, floating doll, impossible door, fresh footprints and synchronised stares make familiar places less trustworthy. See [release notes](RELEASE_NOTES.md) for details. v2.0.0 remains the stable GitHub release.
+This prerelease adds desktop updates and includes the sign fixes and eight timed anomalies from the renamed v.2.0.1 release. A silent watcher, floating doll, impossible door, fresh footprints and synchronised stares make familiar places less trustworthy. See [release notes](RELEASE_NOTES.md) for details. v2.0.5 is the latest stable GitHub release, containing only the sign fixes backported onto v2.0.0. This branch and the online preview continue to contain the v.2.1.0 prerelease features.
 
 You return to your childhood home to care for Mother. An unfamiliar room contains a diary predicting your next day. Decide whether to obey it, protect your memories, and investigate what the house is hiding.
 
