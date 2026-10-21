@@ -29,7 +29,8 @@
   for(const [label,key] of [['LEFT','a'],['RIGHT','d']]){const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-label','Strafe '+label.toLowerCase());b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);if(!paused())house.keys[key]=true};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>delete house.keys[key];controls.append(b)}
   const use=document.createElement('button');use.id='touch-use';use.textContent='USE';use.setAttribute('aria-label','Interact with highlighted object');use.onclick=()=>{if(!paused()){house.pointer=null;updateTargets();if(house.target){tone();house.target.fn()}}};gameScene.append(use);
   canvas.addEventListener('pointerup',()=>{house.pointer=null;house.dirty=true});
-  for(const b of controls.children)b.addEventListener('lostpointercapture',()=>{house.keys={}});
+  for(const b of controls.children)b.addEventListener('lostpointercapture',e=>b.onpointerup?.(e));
+  const tasks=document.createElement('button');tasks.textContent='TASKS';tasks.onclick=()=>{const expanded=document.body.classList.toggle('show-mobile-tasks');tasks.setAttribute('aria-expanded',String(expanded))};tasks.setAttribute('aria-expanded','false');toolbar.append(tasks);
   if(typeof advancedEngine!=='undefined'&&advancedEngine?.renderer){advancedEngine.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.2));advancedEngine.sun.shadow.mapSize.set(1024,1024);advancedEngine.sun.shadow.map?.dispose();advancedEngine.sun.shadow.map=null;house.dirty=true}
  }
 })();
