@@ -1,7 +1,10 @@
 const {app,BrowserWindow}=require('electron'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve('pwa-build');
 app.setPath('userData',fs.mkdtempSync(path.join(os.tmpdir(),'spare-offline-test-')));
-app.commandLine.appendSwitch('use-angle','swiftshader');app.commandLine.appendSwitch('enable-unsafe-swiftshader');
+const backend=process.env.SPARE_ROOM_TEST_ANGLE||(process.platform==='darwin'?'default':'swiftshader');
+if(!['default','metal','gl','swiftshader'].includes(backend))throw Error('Unknown test graphics backend');
+if(backend!=='default')app.commandLine.appendSwitch('use-angle',backend);
+if(backend==='swiftshader')app.commandLine.appendSwitch('enable-unsafe-swiftshader');
 const timer=setTimeout(()=>{console.error('Offline app verification timed out');app.exit(1)},90000);
 app.whenReady().then(async()=>{
  let server;

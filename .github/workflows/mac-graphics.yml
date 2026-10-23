@@ -1,0 +1,33 @@
+name: Diagnose Mac graphics support
+on:
+  push:
+    branches: [main]
+    paths: [scripts/smoke-graphics.cjs, .github/workflows/mac-graphics.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  graphics:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-latest, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check available WebGL2 backends with pixel readback
+        shell: bash
+        run: |
+          WORKING=0
+          for backend in default metal gl swiftshader; do
+            if SPARE_ROOM_TEST_ANGLE="$backend" npx electron scripts/smoke-graphics.cjs; then
+              WORKING=$((WORKING + 1))
+            fi
+          done
+          test "$WORKING" -gt 0
