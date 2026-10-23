@@ -10,3 +10,5 @@ platform-build/
 platform-output/
 platform-artifacts/
 squashfs-root/
+halloween-build/
+halloween-checks/

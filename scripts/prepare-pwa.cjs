@@ -6,7 +6,7 @@ if(source===out||source.startsWith(out+path.sep))throw Error('PWA output must no
 fs.rmSync(out,{recursive:true,force:true});fs.cpSync(source,out,{recursive:true});
 for(const file of ['app.js','app.css'])fs.copyFileSync(path.join(root,'platforms/web',file),path.join(out,'install-'+file));
 for(const size of [192,512])fs.copyFileSync(path.join(root,'platforms/icons/icon-'+size+'.png'),path.join(out,'icon-'+size+'.png'));
-const manifest={id:'./',name:'The Spare Room'+(release.prerelease?' Preview':''),short_name:'Spare Room',description:'An offline psychological horror game',start_url:'./',scope:'./',display:'standalone',background_color:'#152019',theme_color:'#152019',icons:[192,512].map(size=>({src:'icon-'+size+'.png',sizes:size+'x'+size,type:'image/png',purpose:'any'}))};
+const manifest={id:'./',name:release.web_app_name||'The Spare Room'+(release.prerelease?' Preview':''),short_name:release.web_app_short_name||'Spare Room',description:'An offline psychological horror game',start_url:'./',scope:'./',display:'standalone',background_color:release.web_app_theme||'#152019',theme_color:release.web_app_theme||'#152019',icons:[192,512].map(size=>({src:'icon-'+size+'.png',sizes:size+'x'+size,type:'image/png',purpose:'any'}))};
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify(manifest,null,2));
 let html=fs.readFileSync(path.join(out,'index.html'),'utf8').replace(/href="\/(favicon[^" ]*|apple-touch-icon\.png)"/g,'href="$1"').replace('width=device-width,initial-scale=1','width=device-width,initial-scale=1,viewport-fit=cover');
 // Stable and preview installed apps use separate saves on the shared hosted origin.

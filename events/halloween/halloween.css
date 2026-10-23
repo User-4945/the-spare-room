@@ -1,0 +1,34 @@
+body.halloween-event{--ember:#efb175;--event-border:#815e45;background:#101019;color:#e9dfd0}
+.halloween-event .top{border-color:#40312d;background:linear-gradient(90deg,#201619,#101019)}
+.halloween-event .logo{color:#edb478;letter-spacing:4px}
+.halloween-event button:focus-visible,.halloween-event a:focus-visible{outline:2px solid #ffcb88;outline-offset:4px}
+.halloween-event .panel{background:#18161d;border-color:#574039}
+.halloween-event .small,.halloween-event .secret-count{color:#c5a78d}
+.halloween-event .modal{background:#1b1820;border-color:#856149;max-height:92dvh;overflow:auto}
+.halloween-event .modal h2{color:#f2c495}
+.halloween-event .task-hud{background:#1b161ce8;border-color:#725442}
+.halloween-event .task-row.current{border-color:#ffcf6d;color:#ffe6aa;background:#ecae4616}
+.halloween-event .game-toolbar button{background:#211b24e8;border-color:#71553f}
+.halloween-event .halloween-title{max-width:900px;padding:38px 44px;background:radial-gradient(ellipse at 96% 0,#66403266,transparent 50%),linear-gradient(125deg,#211a24,#11131c);position:relative;border-color:#9c7052;box-shadow:0 30px 140px #000}
+.halloween-title .event-kicker{font:11px/1.5 monospace;letter-spacing:3px;color:#d7a474;margin:0 0 15px}
+.halloween-title h2{font-size:clamp(33px,5.6vw,60px);font-weight:normal;line-height:1.02;letter-spacing:2px;margin:0 0 10px;max-width:630px;color:#f0dfcb}
+.halloween-title .event-subtitle{font:italic 24px Georgia,serif;letter-spacing:1px;color:#edaa70;margin:0 0 22px}
+.halloween-title .event-story{font-size:15px;line-height:1.7;color:#c7bdb8;max-width:630px;margin:0 0 22px}
+.halloween-title .event-chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.event-chips span{border:1px solid #79523d;padding:6px 10px;font:10px/1.4 monospace;letter-spacing:1px;color:#e0b68d}
+.halloween-title .difficulty-grid{margin:20px 0 16px;gap:10px}
+.halloween-title .difficulty-card{background:#15151dcc;border-color:#655044;min-height:122px;padding:18px 16px}
+.halloween-title .difficulty-card strong{font:21px Georgia,serif;color:#f0c191}
+.halloween-title .difficulty-card span{color:#c1b7b1;font:11px/1.7 monospace}
+.halloween-title .difficulty-card:hover,.halloween-title .difficulty-card.selected{background:#473027;border-color:#edb175}
+.halloween-title .event-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.halloween-title .event-continue{background:#b86d3c;color:#fff5de;border-color:#edae70;flex:1;min-height:48px}
+.halloween-title .event-footnote{font:11px/1.7 monospace;color:#b9a79b;margin:20px 0 0}
+.halloween-title .event-footnote a{color:#efbf91}
+.halloween-moon{position:absolute;right:38px;top:33px;width:85px;height:85px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f2d1a4,#ac784d 65%,#715147);box-shadow:0 0 60px #d18d4e25;opacity:.55;pointer-events:none}
+.halloween-title>*:not(.halloween-moon){position:relative}
+.halloween-status{position:absolute;left:18px;top:144px;z-index:3;max-width:200px;border-left:2px solid #d08c53;padding:8px 11px;background:#211822db;color:#ecc49c;font:10px/1.5 monospace;pointer-events:none;white-space:pre-line}
+.halloween-event .anomaly-caption{border-color:#d48c5a;background:#1c1720ed}
+@media(max-width:650px){.halloween-event .halloween-title{padding:24px}.halloween-title h2{font-size:36px;max-width:90%}.halloween-title .event-subtitle{font-size:20px}.halloween-title .event-story{font-size:13px;line-height:1.55}.halloween-title .difficulty-grid{gap:7px;margin:15px 0}.halloween-title .difficulty-card{padding:12px;min-height:0}.halloween-title .difficulty-card strong{font-size:18px;margin-bottom:5px}.halloween-moon{right:18px;top:22px;width:62px;height:62px}.halloween-title .event-kicker{font-size:9px;letter-spacing:2px;max-width:78%}.halloween-title .event-chips{gap:5px;margin:12px 0}.halloween-status{top:184px;left:8px;font-size:9px;max-width:150px}.halloween-title .event-footnote{font-size:10px;margin-top:14px}}
+.touch-game.halloween-event .halloween-status{top:187px;left:10px;max-width:145px;font-size:9px}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:550px){.touch-game.halloween-event .halloween-status{top:129px;left:175px}.halloween-title .difficulty-grid{grid-template-columns:repeat(3,1fr)}}

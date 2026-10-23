@@ -1,0 +1,37 @@
+name: Verify Halloween preview
+on:
+  push:
+    branches: [halloween-all-hallows-eve]
+  pull_request:
+    paths: [events/halloween/**, scripts/prepare-halloween.cjs, scripts/smoke-halloween.cjs, tests/halloween.cjs, .github/workflows/halloween-preview.yml]
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node tests/halloween.cjs
+      - name: Prepare isolated installable event
+        run: |
+          node scripts/prepare-halloween.cjs
+          node scripts/prepare-pwa.cjs halloween-build pwa-build events/halloween/release.json
+          node --test tests/pwa.cjs
+      - name: Install graphics test dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y libasound2t64 libgtk-3-0t64 libnss3 libgbm1 xvfb
+      - name: Render the event and verify the real offline app
+        run: |
+          xvfb-run -a npx electron --no-sandbox scripts/smoke-halloween.cjs
+          xvfb-run -a npx electron --no-sandbox scripts/smoke-pwa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Halloween-preview-checks
+          path: halloween-checks/
+          if-no-files-found: ignore

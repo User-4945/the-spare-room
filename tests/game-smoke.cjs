@@ -58,3 +58,6 @@ paused=oldPause;reset();
 console.log('PASS: eight encounters, gameplay-only clock, grace/cooldown, occluded spawn rejection, once-only sanity, gaze disappearance, raised footprints, mirror reflection, frozen residents and bounded reusable effect pool');
 }
 `,context);
+
+// Event tests extend this same game harness after the complete baseline suite.
+module.exports={context,vm,assert,nodes};
