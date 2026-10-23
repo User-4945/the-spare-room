@@ -11,9 +11,7 @@ for(const folder of fs.readdirSync('platform-artifacts')){
 }
 for(const [tag,{meta,files}] of groups){
  const before=api('releases/tags/'+encodeURIComponent(tag));if(before.prerelease!==meta.prerelease)throw Error('Wrong release channel');
- const expected=['The-Spare-Room-'+meta.game_version+'-mac-universal.dmg','The-Spare-Room-'+meta.game_version+'-linux-x64.AppImage','The-Spare-Room-'+meta.game_version+'-linux-amd64.deb'];
- // electron-builder uses x64 in the configured artifact filename for both Linux formats.
- expected[2]='The-Spare-Room-'+meta.game_version+'-linux-x64.deb';
+ const expected=['The-Spare-Room-'+meta.game_version+'-mac-universal.dmg','The-Spare-Room-'+meta.game_version+'-linux-x64.AppImage','The-Spare-Room-'+meta.game_version+'-linux-x64.deb'];
  for(const name of expected)if(!files.has(name))throw Error('Missing package '+name);
  const sums=[...files].map(([name,file])=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')+'  '+name).join('\n')+'\n';
  const sumsPath=path.join(path.dirname(files.values().next().value),'PLATFORM-SHA256SUMS.txt');fs.writeFileSync(sumsPath,sums);files.set('PLATFORM-SHA256SUMS.txt',sumsPath);
