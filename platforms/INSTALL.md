@@ -11,7 +11,7 @@ Download the mac-universal.dmg for your chosen release, open it and drag The Spa
 ## Linux
 For Debian/Ubuntu x64, download the .deb and use `sudo apt install ./The-Spare-Room-VERSION-linux-x64.deb` with the actual filename. For other x64 distributions, make the AppImage executable with `chmod +x The-Spare-Room-VERSION-linux-x64.AppImage`, then launch it. AppImage environments need FUSE; distributions that block unprivileged user namespaces may need their supported Electron/AppImage sandbox configuration. Do not disable the sandbox globally.
 
-Mac and Linux Settings support daily checks, manual checks and the saved prerelease preference. Open release page downloads the correct platform package; Windows EXEs are never run on another OS. Mac/Linux updates are installed manually. Saves live under ~/Library/Application Support/The Spare Room on Mac and $XDG_CONFIG_HOME/The Spare Room (usually ~/.config/The Spare Room) on Linux.
+Mac and Linux Settings support daily checks, manual checks and the saved prerelease preference. Use Open release page to download the correct platform package; Windows EXEs are never run on another OS. Mac/Linux updates are installed manually. Saves live under ~/Library/Application Support/The Spare Room on Mac and $XDG_CONFIG_HOME/The Spare Room (usually ~/.config/The Spare Room) on Linux.
 
 ## Android, iPhone and iPad
 Stable: https://the-spare-room.sunsetjelly6.chatgpt.site/stable/

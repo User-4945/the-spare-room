@@ -2,7 +2,7 @@ name: Build Mac Linux and mobile web apps
 on:
   push:
     branches: [main]
-    paths: [platforms/**, scripts/prepare-pwa.cjs, scripts/publish-platforms.cjs, tests/pwa.cjs, .github/workflows/platforms.yml]
+    paths: [platforms/**, desktop/**, package.json, package-lock.json, scripts/prepare-desktop.cjs, scripts/prepare-release-installer.cjs, scripts/platform-inventory.cjs, scripts/prepare-pwa.cjs, scripts/publish-platforms.cjs, scripts/smoke-pwa.cjs, tests/pwa.cjs, tests/updater.cjs, .github/workflows/platforms.yml]
   workflow_dispatch:
 permissions:
   contents: write
@@ -58,6 +58,9 @@ jobs:
         shell: bash
         run: |
           if [ '${{ matrix.platform }}' = 'mac' ]; then
+            # Metal is available on this Apple Silicon runner. Forcing
+            # SwiftShader here fails before the game's WebGL engine can start.
+            export SPARE_ROOM_TEST_ANGLE=default
             APP='platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room'
             codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
             lipo -info "$APP"
