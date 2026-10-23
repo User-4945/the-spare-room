@@ -1,8 +1,10 @@
 {
-  "name": "The Spare Room v.2.1.0",
-  "version": "2.1.0",
-  "tag": "v.2.1.0",
+  "name": "The Spare Room v.2.5.0 \u2014 All Hallows\u2019 Eve",
+  "version": "2.5.0",
+  "tag": "v.2.5.0",
   "generation_version": 2,
-  "prerelease": true,
-  "renamed_from": "v.2.0.1"
+  "prerelease": false,
+  "web_app_name": "The Spare Room \u00b7 All Hallows\u2019 Eve",
+  "web_app_short_name": "Spare Room",
+  "web_app_theme": "#211a24"
 }

@@ -66,3 +66,18 @@ check(taskRows().length===5&&taskRows()[0].label.includes('invitation'),'Event c
 console.log('PASS: 4 gated endings, three note/lantern puzzles, deferred once-only sanity, pause/resume clock, treat spending/recovery, five seeded layouts, aligned reachable props, pooled graphics and restart persistence');
 }
 `,context);
+vm.runInContext(fs.readFileSync('events/halloween/more-halloween.js','utf8'),context);
+vm.runInContext(`{
+const check=(v,m)=>{if(!v)throw Error(m)};
+const click=text=>{let found;function find(n){if(n.textContent===text&&n.onclick)found=n;for(const c of n.children||[])find(c)}find($('modal'));check(found,'Missing action '+text);found.onclick()};
+reset();s.started=true;s.difficulty='intermediate';s.sanity=100;let h=halloweenState(),m=moreHalloweenState();
+for(const id of Object.keys(moreHalloweenEndings)){ending('hallows-extra:'+id);check(!s.ending,'Extra ending bypass '+id)}
+halloweenChild();check(m.childMet&&s.pendingSanity===4&&s.sanity===100,'Child discovery not deferred');close();
+halloweenRibbon();close();check(m.ribbon,'Ribbon missing');halloweenChild();click('Return the ribbon and one sweet');check(!m.childHelped,'Child accepts nonexistent sweet');close();
+h.candy=1;halloweenChild();click('Return the ribbon and one sweet');close();check(m.childHelped&&h.candy===0,'Ribbon/sweet exchange failed');check(!moreHalloweenAllowed('child'),'Child ignores porch promise');halloweenPromise();close();halloweenPorch();click('Follow the child’s shadow');click('Choose this ending');check(s.ending?.title.startsWith('Ending 36'),'Child ending failed');
+s.ending=null;h.seals=[];halloweenSeed('library');check(m.seeds.length===0,'Unlit seed acquired');close();h.seals=halloweenSeals.map(n=>n.id);for(const n of halloweenSeals){halloweenSeed(n.id);close();}let count=m.seeds.length;halloweenSeed('library');close();check(m.seeds.length===count&&count===3,'Seed duplication');halloweenFlowerBed();check(!m.planted,'Planting bypasses water');close();flags().water=true;halloweenFlowerBed();click('Plant and water the three black seeds');close();check(m.planted&&moreHalloweenAllowed('orchard'),'Orchard path failed');ending('hallows-extra:orchard');check(s.ending?.title.startsWith('Ending 37'),'Orchard ending failed');
+s.ending=null;h.mask=false;halloweenWaxMirror();check(!m.maskWax,'Mirror accepts absent mask');close();flags().mirror=true;h.mask=true;halloweenWaxMirror();click('Press the spare mask into the glass');close();check(m.maskWax,'Mask wax missing');ending('hallows-extra:mirror');check(s.ending?.title.startsWith('Ending 38'),'Mirror ending failed');
+s.ending=null;renderAdvanced();check(advancedEngine.halloweenMore,'Child model missing');let child=targets().find(t=>t.event==='child');check(child.p[2]===-1.2&&advancedEngine.halloweenMore.group.position.z===1.2,'Child target/model disagree');let pool=advancedEngine.halloweenMore;buildHouse();renderAdvanced();check(pool===advancedEngine.halloweenMore,'Extra models leak on rebuild');
+reset();check(moreHalloweenState().seeds.length===0&&!moreHalloweenState().ribbon&&!moreHalloweenState().maskWax,'Extra quests persist across new runs');
+console.log('PASS: three extra gated endings, child exchange and relocation, seed uniqueness and water requirement, mask/mirror puzzle, deferred costs and pooled models');
+}`,context);

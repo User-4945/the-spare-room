@@ -171,7 +171,7 @@ function halloweenTravel(place) {
   else if (place === 'guest') {position=[-1.5,-7.3,Math.PI];s.room='garden';}
   else {
     const c=cityWorld().find(c=>c.id===place); if (!c) return;
-    s.cityOpen=true;position=[c.x+1.8,c.z+3,Math.PI];s.room=place;
+    s.cityOpen=true;position=[c.x+1.8,c.z+2.8,Math.PI];s.room=place;
   }
   [house.x,house.z,house.a]=position;house.pitch=0;house.jumpHeight=0;house.jumpVelocity=0;
   save();close();
@@ -200,9 +200,9 @@ updateChecklist=function(){
   halloweenPreviousChecklist();
   const heading=taskHUD.querySelector('.task-heading'),count=taskHUD.querySelector('.secret-count');
   if(heading)heading.textContent='ALL HALLOWS’ EVE · TASKS';
-  if(count)count.textContent='35 ENDINGS · '+endingBook.length+' FOUND · '+currentMode().name.toUpperCase();
+  if(count)count.textContent='38 ENDINGS · '+endingBook.length+' FOUND · '+currentMode().name.toUpperCase();
 };
-endingJournal=function(){modal('Halloween ending journal · '+endingBook.length+'/35',endingBook.length?endingBook.map(e=>'✓ '+e.title).join('\n'):'31 original paths and four Halloween endings. This event keeps its own ending journal.',[['Back',close]])};
+endingJournal=function(){modal('Halloween ending journal · '+endingBook.length+'/38',endingBook.length?endingBook.map(e=>'✓ '+e.title).join('\n'):'31 original paths and seven Halloween endings. This event keeps its own ending journal.',[['Back',close]])};
 
 const halloweenHUD=document.createElement('div');halloweenHUD.className='halloween-status';gameScene.append(halloweenHUD);
 function halloweenDisplay(){
@@ -322,10 +322,10 @@ titleScreen=function(){
   const panel=$('modal');panel.classList.remove('title-modal');panel.classList.add('halloween-title');panel.replaceChildren();
   function add(tag,cls,text){const el=document.createElement(tag);el.className=cls;el.textContent=text;panel.append(el);return el;}
   const moon=add('div','halloween-moon','');moon.setAttribute('aria-hidden','true');
-  add('p','event-kicker','A SPECIAL HALLOWEEN STORY · PLAYABLE PREVIEW');
+  add('p','event-kicker','v.2.5.0 · HALLOWEEN UPDATE');
   add('h2','','THE SPARE ROOM');add('p','event-subtitle','All Hallows’ Eve');
   add('p','event-story','The neighbourhood has dressed for Halloween. The people behind the masks have not. Find three lanterns before you answer the midnight bell. Mother has left a light on for you.');
-  const chips=add('div','event-chips','');for(const text of ['4 NEW ENDINGS','3 LANTERN SEALS','A SEPARATE SAVE']){let chip=document.createElement('span');chip.textContent=text;chips.append(chip);}
+  const chips=add('div','event-chips','');for(const text of ['7 NEW ENDINGS','3 LANTERN SEALS','A SEPARATE SAVE']){let chip=document.createElement('span');chip.textContent=text;chips.append(chip);}
   const modes=add('div','difficulty-grid','');for(const [id,m]of Object.entries(gameModes)){
     const b=document.createElement('button');b.className='difficulty-card'+(s.difficulty===id?' selected':'');
     const name=document.createElement('strong');name.textContent=m.name;const detail=document.createElement('span');detail.textContent=id==='easy'?'A gentler haunt. More recovery, fewer scares.':id==='hard'?'The masks notice you. Faster sanity loss.':'A balanced night. Keep your lantern close.';b.append(name,detail);
@@ -336,7 +336,7 @@ titleScreen=function(){
   function button(label,fn,cls){const b=document.createElement('button');b.textContent=label;b.className=cls||'';b.onclick=fn;actions.append(b);}
   if(s.started&&!s.ending&&!s.sanityLost)button('Continue · '+currentMode().name,()=>{panel.classList.remove('halloween-title');close();start();},'event-continue');
   button('How to play',()=>modal('A guide to All Hallows’ Eve','WASD walk · Shift sprint · Space jump\nClick to capture the mouse · E / click to interact\nOn touchscreens: drag to look, use the movement and USE buttons.\n\nRead the hallway invitation. Find notes and lanterns in the archives, cinema and chapel. Return to the garden bell after midnight. The HALLOWEEN button contains directions.\n\nMasked neighbours have sweets. Mother can leave a light on. The tall guest is waiting by the gate.\n\nThe original 31 endings are also available. Reading and menus pause the countdown and scares. Audio is optional.',[['Back',titleScreen]]));
-  add('p','event-footnote','35 possible endings · Original saves stay separate · No calendar lock: play whenever you like.');
+  add('p','event-footnote','38 possible endings · Original saves stay separate · No calendar lock: play whenever you like.');
 };
 // Resolve callbacks at click time; existing controls captured the earlier title function.
 menuButton.onclick=()=>titleScreen();journalButton.onclick=()=>endingJournal();
