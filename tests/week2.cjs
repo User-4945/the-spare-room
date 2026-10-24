@@ -6,6 +6,7 @@ const click=text=>{let found;function find(n){if(n.textContent===text&&n.onclick
 const realNow=Date.now,cutoff=Date.parse('2026-10-30T17:00:00Z');Date.now=()=>cutoff-1000;
 check(!enterReleaseWeek('week2')&&!week2Active(),'Week 2 opens early');enterReleaseWeek('week1');reset();s.started=true;check(!targets().some(t=>t.week2),'Week 2 targets in Week 1');check(taskRows().length===5,'Week 1 tasks changed');let w=week2State(),elapsed=w.elapsed;week2Knock('station');advanceWeek2(.1);check(w.visited.length===0&&w.elapsed===elapsed,'Week 1 quest advances');
 Date.now=()=>cutoff;check(enterReleaseWeek('week2')&&week2Active(),'Week 2 locked after cutoff');reset();s.started=true;s.difficulty='intermediate';s.sanity=100;s.ending=null;s.sanityLost=false;w=week2State();let h=halloweenState();
+week2Travel('station');updateTargets();check(house.target?.action==='Knock on the door','Door not aimable from its arrival point');
 for(const id of Object.keys(week2Endings)){ending('week2:'+id);check(!s.ending,'Early ending '+id);}
 week2Knock('station');click('Accept two wrapped sweets');close();check(h.candy===2,'Station treat missing');week2Knock('station');close();check(h.candy===2,'Treat duplicated');
 week2Knock('library');check(w.clues.includes('mother')&&s.pendingSanity===6&&s.sanity===100,'Mother trick not deferred');close();check(s.sanity===94,'Trick damage not applied on close');

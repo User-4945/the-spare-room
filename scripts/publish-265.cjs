@@ -1,6 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const repo=process.env.GH_REPO,tag='v2.6.5';
 function api(route,method='GET',data){const out=execFileSync('gh',['api','repos/'+repo+'/'+route,'--method',method,...(data?['--input','-']:[])],{encoding:'utf8',input:data?JSON.stringify(data):undefined});return out.trim()?JSON.parse(out):null;}
+if(api('git/ref/heads/release-v2.6.5').object.sha!==process.env.GITHUB_SHA)throw Error('A newer prerelease build superseded this run');
 const files=new Map();
 for(const name of fs.readdirSync('release-artifacts')){
  if(name==='halloween-265-screenshots')continue;
