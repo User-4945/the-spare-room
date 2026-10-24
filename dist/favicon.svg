@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#152019"/><path d="M17 53V11h31v42" fill="#283c2d" stroke="#d1b775" stroke-width="4" stroke-linejoin="round"/><path d="M22 16h20v36H22z" fill="#101a13"/><path d="M42 16v36l-14 5V21z" fill="#3f4d32" stroke="#d1b775" stroke-width="2"/><circle cx="35" cy="34" r="3" fill="#f3d487"/><path d="m34 35-1 6h4l-1-6" fill="#f3d487"/><path d="M17 55h31" stroke="#f3d487" stroke-width="3" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#152019"/><path d="M17 53V11h31v42" fill="#283c2d" stroke="#d1b775" stroke-width="4" stroke-linejoin="round"/><path d="M22 16h20v36H22z" fill="#101a13"/><path d="M42 16v36l-14 5V21z" fill="#3f4d32" stroke="#d1b775" stroke-width="2"/><circle cx="35" cy="34" r="3" fill="#f3d487"/><path d="m34 35-1 6h4l-1-6" fill="#f3d487"/><path d="M17 55h31" stroke="#f3d487" stroke-width="3" stroke-linecap="round"/><g id="halloween-pumpkin" transform="translate(46 46)">
+<circle r="18" fill="#211524" stroke="#563349" stroke-width="1.2"/>
+<path d="M-1-11Q-4-17 2-17L4-15Q0-14 2-10" fill="#708848" stroke="#9aaf63" stroke-width="1"/>
+<ellipse cx="-7" cy="1" rx="7" ry="11" fill="#d76318"/>
+<ellipse cx="7" cy="1" rx="7" ry="11" fill="#db6e1d"/>
+<ellipse cx="0" cy="1" rx="8.6" ry="12" fill="#f49528"/>
+<path d="M-9-2-3-6-3-1ZM9-2 3-6 3-1Z" fill="#241527"/>
+<path d="M-9 3-5 5-3 3 0 6 3 3 5 5 9 3 6 9H-6Z" fill="#241527"/>
+<path d="m0-1-2 3h4Z" fill="#ffe2a2"/>
+<path d="M-8-2-4-4-4-2ZM8-2 4-4 4-2Z" fill="#ffd978"/>
+</g></svg>
