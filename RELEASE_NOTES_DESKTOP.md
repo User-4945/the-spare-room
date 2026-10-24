@@ -1,18 +1,24 @@
 # The Spare Room v2.6.5 — All Hallows’ Eve: The Houses That Answer
 
-**Week 2 preview · Prerelease**
+**Week 2 · Prerelease**
 
-Week 2 opens on **Friday 30 October 2026 at 5:00 PM UK time (GMT / 17:00 UTC)**.
+Week 2 unlocks on **Friday 30 October 2026 at 5:00 PM UK time (GMT / 17:00 UTC)**. The live countdown enables Week 2 automatically. **Play Week 1** remains available while waiting; its gameplay and 38 ending paths are unchanged.
 
-- A themed event screen counts down days, hours, minutes and seconds. Week 2 unlocks automatically when the countdown reaches zero.
-- Choose **Play Week 1** to play the Halloween update while you wait. Return using **WEEK 2 EVENT**.
-- Week 2 adds contextual interaction buttons: approach and aim at an object to see the action, such as **Read invitation**, **Eat sandwich** or **Repair fuse box**. Use E, click, or tap the prompt.
-- Prompts hide when the target is out of reach, obscured, or a dialog is open. The action is checked again when pressed.
-- Includes the existing Halloween endings, interactions and eight anomalies. Additional trick-or-treat mechanics are still planned.
-- Saves and updater preferences retain the existing app identity. Stable-only update checks ignore this prerelease; opting into prereleases allows it. Version checks prevent downgrading.
+## The city starts recognising you
 
-## Downloads
+- **Six answering doors:** knock at the station, archives, cinema, clinic, chapel and clock repair shop. Residents offer sweets, instructions and errands. Mother answers one door far from home. A wrapped treat may turn into ash.
+- **Velvet & Ash:** explore an abandoned costume shop reached through a new east-side passage. Borrow masks, find the clockmaker’s missing key and unlock a basement below the shop by delivering the projectionist’s misaddressed parcel from the Dead Letter Office. A faceless mannequin changes position when you look away.
+- **Useful masks:** the crow mask lets you return stolen things; the moth mask exposes a false treat and earns a frightened voice’s trust; the neighbour’s mask makes the porter recognise you. Wear one for 45 seconds of active play and the procession begins following. Take it off from WEEK 2 QUEST to disperse them. Reading pauses the exposure timer.
+- **Three new anomalies:** a ringing doorbell appears behind you, a detached shadow continues walking after you stop, and an extra house appears beyond the shop after two door visits and 45 seconds of active play.
+- **Three new endings (41 total):** return the stolen face to its wooden owner, rescue Ada from behind the impossible door, or become the neighbour everybody remembers. Each ending requires its own discoveries and an explicit final choice.
+- **Contextual interaction buttons:** aim at an object within reach to see its action. Press E, click or tap. Targets are checked for range and visibility again when clicked.
+- **Quest journal and checklist:** WEEK 2 QUEST tracks errands, masks and door tasks, with directions to the shop, parcel, residents and extra house. New games reset quest progress while preserving your ending journal.
+- Disturbing discoveries apply sanity loss after closing their reading popup. Door rewards and quest exchanges cannot be collected repeatedly.
 
-Windows x64 installer, universal Mac DMG, Linux x64 AppImage and DEB, browser ZIP, installable web ZIP, and desktop source ZIP are included. Android, iPhone and iPad use the installable web version; native APK/IPA packages are not included. Mac downloads are ad-hoc signed and are not notarized.
+## Downloads and updates
 
-This is a preview: **v.2.5.0 remains the latest stable release**. The countdown uses the device clock and the fixed unlock instant above, including when offline.
+Windows x64 installer, universal Mac DMG, Linux x64 AppImage and DEB, browser ZIP, installable web ZIP, and matching desktop source are included. Android, iPhone and iPad use the installable web version (no native APK/IPA). Mac builds are ad-hoc signed, not notarized.
+
+This replaces the earlier countdown-only v2.6.5 preview. **If you installed that preview already, download and reinstall this refreshed v2.6.5 build**: the updater correctly avoids reinstalling an equal version. Your existing app identity, saves and preferences are retained.
+
+v.2.5.0 remains the latest stable release. Prerelease updates are opt-in, and newer installed versions cannot downgrade to stable. The countdown uses the device clock, including offline. All new content stays locked until the event’s fixed unlock time.
