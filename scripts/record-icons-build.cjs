@@ -1,0 +1,5 @@
+const fs=require('node:fs'),{execFileSync}=require('node:child_process');
+const git=(...a)=>execFileSync('git',a,{encoding:'utf8'}).trim(),r=JSON.parse(fs.readFileSync('release.json')),week2=fs.existsSync('dist/week2.js');
+if(!fs.readFileSync('dist/favicon.svg','utf8').includes('halloween-pumpkin'))throw Error('Pumpkin missing');
+fs.appendFileSync('RELEASE_NOTES.md','\n\n### Halloween icon refresh\nA small jack-o’-lantern now accompanies the doorway symbol in browser tabs, installed web apps and desktop installers. Gameplay is unchanged.\n');
+fs.writeFileSync('installer-build.json',JSON.stringify({game_version:r.version,game_tag:r.tag,game_commit:git('rev-parse','HEAD'),game_tree:git('rev-parse','HEAD:dist'),updater_commit:git('rev-parse','HEAD'),icon_patch_commit:process.env.GITHUB_SHA,prerelease:!!r.prerelease,platform:process.argv[2],endings:week2?41:38,halloween_endings:week2?10:7,anomalies:week2?11:8,update_settings:{default:'stable',prereleases:'opt-in',never_downgrade:true}},null,2));
