@@ -13,12 +13,12 @@ for (const name of ['halloween.js', 'halloween.css', 'more-halloween.js']) {
   fs.copyFileSync(path.join(root, 'events/halloween', name), path.join(out, name));
 }
 let html = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
-html = html.replace(/<script src="(?:halloween|more-halloween|action-prompts)\.js"><\/script>/g, '').replace(/<link rel="stylesheet" href="halloween\.css">/g, '');
+html = html.replace(/<script src="(?:halloween|more-halloween|action-prompts|release-event)\.js"><\/script>/g, '').replace(/<link rel="stylesheet" href="halloween\.css">/g, '');
 html = html.replaceAll("'spare-room-v1'", "'spare-room-halloween-v1'")
   .replace(/<title>.*?<\/title>/, '<title>The Spare Room · All Hallows’ Eve</title>')
   .replace(/href="\/(favicon[^" ]*|apple-touch-icon\.png)"/g, 'href="$1"')
   .replace('</head>', '<link rel="stylesheet" href="halloween.css"></head>')
-  .replace('</body>', '<script src="halloween.js"></script><script src="more-halloween.js"></script><script src="action-prompts.js"></script></body>');
+  .replace('</body>', '<script src="halloween.js"></script><script src="more-halloween.js"></script><script src="action-prompts.js"></script><script src="release-event.js"></script></body>');
 fs.writeFileSync(path.join(out, 'index.html'), html);
 // The seasonal journal is independent too. Original save files are never migrated.
 const cityPath = path.join(out, 'city.js');

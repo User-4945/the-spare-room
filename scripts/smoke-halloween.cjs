@@ -15,6 +15,7 @@ app.whenReady().then(async()=>{
   await evaluate(`(()=>{if(!advancedEngine||advancedEngine.failed)throw Error('WebGL engine failed');renderAdvanced();if(!advancedEngine.halloween)throw Error('Event props missing');})()`);
   async function snapshot(name){await evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');const frame=await win.webContents.capturePage();if(frame.isEmpty())throw Error('Empty screenshot');fs.writeFileSync(path.join(out,name+'.png'),frame.toPNG());}
   await snapshot('01-title');
+  await evaluate(`(()=>{if(typeof enterReleaseWeek==='function')enterReleaseWeek('week1')})()`);
   await evaluate(`(()=>{reset();s.started=true;s.difficulty='easy';halloweenReadInvitation();close();s.worldSeed=317;house.citySeed=null;halloweenTravel('cinema');house.pitch=-.12;renderAdvanced();})()`);
   await snapshot('02-cinema-lantern');
   await evaluate(`(()=>{halloweenReadNote('cinema');close();halloweenLightSeal('cinema');const b=[...document.querySelectorAll('#modal button')].find(b=>b.textContent==='Light the seal');if(!b)throw Error('Missing seal action');b.click();close();renderAdvanced();if(advancedEngine.halloween.seals.find(s=>s.id==='cinema').light.intensity<=0)throw Error('Lantern stayed dark');})()`);

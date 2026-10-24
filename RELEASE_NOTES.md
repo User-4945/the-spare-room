@@ -1,33 +1,18 @@
-# The Spare Room v.2.5.0 — All Hallows’ Eve
+# The Spare Room v2.6.5 — All Hallows’ Eve: The Houses That Answer
 
-The Halloween update is now a normal release, with **38 endings**, seven Halloween paths, new interactions and all eight anomalies from v.2.1.0.
+**Week 2 preview · Prerelease**
 
-## Halloween stories and interactions
+Week 2 opens on **Friday 30 October 2026 at 5:00 PM UK time (GMT / 17:00 UTC)**.
 
-- Read the invitation, follow three folded notes and light lantern seals at the archives, cinema and chapel. The garden bell unlocks after 90 seconds of active play and waits until you are ready.
-- Ask Mother to leave the porch light on, release borrowed names, join the procession, or invite the tall guest home.
-- Meet the lost visitor in the upstairs nursery. Find her ribbon by the records-room typewriter, return it with a sweet, and help her find her way home.
-- Take one black seed from each lit lantern. Find the gardener’s watering can and grow the October orchard in the garden flower bed.
-- Uncover the bedroom mirror and take the guest’s spare mask to the wax mark on its frame.
-- Six masked neighbours each offer one sweet per run. Eat sweets for up to 4% sanity or save them for the guest and lost child.
-- Turning pumpkins, a spectral procession, bats, masked residents, orange notes and a Halloween title screen. Easy, Intermediate and Hard remain available.
-- Use **HALLOWEEN → Three more October stories** for the additional quests and directions.
+- A themed event screen counts down days, hours, minutes and seconds. Week 2 unlocks automatically when the countdown reaches zero.
+- Choose **Play Week 1** to play the Halloween update while you wait. Return using **WEEK 2 EVENT**.
+- Week 2 adds contextual interaction buttons: approach and aim at an object to see the action, such as **Read invitation**, **Eat sandwich** or **Repair fuse box**. Use E, click, or tap the prompt.
+- Prompts hide when the target is out of reach, obscured, or a dialog is open. The action is checked again when pressed.
+- Includes the existing Halloween endings, interactions and eight anomalies. Additional trick-or-treat mechanics are still planned.
+- Saves and updater preferences retain the existing app identity. Stable-only update checks ignore this prerelease; opting into prereleases allows it. Version checks prevent downgrading.
 
-## Anomalies included
+## Downloads
 
-The silent watcher, wet footprints, floating doll, synchronised resident stares, mirror writing and handprints, answering knocks, brownouts and impossible door are all included. Encounters pause while reading, respect walls and floor heights, apply sanity damage once, and use difficulty-based grace periods and cooldowns. The Anomalies journal records encounters you notice.
+Windows x64 installer, universal Mac DMG, Linux x64 AppImage and DEB, browser ZIP, installable web ZIP, and desktop source ZIP are included. Android, iPhone and iPad use the installable web version; native APK/IPA packages are not included. Mac downloads are ad-hoc signed and are not notarized.
 
-## Saves, updates and downloads
-
-The Halloween run and its ending journal have separate save keys. Existing original-game progress is retained on the device. The original 31 ending paths remain available alongside seven Halloween endings. City generation stays version 2.
-
-- **Windows x64:** self-contained EXE installer with daily/manual update checks, optional prereleases, verified downloads, retained preferences and release notes after updating.
-- **macOS:** universal DMG for Intel and Apple Silicon. Ad-hoc signed; not Apple-notarized. Install updates from the linked release page.
-- **Linux x64:** AppImage and Debian/Ubuntu DEB packages. Install updates from the linked release page.
-- **Android, iPhone and iPad:** installable web app with touch controls and offline caching. Open the game online and use INSTALL; wait for “Ready to play offline”. These are home-screen web apps.
-
-Download checksums and matching source archives are attached. The GitHub tag is **v.2.5.0**, and the installed app version is **2.5.0**. v.2.1.0 is also promoted to a normal release. Update selection always refuses older versions, including when opting out of prereleases.
-
-## Verification
-
-Checks cover all seven Halloween ending gates, the three new quest chains, deferred sanity costs, candy/seed accounting, save isolation, restart behaviour, city routes and all eight anomalies. Release builds verify the packaged desktop app, Settings and save persistence; WebGL checks and a server-stopped offline reload cover the browser build.
+This is a preview: **v.2.5.0 remains the latest stable release**. The countdown uses the device clock and the fixed unlock instant above, including when offline.

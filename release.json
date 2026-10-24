@@ -1,10 +1,12 @@
 {
-  "name": "The Spare Room v.2.5.0 \u2014 All Hallows\u2019 Eve",
-  "version": "2.5.0",
-  "tag": "v.2.5.0",
+  "name": "The Spare Room v2.6.5 \u2014 All Hallows\u2019 Eve: The Houses That Answer",
+  "version": "2.6.5",
+  "tag": "v2.6.5",
   "generation_version": 2,
-  "prerelease": false,
-  "web_app_name": "The Spare Room \u00b7 All Hallows\u2019 Eve",
+  "prerelease": true,
+  "web_app_name": "The Spare Room \u00b7 The Houses That Answer",
   "web_app_short_name": "Spare Room",
-  "web_app_theme": "#211a24"
+  "web_app_theme": "#211a24",
+  "unlock_at": "2026-10-30T17:00:00Z",
+  "unlock_timezone": "Europe/London"
 }
