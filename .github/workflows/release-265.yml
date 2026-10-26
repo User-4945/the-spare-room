@@ -36,6 +36,8 @@ jobs:
       - run: node tests/halloween.cjs
       - run: node tests/release-event.cjs
       - run: node tests/week2.cjs
+      - run: node --test tests/admin-auth.cjs
+      - run: node tests/admin-panel.cjs
       - name: Record exact game and installer source
         run: node scripts/record-265-build.cjs '${{ matrix.platform }}'
       - name: Build native installer
@@ -100,6 +102,7 @@ jobs:
           xvfb-run -a npx electron --no-sandbox scripts/smoke-halloween.cjs
           xvfb-run -a npx electron --no-sandbox scripts/smoke-pwa.cjs
           xvfb-run -a npx electron --no-sandbox scripts/smoke-week2.cjs
+          xvfb-run -a npx electron --no-sandbox scripts/smoke-admin.cjs
           python3 scripts/package-release.py
           mkdir -p installer-output
           python3 scripts/package-desktop-source.py

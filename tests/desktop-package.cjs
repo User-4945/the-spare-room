@@ -14,7 +14,7 @@ for(const asset of ['updater-core.cjs','updates-controller.cjs','preload.cjs','u
 assert.equal(JSON.parse(fs.readFileSync(path.join(root,'desktop','release-info.json'),'utf8')).version,pkg.version);
 const game=path.join(root,'desktop/game');
 const html=fs.readFileSync(path.join(game,'index.html'),'utf8');
-assert(html.includes("connect-src 'none'"));
+assert(html.includes("connect-src https://the-spare-room.sunsetjelly6.chatgpt.site/api/admin/"));
 assert(html.includes('game-updates.js'));
 for(const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)){
  const asset=match[1].split('?')[0];

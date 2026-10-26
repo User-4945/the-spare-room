@@ -22,3 +22,16 @@ Windows x64 installer, universal Mac DMG, Linux x64 AppImage and DEB, browser ZI
 This replaces the earlier countdown-only v2.6.5 preview. **If you installed that preview already, download and reinstall this refreshed v2.6.5 build**: the updater correctly avoids reinstalling an equal version. Your existing app identity, saves and preferences are retained.
 
 v.2.5.0 remains the latest stable release. Prerelease updates are opt-in, and newer installed versions cannot downgrade to stable. The countdown uses the device clock, including offline. All new content stays locked until the event’s fixed unlock time.
+
+
+## Local game admin panel
+
+- Open **ADMIN** or press **F8**, then sign in with the owner-supplied credentials. Credentials are checked online by the game’s admin service. No password or verifier ships in the game files.
+- Teleport between the house, upstairs rooms and all city venues. Week 2 destinations remain behind the existing release gate and quest prerequisites.
+- Spawn the eight house/city anomalies with the usual safe placement checks; Week 2’s bell, shadow and extra house are available in Week 2. Clear active effects.
+- Set sanity, add/remove 10%, revive after sanity loss, restore stamina, refill sandwiches and grant sweets.
+- Select story night 1–3, set daylight time or trigger Halloween midnight.
+- Session-only tools freeze sanity loss, provide infinite stamina or freeze the daylight clock. Locking, inactivity or reloading disables them.
+- Failed login attempts are throttled by the admin service. Sessions expire after ten minutes; authorized actions renew them. Credentials and session tokens are not written to saves or browser storage.
+
+Admin login and commands require an internet connection. The single-player game remains playable offline. Commands affect only this device’s current run; the service authorizes tools but does not host or control game saves. Client-side game code remains inspectable and this panel is not a DRM mechanism. Updated builds retain the current version number; reinstall if you already installed v2.6.5.
