@@ -111,5 +111,26 @@
       "The-Spare-Room-v2.1.0-installable-web.zip",
       "The-Spare-Room-v2.1.0-web.zip"
     ]
+  },
+  {
+    "tag": "v2.6.5",
+    "id": 422913580,
+    "version": "2.6.5",
+    "ref": "e03fa25410b20f59428d722bc1f5ab80ccc94b39",
+    "prerelease": true,
+    "assets": [
+      "linux-BUILD.json",
+      "mac-BUILD.json",
+      "RELEASE_NOTES.md",
+      "SHA256SUMS.txt",
+      "The-Spare-Room-2.6.5-linux-x64.AppImage",
+      "The-Spare-Room-2.6.5-linux-x64.deb",
+      "The-Spare-Room-2.6.5-mac-universal.dmg",
+      "The-Spare-Room-Setup-2.6.5-x64.exe",
+      "The-Spare-Room-v2.6.5-desktop-source.zip",
+      "The-Spare-Room-v2.6.5-installable-web.zip",
+      "The-Spare-Room-v2.6.5-web.zip",
+      "win-BUILD.json"
+    ]
   }
 ]

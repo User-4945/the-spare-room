@@ -58,6 +58,15 @@ jobs:
           - version: "2.1.0"
             platform: linux
             runner: ubuntu-latest
+          - version: "2.6.5"
+            platform: win
+            runner: windows-latest
+          - version: "2.6.5"
+            platform: mac
+            runner: macos-latest
+          - version: "2.6.5"
+            platform: linux
+            runner: ubuntu-latest
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 40
     env:
@@ -76,7 +85,7 @@ jobs:
       - name: Restore exact version and add only Admin Panel
         run: node scripts/prepare-admin-release.cjs '${{ matrix.version }}' '${{ matrix.platform }}'
       - run: npm test
-      - run: node --test tests/admin-auth.cjs
+      - run: node --test tests/admin-auth.cjs tests/admin-network.cjs
       - run: node tests/admin-compat.cjs
       - name: Build native installer
         run: |
@@ -99,7 +108,7 @@ jobs:
             $p = Start-Process $exe -ArgumentList $argsList -PassThru
             if (!$p.WaitForExit(180000)) { $p.Kill(); throw 'Launch timed out' }
             $r = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
-            if ($p.ExitCode -ne 0 -or !$r.ok -or !$r.settingsPreferences) { throw 'Installed app check failed' }
+            if ($p.ExitCode -ne 0 -or !$r.ok -or !$r.settingsPreferences -or !$r.adminNetworkVerified) { throw 'Installed app check failed' }
             if ($attempt -eq 2 -and !$r.saveVerified) { throw 'Save missing' }
           }
       - name: Install Linux graphics dependencies
@@ -129,7 +138,7 @@ jobs:
             else
               "$APP" --smoke-test $EXTRA
             fi
-            node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences)process.exit(1)"
+            node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences||!r.adminNetworkVerified)process.exit(1)"
           done
       - name: Verify actual login form and commands in WebGL
         if: matrix.platform == 'linux'
@@ -146,7 +155,7 @@ jobs:
           python3 -c "import shutil;shutil.make_archive('The-Spare-Room-v${{ matrix.version }}-installable-web','zip','pwa-build')"
           cp release-build/*.zip installer-output/*.zip The-Spare-Room-v${{ matrix.version }}-installable-web.zip platform-build/
           cp RELEASE_NOTES.md platform-build/
-          if [ '${{ matrix.version }}' != '2.5.0' ]; then
+          if [ '${{ matrix.version }}' != '2.5.0' ] && [ '${{ matrix.version }}' != '2.6.5' ]; then
             cp DESKTOP_README.md platform-build/
             cp platforms/INSTALL.md platform-build/INSTALL-PLATFORMS.md
             cp installer-build.json platform-build/INSTALLER_BUILD.json

@@ -1,5 +1,7 @@
 const {app,BrowserWindow,Menu,session,dialog,ipcMain,safeStorage,net,shell}=require('electron');
 const {setupUpdates}=require('./updates-controller.cjs');
+const {allowAdminRequest}=require('./admin-network.cjs');
+const adminSmokeTraffic=[];
 const path=require('node:path');
 const fs=require('node:fs');
 const {fileURLToPath}=require('node:url');
@@ -51,6 +53,12 @@ for(let id of encounters){
  if(advancedEngine.failed||!advancedEngine.anomalies.groups[id].visible)throw Error('Encounter did not render: '+id);
 }
 if(encounters.length){anomalyRuntime.active=null;s=fresh();save();updateAnomalyVisuals(advancedEngine);}
+const admin=window.spareAdmin;if(!admin)throw Error('Installed Admin Panel missing');
+admin.open();if((await admin.authenticate('qa-admin','wrong')).ok)throw Error('Installed wrong-password accepted');
+const au=document.querySelector('#admin-panel input[name="admin-username"]'),ap=document.querySelector('#admin-panel input[name="admin-password"]');au.value='qa-admin';ap.value='qa-password';document.querySelector('#admin-panel form').requestSubmit();
+for(let i=0;i<150&&!admin.isAuthenticated();i++)await new Promise(r=>setTimeout(r,50));
+if(!admin.isAuthenticated()||ap.value!=='')throw Error('Installed admin login blocked: '+document.querySelector('#admin-panel .admin-message').textContent);
+s.ending=null;s.sanityLost=false;s.sanity=100;if(!(await admin.dispatch('sanity',{value:90})).ok||s.sanity!==90)throw Error('Installed admin authorization blocked');admin.lock();admin.close();
 let persisted=localStorage.getItem('desktop-smoke-save');
 if(${verifySave}&&persisted!==${JSON.stringify(version)})throw Error('Save did not survive restart');
 localStorage.setItem('desktop-smoke-save',${JSON.stringify(version)});
@@ -59,7 +67,9 @@ let networkBlocked=false;try{await fetch('https://example.com/')}catch{networkBl
 if(!networkBlocked)throw Error('Network requests are not blocked');
 if(!window.spareUpdates||!Array.from(toolbar.children).some(b=>b.textContent==='SETTINGS'))throw Error('Desktop update controls missing');
 return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,signsChecked:signs.length,encountersRendered:encounters.length,updateControls:true,networkBlocked,saveVerified:${verifySave},upgradeSaveVerified:${verifyUpgrade}};
-})()`);await updates.open(false);let panel=updates.getWindow();
+})()`);
+if(!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/login'&&r.method==='POST')||!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/authorize'&&r.method==='POST'))throw Error('Installed admin requests did not pass the native network policy');result.adminNetworkVerified=true;
+await updates.open(false);let panel=updates.getWindow();
 result.updatePanel=await panel.webContents.executeJavaScript(`(async()=>{
  const api=window.spareUpdates,$=id=>document.getElementById(id);
  if(!api||!$('check')||!$('install')||!$('notes')||!$('prereleases')||!$('save-preferences'))throw Error('Settings controls missing');
@@ -106,7 +116,19 @@ function upgradeFixture(){
 }
 app.whenReady().then(async()=>{
 const ses=session.defaultSession;
-ses.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(_details,callback)=>callback({cancel:true}));
+ses.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>{
+ const allowed=allowAdminRequest(details,!!win&&details.webContentsId===win.webContents.id&&localGameURL(details.frame?.url||win.webContents.getURL()));
+ if(smoke&&details.url.includes('/api/admin/'))adminSmokeTraffic.push({method:details.method,path:new URL(details.url).pathname,allowed});
+ callback({cancel:!allowed});
+});
+// In installed-app QA only, serve a private fixture through Chromium's normal
+// HTTPS protocol path. The real request filter above still runs unchanged.
+if(smoke&&!smokeUpgrade)ses.protocol.handle('https',request=>{
+ const u=new URL(request.url),headers={'Content-Type':'application/json','Access-Control-Allow-Origin':'null','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Cache-Control':'no-store'};
+ if(u.origin!=='https://the-spare-room.sunsetjelly6.chatgpt.site'||!['/api/admin/login','/api/admin/authorize'].includes(u.pathname))return new Response('Blocked fixture route',{status:403});
+ if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
+ return request.json().then(body=>{const ok=u.pathname.endsWith('/login')?body.username==='qa-admin'&&body.password==='qa-password':request.headers.get('Authorization')==='Bearer installed-app-test-token';return new Response(JSON.stringify(ok?{ok:true,token:'installed-app-test-token',expiresAt:Date.now()+600000}:{ok:false,message:'Incorrect username or password.'}),{status:ok?200:401,headers});});
+});
 ses.setPermissionRequestHandler((contents,permission,callback)=>callback(localGameURL(contents.getURL())&&['pointerLock','fullscreen'].includes(permission)));
 ses.setPermissionCheckHandler((contents,permission)=>!!contents&&localGameURL(contents.getURL())&&['pointerLock','fullscreen'].includes(permission));
 ses.on('will-download',event=>event.preventDefault());
