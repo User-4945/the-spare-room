@@ -15,9 +15,10 @@
  const controls=el('div','admin-controls','',card);controls.hidden=true;
  const sessionRow=el('div','admin-session','',controls),sessionLabel=el('span','','',sessionRow);button('Lock admin',lock,sessionRow);
  const stats=el('p','admin-stats','',controls),notice=el('p','admin-message','',controls);notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
- button('Start / resume Week 1',()=>run('start'),controls);
+ button('Start / resume game',()=>run('start'),controls);
  const travel=group('Teleport',controls),place=select('Destination',travel);button('Teleport and resume',()=>run('teleport',{place:place.value}),travel);
  const scares=group('Anomalies',controls),anomaly=select('Encounter',scares);button('Spawn and resume',()=>run('spawn',{id:anomaly.value}),scares);button('Clear current anomalies',()=>run('clear'),scares);
+ if(typeof anomalyDefinitions==='undefined')scares.hidden=true;
  el('small','','Spawns use the game’s placement checks. Move to an open area if there is no safe position. Mirror and resident events need their usual surroundings.',scares);
  const sanity=group('Sanity and supplies',controls),sanityValue=number('Sanity %',0,100,100,sanity);
  button('Set sanity',()=>run('sanity',{value:Number(sanityValue.value)}),sanity);button('+10 sanity',()=>run('sanityDelta',{value:10}),sanity);button('−10 sanity',()=>run('sanityDelta',{value:-10}),sanity);button('Full heal / revive after sanity loss',()=>run('revive'),sanity);
@@ -58,7 +59,7 @@
   if(typeof week2Active==='function'&&week2Active()){result.push({id:'costume_shop',label:'Week 2 · Costume shop',p:[56,-29.5,Math.PI],y:.1});if(week2State().key)result.push({id:'costume_basement',label:'Week 2 · Basement',p:[56,-34,Math.PI],y:-3.2});if(week2State().extraHouse)result.push({id:'extra_house',label:'Week 2 · Extra house',p:[56,-47.5,Math.PI],y:.1});}
   return result;
  }
- function fillSelects(){place.replaceChildren();for(const d of destinations())option(place,d.id,d.label);place.value=destinations().some(d=>d.id===s.room)?s.room:'hall';anomaly.replaceChildren();for(const [id,d]of Object.entries(anomalyDefinitions))option(anomaly,id,d.title);if(typeof week2Active==='function'&&week2Active())for(const [id,label]of [['week2:bell','Week 2 · Doorbell behind you'],['week2:shadow','Week 2 · Detached shadow'],['week2:house','Week 2 · Reveal extra house']])option(anomaly,id,label);day.value=String(s.day);sanityValue.value=String(Math.round(s.sanity??100));}
+ function fillSelects(){place.replaceChildren();for(const d of destinations())option(place,d.id,d.label);place.value=destinations().some(d=>d.id===s.room)?s.room:'hall';anomaly.replaceChildren();for(const [id,d]of Object.entries(typeof anomalyDefinitions==='undefined'?{}:anomalyDefinitions))option(anomaly,id,d.title);if(typeof week2Active==='function'&&week2Active())for(const [id,label]of [['week2:bell','Week 2 · Doorbell behind you'],['week2:shadow','Week 2 · Detached shadow'],['week2:house','Week 2 · Reveal extra house']])option(anomaly,id,label);day.value=String(s.day);sanityValue.value=String(Math.round(s.sanity??100));}
  function updateView(){const valid=auth.isAuthenticated();if(!valid)clearToggles();login.hidden=valid;controls.hidden=!valid;shown=valid?'tools':'login';if(valid){const seconds=Math.ceil(auth.status().expiresIn/1000);sessionLabel.textContent='Unlocked · locks in '+Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');stats.textContent='Night '+s.day+' · '+(rooms[s.room]||s.room)+' · Sanity '+Math.round(s.sanity??100)+'% · X '+house.x.toFixed(1)+' / Y '+(house.jumpHeight||0).toFixed(1)+' / Z '+house.z.toFixed(1);notice.textContent=feedback;}else loginMessage.textContent=feedback;}
  function open(){if(locked())document.exitPointerLock();house.keys={};if(typeof hideActionPrompt==='function')hideActionPrompt();returnFocus=document.activeElement;panel.hidden=false;fillSelects();updateView();(auth.isAuthenticated()?closeButton:username).focus();}
  function hide(){panel.hidden=true;password.value='';house.keys={};returnFocus?.focus?.();if(typeof updateActionPrompt==='function')updateActionPrompt();}
@@ -89,6 +90,7 @@
   if(action==='toggle'){if(!Object.hasOwn(options,data.key)||typeof data.value!=='boolean')return reply(false,'Unknown session tool.');options[data.key]=data.value;changed();return reply(true,'Session tool '+(data.value?'enabled.':'disabled.'));}
   if(!ready())return reply(false,'Start / resume the game first, or revive after sanity loss.');
   if(action==='spawn'){
+   if(typeof anomalyDefinitions==='undefined')return reply(false,'This game version has no spawnable anomaly system.');
    const id=String(data.id||'');if(!Object.hasOwn(anomalyDefinitions,id)&&!['week2:bell','week2:shadow','week2:house'].includes(id))return reply(false,'Choose an available anomaly.');
    if(id.startsWith('week2:')&&!(typeof week2Active==='function'&&week2Active()))return reply(false,'Week 2 anomalies are available after Week 2 unlocks.');
    if(id==='mirror'&&!flags().mirror)return reply(false,'Uncover the bedroom mirror first, then stand near it.');
@@ -98,7 +100,7 @@
    if(!ok){open();return reply(false,'No safe spawn here. Try an open floor; the resident stare needs nearby people and the mirror event needs the uncovered mirror.');}
    changed();return reply(true,'Anomaly spawned. Press F8 to reopen admin tools.');
   }
-  if(action==='clear'){anomalyRuntime.active=null;anomalyRuntime.captionUntil=0;if(typeof week2Runtime!=='undefined'){week2Runtime.effect=null;week2Runtime.shadow=null;week2Runtime.pressure=0;if(typeof week2Active==='function'&&week2Active()){week2State().mask=null;week2State().worn=0;}}changed();return reply(true,'Current anomalies cleared. Any Week 2 mask was removed.');}
+  if(action==='clear'){if(typeof anomalyRuntime==='undefined')return reply(false,'This game version has no anomaly system.');anomalyRuntime.active=null;anomalyRuntime.captionUntil=0;if(typeof week2Runtime!=='undefined'){week2Runtime.effect=null;week2Runtime.shadow=null;week2Runtime.pressure=0;if(typeof week2Active==='function'&&week2Active()){week2State().mask=null;week2State().worn=0;}}changed();return reply(true,'Current anomalies cleared. Any Week 2 mask was removed.');}
   if(action==='sandwich'){s.sandwichAt=0;buildHouse();changed();return reply(true,'The kitchen sandwich is ready.');}
   if(action==='stamina'){house.stamina=100;house.sprintExhausted=false;changed();return reply(true,'Stamina restored.');}
   if(action==='sweets'&&typeof halloweenState==='function'){halloweenState().candy=Math.min(999,halloweenState().candy+3);changed();return reply(true,'Added three sweets.');}

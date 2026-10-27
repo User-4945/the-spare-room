@@ -1,0 +1,185 @@
+name: Add Admin Panel to historical releases
+on:
+  push:
+    branches: [admin-all-releases]
+permissions:
+  contents: write
+concurrency:
+  group: spare-room-admin-all-releases
+  cancel-in-progress: true
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: "2.5.0"
+            platform: win
+            runner: windows-latest
+          - version: "2.5.0"
+            platform: mac
+            runner: macos-latest
+          - version: "2.5.0"
+            platform: linux
+            runner: ubuntu-latest
+          - version: "2.0.5"
+            platform: win
+            runner: windows-latest
+          - version: "2.0.5"
+            platform: mac
+            runner: macos-latest
+          - version: "2.0.5"
+            platform: linux
+            runner: ubuntu-latest
+          - version: "2.0.0"
+            platform: win
+            runner: windows-latest
+          - version: "2.0.0"
+            platform: mac
+            runner: macos-latest
+          - version: "2.0.0"
+            platform: linux
+            runner: ubuntu-latest
+          - version: "1.5.1"
+            platform: win
+            runner: windows-latest
+          - version: "1.5.1"
+            platform: mac
+            runner: macos-latest
+          - version: "1.5.1"
+            platform: linux
+            runner: ubuntu-latest
+          - version: "2.1.0"
+            platform: win
+            runner: windows-latest
+          - version: "2.1.0"
+            platform: mac
+            runner: macos-latest
+          - version: "2.1.0"
+            platform: linux
+            runner: ubuntu-latest
+          - version: "2.6.5"
+            platform: win
+            runner: windows-latest
+          - version: "2.6.5"
+            platform: mac
+            runner: macos-latest
+          - version: "2.6.5"
+            platform: linux
+            runner: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Restore exact version and add only Admin Panel
+        run: node scripts/prepare-admin-release.cjs '${{ matrix.version }}' '${{ matrix.platform }}'
+      - run: npm test
+      - run: node --test tests/admin-auth.cjs tests/admin-network.cjs
+      - run: node tests/admin-compat.cjs
+      - name: Build native installer
+        run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --${{ matrix.platform }} --publish never
+      - name: Verify installed Windows app and save persistence
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem platform-build/*Setup*.exe | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP 'spare-admin-installed'
+          $p = Start-Process $installer.FullName -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Install failed' }
+          $exe = Join-Path $installDir 'The Spare Room.exe'
+          $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-admin-profile'
+          foreach ($attempt in 1,2) {
+            $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP "smoke-$attempt.json"
+            $argsList = @('--smoke-test')
+            if ($attempt -eq 2) { $argsList += '--smoke-verify-save' }
+            $p = Start-Process $exe -ArgumentList $argsList -PassThru
+            if (!$p.WaitForExit(180000)) { $p.Kill(); throw 'Launch timed out' }
+            $r = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+            if ($p.ExitCode -ne 0 -or !$r.ok -or !$r.settingsPreferences -or !$r.adminNetworkVerified) { throw 'Installed app check failed' }
+            if ($attempt -eq 2 -and !$r.saveVerified) { throw 'Save missing' }
+          }
+      - name: Install Linux graphics dependencies
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y libasound2t64 libgtk-3-0t64 libnss3 libgbm1 xvfb
+      - name: Verify Mac and Linux packages twice
+        if: matrix.platform != 'win'
+        shell: bash
+        run: |
+          if [ '${{ matrix.platform }}' = 'mac' ]; then
+            export SPARE_ROOM_TEST_ANGLE=default
+            APP='platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room'
+            codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+            lipo -info "$APP"
+          else
+            chmod +x platform-build/*.AppImage
+            platform-build/*.AppImage --appimage-extract >/dev/null
+            APP='./squashfs-root/the-spare-room'
+          fi
+          export SPARE_ROOM_SMOKE_PROFILE="$RUNNER_TEMP/spare-admin-profile"
+          for attempt in 1 2; do
+            export SPARE_ROOM_SMOKE_REPORT="$RUNNER_TEMP/smoke-$attempt.json"
+            EXTRA=''
+            if [ "$attempt" = 2 ]; then EXTRA='--smoke-verify-save'; fi
+            if [ '${{ matrix.platform }}' = 'linux' ]; then
+              xvfb-run -a "$APP" --no-sandbox --smoke-test $EXTRA
+            else
+              "$APP" --smoke-test $EXTRA
+            fi
+            node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences||!r.adminNetworkVerified)process.exit(1)"
+          done
+      - name: Verify actual login form and commands in WebGL
+        if: matrix.platform == 'linux'
+        run: xvfb-run -a npx electron --no-sandbox scripts/smoke-admin.cjs
+      - name: Package matching browser and source downloads
+        if: matrix.platform == 'linux'
+        run: |
+          node scripts/prepare-pwa.cjs dist pwa-build release.json
+          node --test tests/pwa.cjs
+          xvfb-run -a npx electron --no-sandbox scripts/smoke-pwa.cjs
+          python3 scripts/package-release.py
+          mkdir -p installer-output
+          python3 scripts/package-desktop-source.py
+          python3 -c "import shutil;shutil.make_archive('The-Spare-Room-v${{ matrix.version }}-installable-web','zip','pwa-build')"
+          cp release-build/*.zip installer-output/*.zip The-Spare-Room-v${{ matrix.version }}-installable-web.zip platform-build/
+          cp RELEASE_NOTES.md platform-build/
+          if [ '${{ matrix.version }}' != '2.5.0' ] && [ '${{ matrix.version }}' != '2.6.5' ]; then
+            cp DESKTOP_README.md platform-build/
+            cp platforms/INSTALL.md platform-build/INSTALL-PLATFORMS.md
+            cp installer-build.json platform-build/INSTALLER_BUILD.json
+          fi
+      - name: Collect verified release downloads
+        shell: bash
+        run: |
+          mkdir -p release-output
+          find platform-build -maxdepth 1 -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.zip' -o -name '*.md' -o -name 'INSTALLER_BUILD.json' \) -exec cp {} release-output/ \;
+          cp installer-build.json 'release-output/${{ matrix.platform }}-BUILD.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: admin-${{ matrix.version }}-${{ matrix.platform }}
+          path: release-output/
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: admin-*
+          path: admin-artifacts
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/publish-admin-releases.cjs
