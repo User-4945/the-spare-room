@@ -25,6 +25,8 @@ const week3PreviousScare=advanceAnomalies;advanceAnomalies=function(dt){if(!week
 const week3PreviousWalk=canWalk;canWalk=function(x,z){if(!week3Active()||x<70)return week3PreviousWalk(x,z);if(x<71||x>89||z<11||z>29)return false;return !house.solids.some(b=>Math.abs(x-b.x)<b.w/2+.17&&Math.abs(z-b.z)<b.d/2+.17&&(house.jumpHeight||0)<b.y+b.h-.02&&(house.jumpHeight||0)+1.65>b.y);};
 const week3PreviousSupport=supportAt;supportAt=function(x,z){return week3Active()&&x>70&&x<90&&z>10&&z<30?.1:week3PreviousSupport(x,z);};
 const week3PreviousRoom=houseRoom;houseRoom=function(){return week3Active()&&house.x>70&&house.x<90?'last_house':week3PreviousRoom();};
+const week3Doorways=[{start:15,end:18},{start:22,end:24}];
+function week3DoorwayLayout(){return week3Doorways.map(d=>({...d,center:(d.start+d.end)/2,width:d.end-d.start,head:2.65,trim:.12,base:.1}));}
 const week3PreviousBuild=buildHouse;buildHouse=function(){week3PreviousBuild();if(!week3Active())return;
  // The invitation belongs inside the hall, clear of doorways and the photograph.
  box(1.365,1.12,8,.035,.5,.68,'#594a43');box(1.338,1.16,8,.018,.42,.6,'#dfd1ae');box(1.322,1.34,8,.013,.035,.55,'#b5a17c');box(1.31,1.3,8,.02,.11,.11,'#4b272a');
@@ -32,7 +34,7 @@ const week3PreviousBuild=buildHouse;buildHouse=function(){week3PreviousBuild();i
  // Keep the main house-to-garden path and its approach sightline clear.
  box(-2.5,0,-3.5,1.6,2.6,.12,'#594a43',true);box(-2.5,2.6,-3.5,1.9,.12,.24,'#a38d6c');for(const x of [-3.38,-1.62])box(x,0,-3.5,.12,2.7,.22,'#a38d6c',true);
  box(80,-.12,20,20,.22,20,'#6f6053');box(80,3.1,20,20,.2,20,'#3b3336');for(const x of [70,90])box(x,0,20,.2,3.1,20,'#796c66',true);for(const z of [10,30])box(80,0,z,20,3.1,.2,'#796c66',true);
- for(const x of [77,83])for(const [z,d]of [[12.5,5],[20,4],[27,6]])box(x,0,z,.15,3.1,d,'#796c66',true);
+ for(const x of [77,83]){for(const [z,d]of [[12.5,5],[20,4],[27,6]])box(x,0,z,.15,3.1,d,'#796c66',true);for(const d of week3DoorwayLayout())box(x,d.head,d.center,.15,3.1-d.head,d.width,'#796c66',true);}
  for(const [x,z]of [[74,17],[86,17],[74,24]]){box(x,.1,z,2.6,.75,1.2,'#78604c',true);box(x,.86,z,.65,.05,.45,'#c7b18c');box(x,.92,z,.14,.28,.14,'#c9a46b');}
  box(80,.1,27,1.3,.65,.5,'#69503c',true);box(80,.76,27,.8,.08,.08,'#aa8c62');box(80,.1,24,.6,2.4,.4,'#6c513d',true);box(80,2,24.23,.4,.4,.03,'#d5c9ae');
 };
