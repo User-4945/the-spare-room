@@ -66,7 +66,10 @@ admin.open();if((await admin.authenticate('qa-admin','wrong')).ok)throw Error('I
 const au=document.querySelector('#admin-panel input[name="admin-username"]'),ap=document.querySelector('#admin-panel input[name="admin-password"]');au.value='qa-admin';ap.value='qa-password';document.querySelector('#admin-panel form').requestSubmit();
 for(let i=0;i<150&&!admin.isAuthenticated();i++)await new Promise(r=>setTimeout(r,50));
 if(!admin.isAuthenticated()||ap.value!=='')throw Error('Installed admin login blocked: '+document.querySelector('#admin-panel .admin-message').textContent);
-s.ending=null;s.sanityLost=false;s.sanity=100;if(!(await admin.dispatch('sanity',{value:90})).ok||s.sanity!==90)throw Error('Installed admin authorization blocked');admin.lock();admin.close();
+s.ending=null;s.sanityLost=false;s.sanity=100;if(!(await admin.dispatch('sanity',{value:90})).ok||s.sanity!==90)throw Error('Installed admin authorization blocked');if(!(await admin.dispatch('start')).ok)throw Error('Admin start failed');
+const flightPoint={x:house.x,z:house.z,y:house.jumpHeight||0};if(!(await admin.dispatch('toggle',{key:'fly',value:true})).ok)throw Error('Installed flight enable failed');house.keys={' ':true};const fy=house.jumpHeight||0;updateJump(.1);if(house.jumpHeight<=fy||!canWalk(100,-100))throw Error('Installed flight failed');await admin.dispatch('toggle',{key:'fly',value:false});if(house.x!==flightPoint.x||house.z!==flightPoint.z||house.jumpHeight!==flightPoint.y)throw Error('Installed flight landing failed');
+if(typeof eventAdminLogin!=='undefined'){eventAdminLogin.click();if(document.getElementById('admin-panel').hidden)throw Error('Installed countdown login failed');for(const week of ['week2',...(typeof week3Active==='function'?['week3']:[])]){if(!(await admin.dispatch('start',{week})).ok||releaseAccess!==week)throw Error('Installed event preview failed');} }
+admin.lock();if(admin.status().tools.fly)throw Error('Installed flight lock failed');admin.close();
 let persisted=localStorage.getItem('desktop-smoke-save');
 if(${verifySave}&&persisted!==${JSON.stringify(version)})throw Error('Save did not survive restart');
 localStorage.setItem('desktop-smoke-save',${JSON.stringify(version)});
@@ -76,7 +79,7 @@ if(!networkBlocked)throw Error('Network requests are not blocked');
 if(!window.spareUpdates||!Array.from(toolbar.children).some(b=>b.textContent==='SETTINGS'))throw Error('Desktop update controls missing');
 return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,signsChecked:signs.length,encountersRendered:encounters.length,updateControls:true,networkBlocked,saveVerified:${verifySave},upgradeSaveVerified:${verifyUpgrade}};
 })()`);
-if(!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/login'&&r.method==='POST')||!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/authorize'&&r.method==='POST'))throw Error('Installed admin requests did not pass the native network policy');result.adminNetworkVerified=true;result.promptControls=true;
+if(!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/login'&&r.method==='POST')||!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/authorize'&&r.method==='POST'))throw Error('Installed admin requests did not pass the native network policy');result.adminNetworkVerified=true;result.promptControls=true;result.adminEventsFlight=true;
 await updates.open(false);let panel=updates.getWindow();
 result.updatePanel=await panel.webContents.executeJavaScript(`(async()=>{
  const api=window.spareUpdates,$=id=>document.getElementById(id);

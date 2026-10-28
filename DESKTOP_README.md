@@ -21,3 +21,12 @@ Saves, update preferences and the ending journal remain under `%APPDATA%\The Spa
 ## Building
 
 Use Node.js 24. Run `npm ci`, then `npm start` or `npm run desktop:win` on Windows. `npm test` covers gameplay, packaging and update logic. The desktop-refresh workflow rebuilds every release installer from its own game tag, verifies Settings and saved preferences across restarts, and tests real stable and opt-in prerelease upgrades with reopening, release notes and retained saves. Installer provenance is attached as `INSTALLER_BUILD.json`.
+
+
+## Admin event previews and flight
+
+Halloween countdown screens offer **Admin login / event previews**. Sign in with the existing online admin account, then choose a preview in the panel. Only events included in that game version appear. Public unlock dates stay unchanged: Week 2 on 30 October 2026 at 17:00 GMT; Week 3 on 3 November 2026 at 15:00 GMT. A still-locked preview closes when the session locks, expires or fails authorization.
+
+In **ADMIN → Session tools**, enable **Fly / pass through walls**. Use WASD to move, Space to rise, Ctrl to descend and Shift to move faster. Disable flight to return to the take-off point. Teleporting or changing event stops flight first. Flight and preview access are never saved. F8 opens the admin panel.
+
+The same shared admin controls are included in all refreshed release downloads without adding newer game content to older releases. Existing same-version installs require a one-time re-download and reinstall; save profiles and update preferences are preserved.
