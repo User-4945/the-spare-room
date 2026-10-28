@@ -1,0 +1,13 @@
+const fs=require('node:fs'),{context,vm}=require('./game-smoke.cjs');
+context.document.exitPointerLock=()=>{};
+for(const n of ['halloween','more-halloween','action-prompts','release-event','week2','third-person','week3'])if(fs.existsSync('dist/'+n+'.js'))vm.runInContext(fs.readFileSync('dist/'+n+'.js','utf8'),context);
+vm.runInContext(`{
+const check=(v,m)=>{if(!v)throw Error(m)},originalPause=paused,originalLock=locked,originalNow=Date.now;
+if(typeof enterReleaseWeek==='function')check(enterReleaseWeek('week1'),'Week1 blocked');close();s.started=true;s.ending=null;s.sanityLost=false;
+paused=()=>false;locked=()=>true;house.x=0;house.z=3;house.a=-Math.PI/2;house.pitch=.03;house.jumpHeight=0;buildHouse();if(advancedEngine)renderAdvanced();updateTargets();check(house.target?.name==='Childhood photograph'&&!actionPrompt.hidden&&actionLabel.textContent==='Examine photograph','Real in-range photo prompt missing');
+s.seen=[];actionPrompt.onclick();check(s.seen.includes('photo'),'Prompt click did not interact');close();house.x=0;house.z=8;house.target=null;updateTargets();check(actionPrompt.hidden,'Out-of-range prompt');
+const before=s.day;house.target={name:'Kitchen drawer',fn(){s.day=99}};paused=()=>true;updateActionPrompt();check(actionPrompt.hidden,'Menu prompt visible');actionPrompt.onclick();check(s.day===before,'Menu interaction');paused=()=>false;house.target={name:'Kitchen sandwiches',fn(){}};s.sanityLost=true;updateActionPrompt();check(actionPrompt.hidden,'Loss prompt visible');s.sanityLost=false;
+check(interactionAction({name:'Kitchen sandwiches'})==='Eat sandwich'&&interactionAction({name:'Covered mirror'})=== (flags().mirror?'Inspect mirror':'Uncover mirror')&&interactionAction({name:'Test',action:'Say goodbye'})==='Say goodbye','Action labels');
+if(typeof enterReleaseWeek==='function'){Date.now=()=>Date.parse('2026-10-30T17:00:00Z');check(enterReleaseWeek('week2'),'Week2 gate');close();house.target={name:'Test',action:'Knock on the door',fn(){}};updateActionPrompt();check(!actionPrompt.hidden&&actionLabel.textContent==='Knock on the door','Week2 prompt');if(typeof week3Active==='function'){Date.now=()=>Date.parse('2026-11-03T15:00:00Z');check(enterReleaseWeek('week3'),'Week3 gate');close();house.target={name:'Test',action:'Say goodbye',fn(){}};updateActionPrompt();check(!actionPrompt.hidden&&actionLabel.textContent==='Say goodbye','Week3 prompt');}showReleaseEvent();paused=originalPause;updateActionPrompt();check(actionPrompt.hidden,'Event hub prompt');}
+paused=originalPause;locked=originalLock;Date.now=originalNow;console.log('PASS: real target, action labels, safe click, range/menu/loss hiding and prompts in all available event weeks');
+}`,context);
