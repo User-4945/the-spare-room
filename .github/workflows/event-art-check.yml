@@ -1,0 +1,26 @@
+name: Verify Halloween character and event art
+on:
+  push:
+    branches: [event-art-polish]
+permissions:
+  contents: read
+jobs:
+  graphics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: sudo apt-get update -qq && sudo apt-get install -y libasound2t64 libgtk-3-0t64 libnss3 libgbm1 xvfb
+      - run: xvfb-run -a npx electron --no-sandbox scripts/smoke-event-art.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: event-art-screenshots
+          path: event-art-checks/
+          if-no-files-found: error
