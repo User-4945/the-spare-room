@@ -1,12 +1,12 @@
 // Seasonal access is based on one absolute instant, not the player's timezone.
-const releaseEventInfo={name:'All Hallows’ Eve: The Houses That Answer',version:'2.6.5',unlockAt:'2026-10-30T17:00:00Z',timezone:'Europe/London'};
+const releaseEventInfo={name:'All Hallows’ Eve: The Houses That Answer',version:'2.7.5',unlockAt:'2026-10-30T17:00:00Z',timezone:'Europe/London'};
 function eventTimeRemaining(now=Date.now()){return Math.max(0,Date.parse(releaseEventInfo.unlockAt)-now);}
 function eventCountdown(now=Date.now()){let total=Math.ceil(eventTimeRemaining(now)/1000);return {days:Math.floor(total/86400),hours:Math.floor(total%86400/3600),minutes:Math.floor(total%3600/60),seconds:total%60};}
 let releaseAccess='locked';
 const eventOverlay=document.createElement('section');eventOverlay.id='release-event';eventOverlay.setAttribute('role','dialog');eventOverlay.setAttribute('aria-modal','true');eventOverlay.setAttribute('aria-labelledby','release-event-name');
 const eventCard=document.createElement('div');eventCard.className='event-card';eventOverlay.append(eventCard);
 function eventElement(tag,cls,text,parent=eventCard){let e=document.createElement(tag);e.className=cls;e.textContent=text;parent.append(e);return e;}
-eventElement('p','event-eyebrow','THE SPARE ROOM · v2.6.5 PRERELEASE');
+eventElement('p','event-eyebrow','THE SPARE ROOM · v.2.7.5 PRERELEASE');
 const eventHeading=eventElement('h1','','All Hallows’ Eve');eventHeading.id='release-event-name';
 eventElement('h2','','The Houses That Answer');
 const eventMessage=eventElement('p','event-message','Week 2 is almost here. The doors are still closed. Please wait for the event to unlock—or return to Week 1 while you wait.');
@@ -41,13 +41,13 @@ const eventStyle=document.createElement('style');eventStyle.textContent=`
 `;
 document.body.append(eventStyle);
 const eventPreviousPaused=paused;paused=function(){return !eventOverlay.hidden||releaseAccess==='locked'||eventPreviousPaused();};
-const eventPreviousPrompt=updateActionPrompt;updateActionPrompt=function(){if(releaseAccess!=='week2'||!eventOverlay.hidden)return hideActionPrompt();eventPreviousPrompt();};
+const eventPreviousPrompt=updateActionPrompt;updateActionPrompt=function(){if(!['week2','week3'].includes(releaseAccess)||!eventOverlay.hidden)return hideActionPrompt();eventPreviousPrompt();};
 const eventPreviousTitle=titleScreen;
 titleScreen=function(){
  if(releaseAccess==='locked')return showReleaseEvent();
  eventPreviousTitle();
  const kicker=$('modal').querySelector('.event-kicker');
- if(kicker)kicker.textContent=releaseAccess==='week1'?'WEEK 1 · ALL HALLOWS’ EVE · PLAY NOW':'v2.6.5 PRERELEASE · WEEK 2';
+ if(kicker)kicker.textContent=releaseAccess==='week1'?'WEEK 1 · ALL HALLOWS’ EVE · PLAY NOW':'v.2.7.5 PRERELEASE · WEEK 2';
 };
 function refreshReleaseEvent(now=Date.now()){
  const time=eventCountdown(now),ready=eventTimeRemaining(now)===0;

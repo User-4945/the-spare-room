@@ -1,3 +1,9 @@
+# The Spare Room v.2.7.5 — Halloween Departs: The Last Knock
+
+See RELEASE_NOTES.md for the Week 3 farewell quest, three new endings, the third-person camera and native download details.
+
+Week 1: play now. Week 2: 30 October 2026 at 17:00 GMT. Week 3: 3 November 2026 at 15:00 GMT. Both timed weeks remain locked until their absolute UTC instant. V or CAMERA switches viewpoint.
+
 # The Spare Room v.2.5.0 — All Hallows’ Eve
 
 A first-person psychological horror game built with Three.js. A house remembers someone else wearing your face; the neighbourhood has dressed for a Halloween that never ends.
