@@ -11,11 +11,12 @@ const eventCard=document.createElement('div');eventCard.className='event-card';e
 function eventElement(tag,cls,text,parent=eventCard){let e=document.createElement(tag);e.className=cls;e.textContent=text;parent.append(e);return e;}
 eventElement('p','event-eyebrow','THE SPARE ROOM · v.2.7.5 PRERELEASE');
 const eventHeading=eventElement('h1','','All Hallows’ Eve');eventHeading.id='release-event-name';
-eventElement('h2','','The Houses That Answer');
+const week2HubTitle=eventElement('h2','','The Houses That Answer');
 const eventMessage=eventElement('p','event-message','Week 2 is almost here. The doors are still closed. Please wait for the event to unlock—or return to Week 1 while you wait.');
 const eventDate=eventElement('p','event-date','UNLOCKS FRIDAY 30 OCTOBER · 5:00 PM UK TIME (GMT)');
 const eventTimer=eventElement('div','event-countdown','');eventTimer.setAttribute('aria-label','Time until Week 2 unlocks');
-const eventDigits={};for(const [id,label]of [['days','DAYS'],['hours','HOURS'],['minutes','MINUTES'],['seconds','SECONDS']]){let block=eventElement('div','event-time','',eventTimer);eventDigits[id]=eventElement('strong','', '00',block);eventElement('span','',label,block);}
+function createEventDigits(timer){const digits={};for(const [id,label]of [['days','DAYS'],['hours','HOURS'],['minutes','MINUTES'],['seconds','SECONDS']]){const block=eventElement('div','event-time','',timer);digits[id]=eventElement('strong','','00',block);eventElement('span','',label,block);}return digits;}
+const eventDigits=createEventDigits(eventTimer);
 const eventActions=eventElement('div','event-buttons','');
 const week2Button=eventElement('button','event-primary','Week 2 · Locked',eventActions);week2Button.type='button';week2Button.disabled=true;
 const week1Button=eventElement('button','event-secondary','Play Week 1',eventActions);week1Button.type='button';

@@ -53,10 +53,40 @@ const week3PreviousStart=start;start=function(){const final=week3Active()&&s.roo
 const week3PreviousJournal=endingJournal;endingJournal=function(){if(!week3Active())return week3PreviousJournal();week3Tell('Ending journal · '+endingBook.length+'/44',(lastKnockAward?'🏆 The Last Knock · Witnessed the departure of Halloween 2026.\n\n':'')+(endingBook.map(e=>'✓ '+e.title).join('\n')||'Discover one of three farewell endings. Earlier memories are never spoiled.'));};
 for(const b of toolbar.children)if(b.textContent==='ENDINGS')b.onclick=()=>endingJournal();
 // A second real-world countdown shares the hub without changing Week 2's gate.
-const week3HubTitle=eventElement('h2','','Week 3 · The Last Knock');eventElement('p','event-message','Halloween Departs. The answering houses have fallen silent. One final door remains.');eventElement('p','event-date','UNLOCKS TUESDAY 3 NOVEMBER · 3:00 PM GMT');const week3Timer=eventElement('p','event-date','');const week3Button=eventElement('button','event-secondary','Week 3 · Locked');week3Button.onclick=()=>enterReleaseWeek('week3');
-const week3AdminLogin=eventElement('button','event-secondary','Admin login / preview Week 3');week3AdminLogin.onclick=()=>window.spareAdmin?.open();
-const week3PreviousRefresh=refreshReleaseEvent;refreshReleaseEvent=function(now=Date.now()){const result=week3PreviousRefresh(now),remaining=week3Remaining(now),seconds=Math.ceil(remaining/1000);week3Button.disabled=remaining>0;week3Button.textContent=remaining?'Week 3 · Locked':'Play Week 3 · The Last Knock';week3Timer.textContent=remaining?Math.floor(seconds/86400)+'d '+Math.floor(seconds%86400/3600)+'h '+Math.floor(seconds%3600/60)+'m '+seconds%60+'s':'The final door is open.';return result;};
+const eventColumns=eventElement('div','event-columns','');eventCard.classList.add('has-event-columns');
+const week2Card=eventElement('section','event-week-card','',eventColumns);week2Card.setAttribute('aria-labelledby','week2-countdown-title');
+eventElement('p','event-week-label','WEEK 2',week2Card);week2HubTitle.id='week2-countdown-title';week2Card.append(week2HubTitle,eventMessage,eventDate,eventTimer,eventActions);
+const week3Card=eventElement('section','event-week-card','',eventColumns);week3Card.setAttribute('aria-labelledby','week3-countdown-title');
+eventElement('p','event-week-label','WEEK 3',week3Card);
+const week3HubTitle=eventElement('h2','','The Last Knock',week3Card);week3HubTitle.id='week3-countdown-title';
+const week3Message=eventElement('p','event-message','Halloween Departs. The answering houses have fallen silent. One final door remains.',week3Card);
+eventElement('p','event-date','UNLOCKS TUESDAY 3 NOVEMBER · 3:00 PM GMT',week3Card);
+const week3Timer=eventElement('div','event-countdown','',week3Card);week3Timer.setAttribute('aria-label','Time until Week 3 unlocks');const week3Digits=createEventDigits(week3Timer);
+const week3Actions=eventElement('div','event-buttons','',week3Card),week3Button=eventElement('button','event-primary','Week 3 · Locked',week3Actions);week3Button.type='button';week3Button.onclick=()=>enterReleaseWeek('week3');
+const week3AdminLogin=eventElement('button','event-secondary','Admin login / preview Week 3',week3Actions);week3AdminLogin.type='button';week3AdminLogin.onclick=()=>window.spareAdmin?.open();
+const sharedEventActions=eventElement('div','event-buttons event-shared-actions','');sharedEventActions.append(week1Button);const sharedEventFoot=eventCard.querySelector('.event-foot');if(sharedEventFoot)eventCard.append(sharedEventFoot);
+const week3PreviousRefresh=refreshReleaseEvent;refreshReleaseEvent=function(now=Date.now()){const result=week3PreviousRefresh(now),remaining=week3Remaining(now),seconds=Math.ceil(remaining/1000),time={days:Math.floor(seconds/86400),hours:Math.floor(seconds%86400/3600),minutes:Math.floor(seconds%3600/60),seconds:seconds%60};for(const key of Object.keys(week3Digits)){const value=String(time[key]).padStart(2,'0');if(week3Digits[key].textContent!==value)week3Digits[key].textContent=value;}week3Button.disabled=remaining>0;week3Button.textContent=remaining?'Week 3 · Locked':'Play Week 3 · The Last Knock';week3Message.textContent=remaining?'Halloween Departs. The answering houses have fallen silent. One final door remains.':'The final door is open. Enter the house of memories and witness Halloween’s departure.';return result;};
 releaseEventButton.textContent='HALLOWEEN EVENT HUB';eventOverlay.querySelector('.event-eyebrow').textContent='THE SPARE ROOM · v.2.7.5 PRERELEASE';refreshReleaseEvent();
 const week3PreviousTitle=titleScreen;titleScreen=function(){week3PreviousTitle();if(!week3Active())return;const h=$('modal').querySelector('h2');if(h)h.textContent='Halloween Departs · The Last Knock';const story=$('modal').querySelector('.event-story');if(story)story.textContent='Three farewells. A house of memories. Choose what you carry into the morning. V switches first and third person.';};
 
-const farewellHubStyle=document.createElement("style");farewellHubStyle.textContent="#release-event{align-items:flex-start}#release-event .event-card{margin:auto}#release-event .event-date{font-variant-numeric:tabular-nums}";document.body.append(farewellHubStyle);
+const farewellHubStyle=document.createElement('style');farewellHubStyle.textContent=`
+#release-event{align-items:flex-start;box-sizing:border-box}
+#release-event .event-card{margin:auto;box-sizing:border-box}
+#release-event .has-event-columns{width:min(1120px,100%);padding:40px}
+#release-event .event-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:32px}
+#release-event .event-week-card{display:flex;flex-direction:column;min-width:0;padding:24px;border:1px solid #73513e;background:#11121b77;box-sizing:border-box}
+#release-event .event-week-label{font:10px/1.6 monospace;letter-spacing:3px;color:#d1a579;margin:0 0 12px}
+#release-event .event-week-card h2{font-size:clamp(24px,2.5vw,30px);margin:0 0 18px}
+#release-event .event-week-card .event-message{font-size:14px;line-height:1.8;flex:1;margin:0;min-height:76px}
+#release-event .event-week-card .event-date{font-size:10px;line-height:1.8;min-height:36px;margin:22px 0 14px;font-variant-numeric:tabular-nums}
+#release-event .event-week-card .event-countdown{gap:8px;margin-bottom:22px}
+#release-event .event-week-card .event-time{padding:18px 4px}
+#release-event .event-week-card .event-time strong{font-size:clamp(30px,4vw,52px)}
+#release-event .event-week-card .event-time span{font-size:8px;letter-spacing:1px}
+#release-event .event-week-card .event-buttons{gap:8px}
+#release-event .event-week-card button{font-size:13px;padding:12px 10px}
+#release-event .event-shared-actions{justify-content:center;margin-top:24px}
+#release-event .event-shared-actions button{flex:0 1 320px}
+#release-event .has-event-columns>.event-foot{text-align:center}
+@media(max-width:760px){#release-event .has-event-columns{padding:24px 18px}#release-event .event-columns{grid-template-columns:1fr;gap:18px;margin-top:24px}#release-event .event-week-card{padding:20px}#release-event .event-week-card .event-message{min-height:0}#release-event .event-week-card .event-date{min-height:0}#release-event .event-week-card .event-time strong{font-size:clamp(30px,7vw,48px)}}
+`;document.body.append(farewellHubStyle);
