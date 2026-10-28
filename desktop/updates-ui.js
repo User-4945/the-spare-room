@@ -10,9 +10,9 @@ function render(state){
  const notes=state.notes||state.release&&{version:state.release.version,body:state.release.notes};
  if(!dirty||saving)$('prereleases').checked=!!state.preferences?.allowPrereleases;
  preferenceStatus();
- $('title').textContent=state.notes?'Updated to v'+state.notes.version:state.phase==='available'?(state.release?.prerelease?'A new prerelease is available':'A new release is available'):'Game updates';
+ $('title').textContent=state.notes?'Updated to v'+state.notes.version:state.phase==='available'?(state.release?.refresh?'A refreshed build is available':state.release?.prerelease?'A new prerelease is available':'A new release is available'):'Game updates';
  $('status').textContent=state.message;
- $('version').textContent='Installed: '+state.currentVersion+(state.currentPrerelease?' · prerelease':'')+(state.lastChecked?' · Last checked: '+new Date(state.lastChecked).toLocaleString():'');
+ $('version').textContent='Installed: '+state.currentVersion+(state.currentRevision?' · build '+state.currentRevision:'')+(state.currentPrerelease?' · prerelease':'')+(state.lastChecked?' · Last checked: '+new Date(state.lastChecked).toLocaleString():'');
  $('progress').hidden=state.phase!=='downloading';$('progress').value=state.progress||0;
  $('install').hidden=state.phase!=='available'||!state.release?.canInstall;
  for(const id of ['install','check','save-token','clear-token','save-preferences','prereleases'])$(id).disabled=busy||saving;
