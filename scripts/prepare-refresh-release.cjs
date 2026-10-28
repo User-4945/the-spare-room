@@ -21,7 +21,7 @@ if(v.version!=='2.7.5'){
 // Extend the existing smoke-only transport to cover the installed release endpoint.
 {const p='desktop/main.cjs';let t=fs.readFileSync(p,'utf8');t=t.replace("if(url===API+'/releases/latest')return stable;","if(url===API+'/releases/latest')return stable;\n  if(url.startsWith(API+'/releases/tags/'))return {...stable,tag_name:decodeURIComponent(url.split('/').at(-1))};");fs.writeFileSync(p,t);}
 for(const p of ['desktop/icon.ico','platforms/icons']){fs.rmSync(p,{recursive:true,force:true});fs.cpSync(root+'/'+p,p,{recursive:true});}
-const revision=Number(process.env.GITHUB_RUN_ID)*100+Number(process.env.GITHUB_RUN_ATTEMPT||1);if(!Number.isSafeInteger(revision)||revision<=0)throw Error('Invalid build revision');
+const revision=Number(process.env.GITHUB_RUN_ID)*100+1;if(!Number.isSafeInteger(revision)||revision<=0)throw Error('Invalid build revision');
 const meta=r.assets.find(a=>a.name==='BUILD-REFRESH.json');if(meta){const previous=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GH_REPO+'/releases/assets/'+meta.id,'-H','Accept: application/octet-stream'],{encoding:'utf8'}));if(revision<=previous.revision)throw Error('Refresh revision must increase');}
 for(const n of ['package.json','package-lock.json']){const p=JSON.parse(fs.readFileSync(n));p.version=v.version;if(p.packages)p.packages[''].version=v.version;fs.writeFileSync(n,JSON.stringify(p,null,2)+'\n');}
 fs.writeFileSync('release.json',JSON.stringify({...old,tag:v.tag,prerelease:v.prerelease,build_revision:revision},null,2));

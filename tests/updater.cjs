@@ -85,3 +85,5 @@ test('installed prerelease refresh is allowed when opted out without accepting o
 test('replaced refresh revision requires another review before execution',async t=>{
  const f=fixture(t,{version:'2.0.0',tag:'v.2.0.0',revision:1});const r=release();r.assets.push({id:30,name:'BUILD-REFRESH.json',state:'uploaded',size:140});let revision=2;f.transport.json=async()=>r;f.transport.text=async()=>JSON.stringify({schema:1,version:'2.0.0',tag:r.tag_name,release_id:r.id,revision});await f.service.check(true);revision=3;await f.service.install();assert.equal(f.installs,0);assert.equal(f.service.state().phase,'available');assert.equal(f.service.state().release.revision,3);
 });
+
+test('manual same-version reinstall shows refresh notes for a legacy profile',t=>{const f=fixture(t,{version:'2.0.0'});fs.writeFileSync(path.join(f.profile,'updater-state.json'),JSON.stringify({lastLaunchVersion:'2.0.0',allowPrereleases:true}));const next=new UpdateService({...f.options,revision:100,notes:'Refreshed build notes'});assert.equal(next.state().notes.body,'Refreshed build notes');assert.equal(next.state().preferences.allowPrereleases,true);});

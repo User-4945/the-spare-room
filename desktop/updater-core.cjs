@@ -64,7 +64,7 @@ class UpdateService extends EventEmitter{
   super();Object.assign(this,{profile,version,prerelease,platform,revision,tag,transport,isOnline,now,runInstaller,prepareInstall});this.file=path.join(profile,'updater-state.json');this.saved=readJSON(this.file);this.busy=false;this.candidate=null;this.status={phase:'idle',message:'Checks for updates once a day while the game is open and connected. Save your preferences to check a different update channel.',version};
   const previous=this.saved.lastLaunchVersion,pending=this.saved.pendingUpdate;
   if(pending&&pending.version===version&&(!pending.revision||pending.revision===revision)){this.saved.releaseNotes={version,body:pending.notes};if(pending.prerelease===false||pending.prerelease===undefined&&!prerelease)this.saved.confirmedStable=version;delete this.saved.pendingUpdate;}
-  else if(previous&&(previous!==version||this.saved.lastLaunchRevision&&this.saved.lastLaunchRevision!==revision)){this.saved.releaseNotes={version,body:notes||'The game has been updated.'};}
+  else if(previous&&(previous!==version||this.saved.lastLaunchRevision!==revision)){this.saved.releaseNotes={version,body:notes||'The game has been updated.'};}
   this.saved.allowPrereleases=this.saved.allowPrereleases===true;this.saved.lastLaunchVersion=version;this.saved.lastLaunchRevision=revision;this.persist();
  }
  persist(){writeJSON(this.file,this.saved)}
