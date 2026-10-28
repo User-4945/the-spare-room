@@ -38,3 +38,12 @@ Windows x64 Setup EXE; universal Intel/Apple Silicon Mac DMG; Linux x64 AppImage
 Mac builds are ad-hoc signed, not notarized. Mobile uses the installable web app, not native APK/IPA packages. Normal gameplay works offline after installation; admin authorization and update checks need internet. Daily/manual updates remain stable-only by default, prereleases are opt-in, and newer installed versions are never downgraded.
 
 This is a prerelease. Stable v.2.5.0 and existing release downloads remain unchanged. Please report your platform, difficulty, camera mode, location and world generation code with any issue. Unlocks follow the device clock; this single-player offline build is not a tamper-proof timed service.
+
+
+## Admin event previews and flight
+
+Halloween countdown screens offer **Admin login / event previews**. Sign in with the existing online admin account, then choose a preview in the panel. Only events included in that game version appear. Public unlock dates stay unchanged: Week 2 on 30 October 2026 at 17:00 GMT; Week 3 on 3 November 2026 at 15:00 GMT. A still-locked preview closes when the session locks, expires or fails authorization.
+
+In **ADMIN → Session tools**, enable **Fly / pass through walls**. Use WASD to move, Space to rise, Ctrl to descend and Shift to move faster. Disable flight to return to the take-off point. Teleporting or changing event stops flight first. Flight and preview access are never saved. F8 opens the admin panel.
+
+The same shared admin controls are included in all refreshed release downloads without adding newer game content to older releases. Existing same-version installs require a one-time re-download and reinstall; save profiles and update preferences are preserved.

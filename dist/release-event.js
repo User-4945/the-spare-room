@@ -3,6 +3,9 @@ const releaseEventInfo={name:'All Hallows’ Eve: The Houses That Answer',versio
 function eventTimeRemaining(now=Date.now()){return Math.max(0,Date.parse(releaseEventInfo.unlockAt)-now);}
 function eventCountdown(now=Date.now()){let total=Math.ceil(eventTimeRemaining(now)/1000);return {days:Math.floor(total/86400),hours:Math.floor(total%86400/3600),minutes:Math.floor(total%3600/60),seconds:total%60};}
 let releaseAccess='locked';
+// Private admin session supplies a temporary capability; normal players keep the real clock.
+let eventAdminAuthorizer=()=>false;
+function adminMayEnterEvent(week){return eventAdminAuthorizer(week)===true;}
 const eventOverlay=document.createElement('section');eventOverlay.id='release-event';eventOverlay.setAttribute('role','dialog');eventOverlay.setAttribute('aria-modal','true');eventOverlay.setAttribute('aria-labelledby','release-event-name');
 const eventCard=document.createElement('div');eventCard.className='event-card';eventOverlay.append(eventCard);
 function eventElement(tag,cls,text,parent=eventCard){let e=document.createElement(tag);e.className=cls;e.textContent=text;parent.append(e);return e;}
@@ -17,6 +20,7 @@ const eventActions=eventElement('div','event-buttons','');
 const week2Button=eventElement('button','event-primary','Week 2 · Locked',eventActions);week2Button.type='button';week2Button.disabled=true;
 const week1Button=eventElement('button','event-secondary','Play Week 1',eventActions);week1Button.type='button';
 eventElement('p','event-foot','The countdown uses the same unlock time worldwide. Leave this screen open and it will unlock automatically.');
+const eventAdminLogin=eventElement('button','event-secondary','Admin login / event previews',eventActions);eventAdminLogin.type='button';eventAdminLogin.onclick=()=>window.spareAdmin?.open();
 gameScene.append(eventOverlay);
 const eventStyle=document.createElement('style');eventStyle.textContent=`
  #release-event[hidden]{display:none!important}
@@ -58,7 +62,7 @@ function refreshReleaseEvent(now=Date.now()){
 }
 function showReleaseEvent(){if(locked())document.exitPointerLock();house.keys={};hideActionPrompt();eventOverlay.hidden=false;refreshReleaseEvent();}
 function enterReleaseWeek(week){
- if(week==='week2'&&eventTimeRemaining()>0){showReleaseEvent();return false;}
+ if(week==='week2'&&eventTimeRemaining()>0&&!adminMayEnterEvent(week)){showReleaseEvent();return false;}
  releaseAccess=week;eventOverlay.hidden=true;house.keys={};titleScreen();return true;
 }
 week1Button.onclick=()=>enterReleaseWeek('week1');week2Button.onclick=()=>enterReleaseWeek('week2');

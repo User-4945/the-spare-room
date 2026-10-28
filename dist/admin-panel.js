@@ -1,8 +1,10 @@
 /* All admin mutations go through the same session check. The session is never saved. */
 (function(){
  'use strict';
- const auth=createAdminAuth(adminAuthConfig),options={freezeSanity:false,infiniteStamina:false,freezeDaylight:false};
- let returnFocus=null,feedback='',shown='login';
+ const auth=createAdminAuth(adminAuthConfig),options={freezeSanity:false,infiniteStamina:false,freezeDaylight:false,fly:false};
+ let returnFocus=null,feedback='',shown='login',eventBypass=null,takeoff=null;
+ const eventWeeks=typeof releaseAccess==='undefined'?[]:['week1',...(typeof week2Active==='function'?['week2']:[]),...(typeof week3Active==='function'?['week3']:[])];
+ if(typeof eventAdminAuthorizer!=='undefined')eventAdminAuthorizer=week=>auth.isAuthenticated()&&eventBypass===week;
  const panel=document.createElement('section');panel.id='admin-panel';panel.hidden=true;
  panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','admin-heading');
  const card=el('div','admin-card','',panel),header=el('div','admin-header','',card),title=el('h2','','Game admin',header);title.id='admin-heading';
@@ -16,6 +18,8 @@
  const sessionRow=el('div','admin-session','',controls),sessionLabel=el('span','','',sessionRow);button('Lock admin',lock,sessionRow);
  const stats=el('p','admin-stats','',controls),notice=el('p','admin-message','',controls);notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
  button('Start / resume game',()=>run('start'),controls);
+ const events=group('Event previews',controls);
+ if(eventWeeks.length){for(const week of eventWeeks)button('Preview '+week.replace('week','Week '),()=>run('start',{week}),events);el('small','','Online admin authorization lets you preview locked events included in this release. Public unlock dates stay unchanged. Locking or expiry returns a still-locked preview to the countdown.',events);}else el('small','','This release has no timed event content. Flight and the other admin tools are available below.',events);
  const travel=group('Teleport',controls),place=select('Destination',travel);button('Teleport and resume',()=>run('teleport',{place:place.value}),travel);
  const scares=group('Anomalies',controls),anomaly=select('Encounter',scares);button('Spawn and resume',()=>run('spawn',{id:anomaly.value}),scares);button('Clear current anomalies',()=>run('clear'),scares);
  if(typeof anomalyDefinitions==='undefined')scares.hidden=true;
@@ -28,8 +32,8 @@
  const hour=select('Daylight time',days);for(const [n,label]of [[6,'Dawn · 06:00'],[12,'Noon · 12:00'],[18,'Dusk · 18:00'],[0,'Midnight · 00:00']])option(hour,String(n),label);
  button('Set daylight time',()=>run('time',{hour:Number(hour.value)}),days);if(typeof halloweenState==='function')button('Trigger Halloween midnight',()=>run('midnight'),days);
  el('small','','Story nights are 1–3. Changing daylight does not complete quests or advance their separate clocks.',days);
- const cheats=group('Session tools',controls),toggles={};for(const [key,label]of [['freezeSanity','Freeze sanity loss'],['infiniteStamina','Infinite stamina'],['freezeDaylight','Freeze daylight clock']]){const row=el('label','admin-toggle',label,cheats),input=document.createElement('input');input.type='checkbox';row.prepend(input);input.onchange=()=>run('toggle',{key,value:input.checked});toggles[key]=input;}
- el('small','','These toggles turn off when you lock the panel, the session expires, or the game reloads.',cheats);
+ const cheats=group('Session tools',controls),toggles={};for(const [key,label]of [['freezeSanity','Freeze sanity loss'],['infiniteStamina','Infinite stamina'],['freezeDaylight','Freeze daylight clock'],['fly','Fly / pass through walls']]){const row=el('label','admin-toggle',label,cheats),input=document.createElement('input');input.type='checkbox';row.prepend(input);input.onchange=()=>run('toggle',{key,value:input.checked});toggles[key]=input;}
+ el('small','','Flight: WASD move, Space rise, Ctrl descend, Shift move faster. Turning flight off returns you to your take-off point. Toggles turn off when you lock the panel, the session expires, or the game reloads.',cheats);
  gameScene.append(panel);
  const style=document.createElement('style');style.textContent=`
  #admin-panel[hidden],#admin-panel [hidden]{display:none!important}
@@ -49,7 +53,9 @@
  function select(label,parent){const l=el('label','',label,parent);return el('select','','',l);}
  function option(parent,value,label){const o=el('option','',label,parent);o.value=value;return o;}
  function number(label,min,max,value,parent){const l=el('label','',label,parent),i=el('input','','',l);i.type='number';i.min=String(min);i.max=String(max);i.step='1';i.value=String(value);return i;}
- function clearToggles(){for(const key of Object.keys(options)){options[key]=false;toggles[key].checked=false;}}
+ function stopFlight(){if(!takeoff)return;Object.assign(house,takeoff.house);s.room=takeoff.room;s.cityOpen=takeoff.city;house.jumpVelocity=0;house.keys={};takeoff=null;house.dirty=true;buildHouse();}
+ function revokePreview(){const week=eventBypass;eventBypass=null;if(week&&typeof releaseAccess!=='undefined'&&releaseAccess===week&&((week==='week2'&&eventTimeRemaining()>0)||(week==='week3'&&week3Remaining()>0))){house.keys={};house.x=0;house.z=2;house.jumpHeight=0;house.jumpVelocity=0;s.room='hall';releaseAccess='locked';buildHouse();showReleaseEvent();}}
+ function clearToggles(){stopFlight();revokePreview();for(const key of Object.keys(options)){options[key]=false;toggles[key].checked=false;}}
  function lock(){auth.lock();clearToggles();password.value='';feedback='Admin session locked.';updateView();if(!panel.hidden)password.focus();}
  function destinations(){
   const result=[];for(const id of ['hall','kitchen','bedroom','spare','garden','shed'])if(spawn[id])result.push({id,label:'House · '+rooms[id],p:spawn[id],y:0});
@@ -70,7 +76,7 @@
  function changed(){s.adminUsed=true;save();render();sanityDisplay();if(typeof halloweenDisplay==='function')halloweenDisplay();house.dirty=true;}
  function resume(){house.keys={};panel.hidden=true;close();}
  function setSanity(value){if(!Number.isFinite(value)||value<0||value>100)return reply(false,'Enter a sanity value from 0 to 100.');if(s.ending)return reply(false,'This run has ended. Start a new run before changing it.');sanityState();s.pendingSanity=0;const before=s.sanity;if(value>0&&s.sanityLost){s.sanityLost=false;$('overlay').classList.add('hidden');}if(value<before){const scale=typeof currentMode==='function'?currentMode().damage:1;originalDrain((before-value)/scale);}else s.sanity=value;if(value===0&&!s.sanityLost)sanityLoss();changed();return reply(true,'Sanity set to '+Math.round(s.sanity)+'%.');}
- function teleport(id){if(!ready())return reply(false,'Start / resume Week 1 first, or revive after sanity loss.');const d=destinations().find(d=>d.id===id);if(!d)return reply(false,'That destination is not available in this game mode.');
+ function teleport(id){if(options.fly){stopFlight();options.fly=false;toggles.fly.checked=false;}if(!ready())return reply(false,'Start / resume Week 1 first, or revive after sanity loss.');const d=destinations().find(d=>d.id===id);if(!d)return reply(false,'That destination is not available in this game mode.');
   const previous={x:house.x,z:house.z,a:house.a,y:house.jumpHeight,room:s.room,city:s.cityOpen};s.cityOpen=true;s.room=d.id==='extra_house'?'city':d.id;house.x=d.p[0];house.z=d.p[1];house.a=d.p[2];house.jumpHeight=d.y;house.jumpVelocity=0;house.pitch=0;house.pointer=null;house.keys={};buildHouse();
   let found=false;for(const [dx,dz]of [[0,0],[.5,0],[-.5,0],[0,.5],[0,-.5],[1,0],[-1,0],[0,1],[0,-1]])if(canWalk(d.p[0]+dx,d.p[1]+dz)){house.x=d.p[0]+dx;house.z=d.p[1]+dz;found=true;break;}
   if(!found){Object.assign(house,{x:previous.x,z:previous.z,a:previous.a,jumpHeight:previous.y});s.room=previous.room;s.cityOpen=previous.city;buildHouse();return reply(false,'No safe arrival point was found. Choose another destination.');}
@@ -80,14 +86,23 @@
   if(!auth.isAuthenticated()){clearToggles();return reply(false,'Sign in to use admin tools.');}auth.touch();
   if(action==='start'){
    if(s.ending)return reply(false,'This story has ended. Start a new run from the game menu.');if(s.sanityLost)return reply(false,'Use Full heal / revive first.');
-   if(typeof releaseAccess!=='undefined'&&releaseAccess==='locked'){if(!enterReleaseWeek('week1'))return reply(false,'Week 1 could not start.');}
+   if(data.week!==undefined){
+    if(!eventWeeks.includes(data.week))return reply(false,'That event is not included in this release.');
+    stopFlight();options.fly=false;toggles.fly.checked=false;
+    const previous=eventBypass;eventBypass=data.week;
+    if(!enterReleaseWeek(data.week)){eventBypass=previous;return reply(false,'That event could not start.');}
+   }else if(typeof releaseAccess!=='undefined'&&releaseAccess==='locked'){if(!enterReleaseWeek('week1'))return reply(false,'Week 1 could not start.');}
    s.started=true;changed();resume();return reply(true,'Admin tools are ready. Press F8 to reopen them.');
   }
   if(action==='sanity')return setSanity(data.value);
   if(action==='sanityDelta')return Number.isFinite(data.value)?setSanity(Math.max(0,Math.min(100,(s.sanity??100)+data.value))):reply(false,'Invalid sanity change.');
   if(action==='revive')return setSanity(100);
   if(action==='teleport')return teleport(data.place);
-  if(action==='toggle'){if(!Object.hasOwn(options,data.key)||typeof data.value!=='boolean')return reply(false,'Unknown session tool.');options[data.key]=data.value;changed();return reply(true,'Session tool '+(data.value?'enabled.':'disabled.'));}
+  if(action==='toggle'){if(!Object.hasOwn(options,data.key)||typeof data.value!=='boolean')return reply(false,'Unknown session tool.');if(data.key==='fly'){
+    if(data.value&&!ready())return reply(false,'Start / resume the game first, or revive after sanity loss.');
+    if(data.value&&!options.fly)takeoff={house:{x:house.x,z:house.z,a:house.a,jumpHeight:house.jumpHeight||0,pitch:house.pitch||0},room:s.room,city:s.cityOpen};
+    if(!data.value)stopFlight();
+   }options[data.key]=data.value;changed();return reply(true,'Session tool '+(data.value?'enabled.':'disabled.'));}
   if(!ready())return reply(false,'Start / resume the game first, or revive after sanity loss.');
   if(action==='spawn'){
    if(typeof anomalyDefinitions==='undefined')return reply(false,'This game version has no spawnable anomaly system.');
@@ -109,11 +124,17 @@
   if(action==='midnight'&&typeof halloweenState==='function'){const h=halloweenState();h.midnight=true;h.elapsed=Math.max(90,h.elapsed);changed();return reply(true,'Halloween midnight triggered. Quest requirements still apply.');}
   return reply(false,'Unknown admin action.');
  }
- async function dispatch(action,data={}){const allowed=await auth.authorize(action);if(!allowed.ok)return reply(false,allowed.message);try{return dispatchLocal(action,data);}catch{return reply(false,'The command could not be applied to this game state.');}}
+ async function dispatch(action,data={}){const allowed=await auth.authorize(action);if(!allowed.ok){auth.lock();clearToggles();return reply(false,allowed.message);}try{return dispatchLocal(action,data);}catch{return reply(false,'The command could not be applied to this game state.');}}
  async function run(action,data){const result=await dispatch(action,data);for(const [key,input]of Object.entries(toggles))input.checked=options[key];return result;}
+ const originalResetAdmin=reset;reset=function(){stopFlight();options.fly=false;toggles.fly.checked=false;return originalResetAdmin.apply(this,arguments);};
  const originalPaused=paused;paused=function(){return !panel.hidden||originalPaused();};
  const originalDrain=drainSanity;drainSanity=function(amount){if(options.freezeSanity&&auth.isAuthenticated())return;return originalDrain(amount);};
- const originalMovement=updateMovement;updateMovement=function(dt){const active=auth.isAuthenticated(),before=s.worldSeconds;originalMovement(dt);if(active&&options.infiniteStamina){house.stamina=100;house.sprintExhausted=false;}if(active&&options.freezeDaylight)s.worldSeconds=before;};
+ const originalMovement=updateMovement;updateMovement=function(dt){const active=auth.isAuthenticated(),before=s.worldSeconds;originalMovement(dt);if(active&&(options.infiniteStamina||options.fly)){house.stamina=100;house.sprintExhausted=false;}if(active&&options.fly)house.sprinting=!!house.keys.shift;if(active&&options.freezeDaylight)s.worldSeconds=before;};
+ const originalJump=updateJump;updateJump=function(dt){if(options.fly&&auth.isAuthenticated()){house.jumpVelocity=0;house.dirty=true;const direction=(house.keys[' ']?1:0)-(house.keys.control?1:0);house.jumpHeight=Math.max(-4,Math.min(40,(house.jumpHeight||0)+direction*(house.keys.shift?6:3)*Math.max(0,Math.min(.1,dt))));return;}return originalJump(dt);};
+ const originalWalk=canWalk;canWalk=function(x,z){if(options.fly&&auth.isAuthenticated())return Number.isFinite(x)&&Number.isFinite(z)&&Math.abs(x)<200&&Math.abs(z)<200;return originalWalk(x,z);};
+ window.addEventListener('keydown',event=>{if(event.key==='Control'&&options.fly&&auth.isAuthenticated()&&!paused()&&!/^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName||'')){house.keys.control=true;event.preventDefault();}});
+ window.addEventListener('keyup',event=>{if(event.key==='Control')delete house.keys.control;});
+ window.addEventListener('blur',()=>{house.keys={};});
  window.spareAdmin=Object.freeze({open,close:hide,lock,authenticate,isAuthenticated:auth.isAuthenticated,dispatch,status:()=>({...auth.status(),tools:{...options}})});
  window.addEventListener('offline',lock);
  document.addEventListener('keydown',event=>{
