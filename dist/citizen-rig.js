@@ -1,0 +1,22 @@
+/* A shared articulated silhouette keeps citizens, the player and event figures coherent. */
+function createCitizenRig(config={}){
+ const T=THREE,root=new T.Group(),torso=new T.Group(),head=new T.Group();root.name=config.name||'citizen-rig';torso.name='chest';root.add(torso);head.name='head';head.position.y=1.55;torso.add(head);
+ const wood=!!config.wood,coat=plainMaterial(config.coat||'#566461'),skin=plainMaterial(config.skin||(wood?'#bb9d73':'#bda185')),trousers=plainMaterial(config.trousers||'#354241'),shoe=plainMaterial('#282b2b'),hair=plainMaterial(config.hair||'#393632'),brass=plainMaterial('#ad8d57',.65),seam=plainMaterial(wood?'#67513b':'#283733');
+ const mesh=(parent,geo,mat,x,y,z)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);const small=geo.type==='SphereGeometry'&&geo.parameters.radius<.06||geo.type==='BoxGeometry'&&Math.max(geo.parameters.width,geo.parameters.height,geo.parameters.depth)<.18;m.castShadow=!small;m.receiveShadow=!small;parent.add(m);return m;},caps=(parent,r,len,mat,x,y,z)=>mesh(parent,new T.CapsuleGeometry(r,len,4,9),mat,x,y,z),box=(parent,x,y,z,w,h,d,mat)=>mesh(parent,new T.BoxGeometry(w,h,d),mat,x,y,z);
+ const body=caps(torso,.185,.35,wood?skin:coat,0,1.065,0);body.scale.z=.76;
+ const neck=caps(torso,.053,.085,skin,0,1.405,0);const skull=mesh(head,new T.SphereGeometry(.13,16,12),skin,0,.015,0);skull.scale.set(.96,1.18,.9);
+ if(!config.faceless){mesh(head,new T.SphereGeometry(.134,14,8,0,Math.PI*2,0,Math.PI*.54),hair,0,.06,-.012);for(const side of [-1,1]){mesh(head,new T.SphereGeometry(.013,7,6),seam,side*.047,.04,.108);mesh(head,new T.SphereGeometry(.025,8,6),skin,side*.124,.005,-.005);box(head,side*.047,.068,.11,.052,.009,.012,hair);}const nose=mesh(head,new T.ConeGeometry(.025,.068,6),skin,0,.002,.128);nose.rotation.x=Math.PI/2;box(head,0,-.049,.108,.047,.006,.012,seam);}
+ if(!wood){for(const side of [-1,1]){const lapel=box(torso,side*.083,1.29,.145,.095,.16,.018,seam);lapel.rotation.z=side*.25;box(torso,side*.119,1.035,.15,.098,.09,.013,coat);box(torso,side*.119,1.075,.16,.105,.014,.015,seam);}for(let i=0;i<4;i++)mesh(torso,new T.SphereGeometry(.013,6,5),brass,0,1.27-i*.105,.156);box(torso,0,.91,.151,.007,.22,.008,seam);}
+ const limbs=[],tracks=[];
+ for(const side of [-1,1]){
+  const prefix=side<0?'left':'right',hip=new T.Group(),knee=new T.Group(),arm=new T.Group(),elbow=new T.Group();hip.name=prefix+'Hip';knee.name=prefix+'Knee';arm.name=prefix+'Arm';elbow.name=prefix+'Elbow';hip.position.set(side*.105,.78,0);root.add(hip);caps(hip,.075,.23,wood?skin:trousers,0,-.18,0);knee.position.y=-.355;hip.add(knee);caps(knee,.058,.23,wood?skin:trousers,0,-.17,0);box(knee,0,-.365,.045,.145,.105,.26,wood?seam:shoe);box(knee,0,-.41,.045,.15,.025,.265,seam);
+  arm.position.set(side*.239,1.29,0);torso.add(arm);caps(arm,.055,.215,wood?skin:coat,0,-.16,0);elbow.position.y=-.3;arm.add(elbow);caps(elbow,.046,.19,wood?skin:coat,0,-.135,0);caps(elbow,.044,.035,skin,0,-.29,0);if(wood){for(const [joint,r]of [[hip,.057],[knee,.06],[arm,.053],[elbow,.047]])mesh(joint,new T.SphereGeometry(r,9,7),brass,0,0,0);}else box(elbow,0,-.235,.005,.098,.04,.1,seam);
+  limbs.push({side,hip,knee,arm,elbow});
+  tracks.push(new T.NumberKeyframeTrack(hip.name+'.rotation[x]',[0,.3,.6,.9,1.2],[0,.44*side,0,-.44*side,0]),new T.NumberKeyframeTrack(knee.name+'.rotation[x]',[0,.3,.6,.9,1.2],[.04,side<0?.58:.08,.04,side>0?.58:.08,.04]),new T.NumberKeyframeTrack(arm.name+'.rotation[x]',[0,.3,.6,.9,1.2],[0,-.32*side,0,.32*side,0]),new T.NumberKeyframeTrack(elbow.name+'.rotation[x]',[0,.6,1.2],[-.12,-.27,-.12]));
+ }
+ tracks.push(new T.NumberKeyframeTrack('chest.rotation[z]',[0,.3,.6,.9,1.2],[0,.022,0,-.022,0]));
+ const mixer=new T.AnimationMixer(root),action=mixer.clipAction(new T.AnimationClip('walk',1.2,tracks));action.play();
+ if(config.mask){const mask=mesh(head,new T.SphereGeometry(.126,14,10),plainMaterial('#d9ccb1'),0,.02,.06);mask.scale.set(1,1.23,.56);mask.name='event-mask';for(const side of [-1,1]){const eye=mesh(head,new T.SphereGeometry(.025,8,6),seam,side*.047,.05,.132);eye.scale.set(1,1.4,.3);}box(head,0,-.04,.13,.008,.052,.009,seam);}
+ if(config.cloak){const cloak=mesh(torso,new T.CylinderGeometry(.21,.34,1.03,14,1,true),coat,0,.84,-.025);cloak.name='cloak';cloak.scale.z=.82;for(let i=0;i<6;i++){const pleat=box(torso,(i-2.5)*.07,.68,.22,.012,.69,.018,seam);pleat.rotation.z=(i-2.5)*-.025;}}
+ return {root,torso,head,limbs,mixer,action};
+}
