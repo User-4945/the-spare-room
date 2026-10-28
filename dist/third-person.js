@@ -19,3 +19,5 @@ function applyPlayerCamera(e){if(!e.playerAvatar)e.playerAvatar=createPlayerAvat
  playerCamera.actualDistance=distance;e.camera.position.copy(p.head).addScaledVector(p.direction,distance);p.root.visible=distance>.65;e.camera.updateMatrixWorld(true);
 }
 const playerPreviousView=view;view=function(point){if(!playerCamera.third||!advancedEngine||advancedEngine.failed)return playerPreviousView(point);const v=new THREE.Vector3(point[0],point[1],-point[2]).applyMatrix4(advancedEngine.camera.matrixWorldInverse);return [v.x,v.y,-v.z];};
+
+const playerPreviousVisibility=visibleTo;visibleTo=function(target){if(!playerPreviousVisibility(target))return false;if(!playerCamera.third||!advancedEngine)return true;const c=advancedEngine.camera.position,start=[c.x,c.y,-c.z],distance=Math.hypot(target.p[0]-start[0],target.p[1]-start[1],target.p[2]-start[2]);for(let d=.1;d<distance-.35;d+=.1){const t=d/distance,x=start[0]+(target.p[0]-start[0])*t,y=start[1]+(target.p[1]-start[1])*t,z=start[2]+(target.p[2]-start[2])*t;if(house.solids.some(b=>y>b.y&&y<b.y+b.h&&Math.abs(x-b.x)<b.w/2&&Math.abs(z-b.z)<b.d/2))return false;}return true;};
