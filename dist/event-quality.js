@@ -6,7 +6,7 @@ function eventArtMaterials(e){
   for(let i=0;i<2000;i++){g.fillStyle='rgba(29,20,24,'+(.03+rand()*.12)+')';g.fillRect(rand()*256,rand()*256,kind==='cloth'?1:rand()*8+1,kind==='cloth'?rand()*18+1:1);}
   const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.anisotropy=4;e.textures['event-'+kind]=tex;return tex;
  }
- const palette={wood:{color:'#76604b',map:e.textures.wood},darkWood:{color:'#40332f',map:e.textures.wood},brass:{color:'#b09661',metalness:.67,roughness:.38},iron:{color:'#393c3d',metalness:.65,roughness:.6},stone:{color:'#aaa18a',map:e.textures.stone},cloth:{color:'#867184',map:fabric('cloth'),side:T.DoubleSide},paper:{color:'#d9c5a2'},wallpaper:{color:'#d3bec4',map:fabric('wallpaper')},wax:{color:'#ddd1ab'},glass:{color:'#a6b9b4',transparent:true,opacity:.18,depthWrite:false,roughness:.12},black:{color:'#29252d'},leather:{color:'#77563c',map:fabric('leather')}};
+ const palette={wood:{color:'#76604b',map:e.textures.wood},darkWood:{color:'#40332f',map:e.textures.wood},brass:{color:'#b09661',metalness:.67,roughness:.38},iron:{color:'#393c3d',metalness:.65,roughness:.6},stone:{color:'#aaa18a',map:e.textures.stone},damp:{color:'#788077',map:e.textures.stone},cloth:{color:'#867184',map:fabric('cloth'),side:T.DoubleSide},paper:{color:'#d9c5a2'},wallpaper:{color:'#d3bec4',map:fabric('wallpaper')},wax:{color:'#ddd1ab'},glass:{color:'#a6b9b4',transparent:true,opacity:.18,depthWrite:false,roughness:.12},black:{color:'#29252d'},leather:{color:'#77563c',map:fabric('leather')}};
  const out={};for(const [key,settings]of Object.entries(palette)){out[key]=new T.MeshStandardMaterial({roughness:.86,...settings});e.materials['event-'+key]=out[key];}e.eventArtMaterials=out;return out;
 }
 function eventArtMesh(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=!material.transparent;m.receiveShadow=true;parent.add(m);return m;}
@@ -37,11 +37,18 @@ function buildEventLocationArt(e){
   box('iron',53.35,.86,32,.56,.035,.29);eventArtTube(g,mat.iron,[[53.17,.9,32],[53.17,1.17,32],[53.48,1.17,32],[53.48,1.03,32]],.045);mesh(new T.TorusGeometry(.1,.014,6,16),'brass',53.13,1.08,32.02).rotation.y=Math.PI/2;for(let i=0;i<3;i++)mesh(new T.CylinderGeometry(.027,.027,.08,10),'cloth',53.7+i*.09,.93,32);
   for(const x of [53.4,58.5]){box('paper',x,-2.326,35.5,.59,.008,.39);for(let i=0;i<4;i++)box('leather',x-.6+i*.15,-3.15,35.92,.12,.53,.5);}
   for(const x of [51,61])eventArtTube(g,mat.iron,[[x,-.4,28.4],[x,-.4,37.5],[56,-.4,37.5]],.035);
+  box('damp',56,-3.18,37.86,11.6,2.7,.025);box('darkWood',56,-3.17,37.83,11.6,.55,.035);for(let i=0;i<9;i++)box('damp',51+i*1.2,-2.9,37.807,.04,.6+(i%3)*.23,.009);
+  for(const side of [-1,1])box('iron',56+side*.3,-3.15,37.62,.045,2.7,.045);for(let y=-2.95;y<-.45;y+=.3)box('brass',56,y,37.6,.64,.035,.045);
+  for(const x of [54.5,57.7]){eventArtTube(g,mat.iron,[[x,-.35,37.4],[x,-.65,37.4]],.008);const shroud=mesh(new T.CylinderGeometry(.11,.28,1.15,14,1,true),'cloth',x,-1.27,37.4);shroud.scale.z=.53;for(let i=0;i<4;i++)box('paper',x+(i-1.5)*.06,-1.8,37.22,.008,.95,.01);}
+  for(const r of [.66,.87]){const chalk=mesh(new T.TorusGeometry(r,.008,4,48),'paper',56,-3.065,35.2);chalk.rotation.x=Math.PI/2;}
+  const warning=engineLabel(g,['ALTERATIONS','RETURN WHAT YOU BORROWED'],56,-1.14,37.72,1.5,.39,{bg:'#342d2b',fg:'#d6c6a5',border:'#99794e',font:'Georgia'});warning.rotation.y=Math.PI;
+
   if(week2State().extraHouse){for(const x of [51.12,60.88])box('stone',x,.1,55,.06,.5,9.8);for(const side of [-1,1]){const x=56+side*3;box('darkWood',x,1,49.74,1.42,1.53,.08);box('glass',x,1.1,49.68,1.2,1.3,.02);box('wood',x,1.75,49.65,1.23,.045,.05);box('wood',x,1.08,49.65,.045,1.36,.05);}box('wood',56,2.53,49.68,1.82,.12,.2);}
  }
  if(third){
   // The Final House has rooms with panelled walls, picture rails and memory displays.
   for(const x of [70.15,89.85]){box('wallpaper',x,1.02,-20,.025,1.9,19.6);box('wood',x,.12,-20,.07,.85,19.6);box('brass',x,.99,-20,.09,.025,19.6);}for(const z of [-10.15,-29.85]){box('wallpaper',80,1.02,z,19.6,1.9,.025);box('wood',80,.12,z,19.6,.85,.07);box('brass',80,.99,z,19.6,.025,.09);}
+  for(const x of [77,83])for(const [z,d]of [[-12.5,5],[-20,4],[-27,6]])for(const side of [-1,1]){box('wood',x+side*.086,.1,z,.018,.8,d-.1);box('brass',x+side*.103,.9,z,.023,.025,d-.1);box('wallpaper',x+side*.081,1,z,.012,1.85,d-.1);}
   for(const x of [77,83])for(const z of [-15.6,-22.8]){for(const side of [-1,1])box('darkWood',x,0,z+side*1.15,.25,2.8,.1);box('wood',x,2.72,z,.25,.12,2.4);}
   for(const [x,z]of [[74,-17],[86,-17],[74,-24]]){box('cloth',x,.115,z-1.1,3.8,.008,2.8);for(const dx of [-1.2,1.2])box('brass',x+dx,.18,z,.035,.69,1.12);box('glass',x,.9,z,2.5,.52,1.05);box('darkWood',x,1.41,z,2.6,.035,1.13);box('paper',x,.92,z,.59,.014,.4);}
   eventArtMask(g,mat,86,1.1,-17,.75);eventArtLantern(g,mat,74,.92,-17,.7);
@@ -50,7 +57,7 @@ function buildEventLocationArt(e){
   // Suitcase straps, rounded handle, rivets and metal clasps.
   box('leather',80,.12,-27,1.32,.65,.54);for(const side of [-1,1]){box('darkWood',80+side*.42,.15,-26.716,.085,.58,.014);box('brass',80+side*.42,.44,-26.7,.12,.09,.015);for(const z of [-26.73,-27.27])box('brass',80+side*.61,.18,z,.045,.05,.025);}eventArtTube(g,mat.leather,[[79.8,.77,-27],[79.83,.87,-27],[80.17,.87,-27],[80.2,.77,-27]],.022);
   // Clock has a cream dial and real raised hour markers; hands animate in the pool.
-  mesh(new T.CircleGeometry(.19,32),'paper',80,2.2,-24.254).rotation.y=Math.PI;for(let i=0;i<12;i++){const a=i*Math.PI/6,m=box('brass',80+Math.sin(a)*.157,2.2+Math.cos(a)*.157,-24.263,.013,.035,.014);m.rotation.z=-a;}
+  box('darkWood',80,.12,-24,.69,.12,.54);box('darkWood',80,2.48,-24,.72,.1,.56);box('darkWood',80,.65,-23.778,.43,1.16,.025);box('glass',80,.67,-23.748,.36,1.12,.014);for(const side of [-1,1])box('brass',80+side*.235,.63,-23.74,.025,1.2,.025);mesh(new T.CircleGeometry(.205,32),'brass',80,2.2,-23.756);mesh(new T.CircleGeometry(.183,32),'paper',80,2.2,-23.75);for(let i=0;i<12;i++){const a=i*Math.PI/6,m=box('brass',80+Math.sin(a)*.157,2.2+Math.cos(a)*.157,-23.73,.013,.035,.014);m.rotation.z=-a;}
  }
  batchEventArt(g);return g;
 }
@@ -59,7 +66,7 @@ function createEventPerformanceArt(e){
  const T=THREE,mat=eventArtMaterials(e),root=new T.Group();root.name='event-performance-pool';e.scene.add(root);const lanterns=[],rigs=[],ribbons=[];
  for(const [x,y,z]of [[1.4,.12,8.5],[2.6,.12,8.5],[51,.18,29],[61,.18,29],[55.2,-3.1,34],[74,.92,-24]]){const l=eventArtLantern(root,mat,x,y,z,.8);l.week=x>70?3:x>45?2:1;lanterns.push(l);}
  const ribbonMat=new T.MeshStandardMaterial({color:'#b89570',roughness:.9,side:T.DoubleSide});for(let i=0;i<3;i++){const r=eventArtMesh(root,new T.PlaneGeometry(.07,.42),ribbonMat,1.9+i*.07,1.05,8.43);ribbons.push(r);}
- const clock=new T.Group();clock.position.set(80,2.2,-24.28);clock.rotation.y=Math.PI;root.add(clock);const hands=[];for(const [length,width]of [[.12,.018],[.16,.012]]){const pivot=new T.Group();clock.add(pivot);eventArtBox(pivot,mat.black,0,0,.003,width,length,.012);hands.push(pivot);}const pendulum=new T.Group();pendulum.position.set(80,1.85,-24.28);root.add(pendulum);eventArtBox(pendulum,mat.brass,0,-1,0,.014,1,.014);eventArtMesh(pendulum,new T.SphereGeometry(.075,12,8),mat.brass,0,-.9,0);
+ const clock=new T.Group();clock.position.set(80,2.2,-23.716);root.add(clock);const hands=[];for(const [length,width]of [[.12,.018],[.16,.012]]){const pivot=new T.Group();clock.add(pivot);eventArtBox(pivot,mat.black,0,0,.003,width,length,.012);hands.push(pivot);}const pendulum=new T.Group();pendulum.position.set(80,1.85,-23.712);root.add(pendulum);eventArtBox(pendulum,mat.brass,0,-1,0,.014,1,.014);eventArtMesh(pendulum,new T.SphereGeometry(.075,12,8),mat.brass,0,-.9,0);
  const dustPositions=new Float32Array(64*3),dustGeometry=new T.BufferGeometry();dustGeometry.setAttribute('position',new T.BufferAttribute(dustPositions,3));const dust=new T.Points(dustGeometry,new T.PointsMaterial({color:'#edc293',size:.025,transparent:true,opacity:.4,depthWrite:false}));root.add(dust);
  return {root,lanterns,rigs,ribbons,clock,hands,pendulum,dust,dustPositions,upgraded:false,week2Upgraded:false};
 }
@@ -69,7 +76,7 @@ function upgradeEventFigures(e,pool){const T=THREE;
   for(const child of w.parade.children)child.visible=false;for(let i=0;i<3;i++){const rig=createCitizenRig({name:'following-neighbour-'+i,coat:i%2?'#4a3b49':'#282b32',faceless:true,mask:true,cloak:true});rig.root.position.x=(i-1)*.72;w.parade.add(rig.root);pool.rigs.push({rig,type:'following'});}
   // A continuous soft-edged silhouette replaces the rectangular detached shadow.
   for(const child of w.shadow.children)child.visible=false;const c=document.createElement('canvas');c.width=128;c.height=256;const g=c.getContext('2d');g.fillStyle='#090710';g.shadowColor='#090710';g.shadowBlur=7;g.beginPath();g.ellipse(64,34,15,20,0,0,Math.PI*2);g.ellipse(64,103,24,52,0,0,Math.PI*2);g.fill();g.lineWidth=16;g.lineCap='round';for(const side of [-1,1]){g.beginPath();g.moveTo(64+side*17,70);g.lineTo(64+side*36,139);g.moveTo(64+side*12,142);g.lineTo(64+side*20,232);g.stroke();}const tex=new T.CanvasTexture(c),m=new T.MeshBasicMaterial({map:tex,transparent:true,opacity:.62,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1});const shadow=eventArtMesh(w.shadow,new T.PlaneGeometry(.9,2.5),m,0,.012,.3);shadow.rotation.x=-Math.PI/2;pool.detachedShadow=shadow;
-  const oldFace=w.face,faceRoot=new T.Group();faceRoot.position.copy(oldFace.position);oldFace.parent.add(faceRoot);oldFace.visible=false;w.face=faceRoot;eventArtMask(faceRoot,eventArtMaterials(e),0,0,0,.85);
+  const oldFace=w.face,faceRoot=new T.Group();faceRoot.position.copy(oldFace.position);oldFace.parent.add(faceRoot);oldFace.visible=false;w.face=faceRoot;faceRoot.rotation.y=Math.PI;eventArtMask(faceRoot,eventArtMaterials(e),0,0,0,.85);
   const knocker=new T.Group();w.bell.add(knocker);knocker.position.set(0,1.3,.12);eventArtMesh(knocker,new T.TorusGeometry(.09,.014,7,18),eventArtMaterials(e).brass,0,0,0);pool.knocker=knocker;pool.week2Upgraded=true;
  }
  if(e.anomalies&&!pool.watcher){const old=e.anomalies.groups.watcher;for(const c of old.children)c.visible=false;const rig=createCitizenRig({name:'the-waiting-figure',coat:'#24252a',skin:'#b9b6a7',faceless:true,cloak:true});rig.root.scale.set(.88,1.13,.85);old.add(rig.root);pool.watcher=rig;}
