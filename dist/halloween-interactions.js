@@ -4,16 +4,25 @@ let interactionHold=null,interactionPointerDown=false,interactionKeyDown=false,i
 const actionCopy=document.createElement('span');actionCopy.className='action-copy';
 const actionHelp=document.createElement('span');actionHelp.className='action-help';actionHelp.textContent='HOLD E / HOLD CLICK';
 actionCopy.append(actionLabel,actionHelp);actionPrompt.replaceChildren(actionKey,actionCopy);
-actionPrompt.setAttribute('aria-description','Move close and aim at an object. Hold E or hold the pointer for three quarters of a second. Release to cancel.');
+actionPrompt.setAttribute('aria-description','Move close to a visible object. Hold E or hold the pointer for three quarters of a second. Release to cancel.');
 function holdIdentity(t){return t?String(t.id||t.name)+'|'+String(t.event||'')+'|'+interactionAction(t):'';}
 function paintInteractionProgress(value){actionKey.style.setProperty?.('--hold-progress',(Math.max(0,Math.min(1,value))*360)+'deg');actionPrompt.classList.toggle('holding',value>0);}
 function cancelInteractionHold(){interactionHold=null;paintInteractionProgress(0);}
 function validHoldTarget(t){return !!t&&Array.isArray(t.p)&&Math.hypot(t.p[0]-house.x,t.p[2]-house.z)<=HALLOWEEN_INTERACT_REACH&&Math.abs(t.p[1]-(1.55+(house.jumpHeight||0)))<=1.9&&visibleTo(t);}
+// Proximity supplies a target even when the cursor misses the small outline.
+function nearbyInteractionTarget(aimed){
+ const facing=t=>{if(!validHoldTarget(t))return false;const dx=t.p[0]-house.x,dz=t.p[2]-house.z,d=Math.hypot(dx,dz);return d<.35||(dx*Math.sin(house.a)+dz*Math.cos(house.a))/d>.05;};
+ if(aimed&&facing(aimed))return aimed;
+ const nearby=targets().filter(facing);
+ if(interactionHold){const held=nearby.find(t=>holdIdentity(t)===interactionHold.key);if(held)return held;}
+ return nearby.sort((a,b)=>Math.hypot(a.p[0]-house.x,a.p[2]-house.z)-Math.hypot(b.p[0]-house.x,b.p[2]-house.z)||holdIdentity(a).localeCompare(holdIdentity(b)))[0]||null;
+}
 const halloweenPromptUpdate=updateActionPrompt;
 updateActionPrompt=function(){
- if(!validHoldTarget(house.target))house.target=null;
+ house.target=nearbyInteractionTarget(house.target);
  halloweenPromptUpdate();
  if(actionPrompt.hidden){cancelInteractionHold();return;}
+ const cross=document.getElementById('crosshair');if(cross)cross.classList.toggle('ready',true);
  actionKey.textContent='E';actionHelp.textContent=document.body.classList.contains('touch-game')?'HOLD TO INTERACT':'HOLD E / HOLD CLICK';
  actionPrompt.setAttribute('aria-label',interactionAction(house.target)+'. Hold E or hold click to complete.');
  if(interactionHold&&interactionHold.key!==holdIdentity(house.target))cancelInteractionHold();

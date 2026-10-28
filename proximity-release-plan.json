@@ -1,0 +1,65 @@
+[
+  {
+    "tag": "v.2.7.5",
+    "id": 426674255,
+    "version": "2.7.5",
+    "ref": "9cc65b564f8b2f06c4fb0a5afb7cce678a5bf811",
+    "prerelease": true,
+    "assets": [
+      "linux-BUILD.json",
+      "mac-BUILD.json",
+      "RELEASE_NOTES.md",
+      "SHA256SUMS.txt",
+      "The-Spare-Room-2.7.5-linux-x64.AppImage",
+      "The-Spare-Room-2.7.5-linux-x64.deb",
+      "The-Spare-Room-2.7.5-mac-universal.dmg",
+      "The-Spare-Room-Setup-2.7.5-x64.exe",
+      "The-Spare-Room-v2.7.5-desktop-source.zip",
+      "The-Spare-Room-v2.7.5-installable-web.zip",
+      "The-Spare-Room-v2.7.5-web.zip",
+      "win-BUILD.json"
+    ]
+  },
+  {
+    "tag": "v2.6.5",
+    "id": 422913580,
+    "version": "2.6.5",
+    "ref": "e03fa25410b20f59428d722bc1f5ab80ccc94b39",
+    "prerelease": true,
+    "assets": [
+      "linux-BUILD.json",
+      "mac-BUILD.json",
+      "RELEASE_NOTES.md",
+      "SHA256SUMS.txt",
+      "The-Spare-Room-2.6.5-linux-x64.AppImage",
+      "The-Spare-Room-2.6.5-linux-x64.deb",
+      "The-Spare-Room-2.6.5-mac-universal.dmg",
+      "The-Spare-Room-Setup-2.6.5-x64.exe",
+      "The-Spare-Room-v2.6.5-desktop-source.zip",
+      "The-Spare-Room-v2.6.5-installable-web.zip",
+      "The-Spare-Room-v2.6.5-web.zip",
+      "win-BUILD.json"
+    ]
+  },
+  {
+    "tag": "v.2.5.0",
+    "id": 421814321,
+    "version": "2.5.0",
+    "ref": "25212ffdb3bdaf8596c42b12c05a4b033b665843",
+    "prerelease": false,
+    "assets": [
+      "linux-BUILD.json",
+      "mac-BUILD.json",
+      "RELEASE_NOTES.md",
+      "SHA256SUMS.txt",
+      "The-Spare-Room-2.5.0-linux-x64.AppImage",
+      "The-Spare-Room-2.5.0-linux-x64.deb",
+      "The-Spare-Room-2.5.0-mac-universal.dmg",
+      "The-Spare-Room-Setup-2.5.0-x64.exe",
+      "The-Spare-Room-v2.5.0-desktop-source.zip",
+      "The-Spare-Room-v2.5.0-installable-web.zip",
+      "The-Spare-Room-v2.5.0-web.zip",
+      "win-BUILD.json"
+    ]
+  }
+]

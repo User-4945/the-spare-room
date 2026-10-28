@@ -49,7 +49,14 @@ function buildEventLocationArt(e){
   // The Final House has rooms with panelled walls, picture rails and memory displays.
   for(const x of [70.15,89.85]){box('wallpaper',x,1.02,-20,.025,1.9,19.6);box('wood',x,.12,-20,.07,.85,19.6);box('brass',x,.99,-20,.09,.025,19.6);}for(const z of [-10.15,-29.85]){box('wallpaper',80,1.02,z,19.6,1.9,.025);box('wood',80,.12,z,19.6,.85,.07);box('brass',80,.99,z,19.6,.025,.09);}
   for(const x of [77,83])for(const [z,d]of [[-12.5,5],[-20,4],[-27,6]])for(const side of [-1,1]){box('wood',x+side*.086,.1,z,.018,.8,d-.1);box('brass',x+side*.103,.9,z,.023,.025,d-.1);box('wallpaper',x+side*.081,1,z,.012,1.85,d-.1);}
-  for(const x of [77,83])for(const z of [-15.6,-22.8]){for(const side of [-1,1])box('darkWood',x,0,z+side*1.15,.25,2.8,.1);box('wood',x,2.72,z,.25,.12,2.4);}
+  // Frames share the structural opening dimensions; jambs sit over wall ends.
+  g.userData.memoryDoorFrames=[];
+  for(const x of [77,83])for(const d of week3DoorwayLayout()){
+   for(const z of [d.start-d.trim/2,d.end+d.trim/2])box('darkWood',x,d.base,-z,.26,d.head+d.trim/2-d.base,d.trim);
+   box('wood',x,d.head-d.trim/2,-d.center,.26,d.trim,d.width+2*d.trim);
+   for(const side of [-1,1])box('wallpaper',x+side*.081,d.head+d.trim/2,-d.center,.012,2.85-d.head-d.trim/2,d.width);
+   g.userData.memoryDoorFrames.push({x,start:d.start,end:d.end,center:d.center,width:d.width,head:d.head});
+  }
   for(const [x,z]of [[74,-17],[86,-17],[74,-24]]){box('cloth',x,.115,z-1.1,3.8,.008,2.8);for(const dx of [-1.2,1.2])box('brass',x+dx,.18,z,.035,.69,1.12);box('glass',x,.9,z,2.5,.52,1.05);box('darkWood',x,1.41,z,2.6,.035,1.13);box('paper',x,.92,z,.59,.014,.4);}
   eventArtMask(g,mat,86,1.1,-17,.75);eventArtLantern(g,mat,74,.92,-17,.7);
   // Open journal: folded pages, stitched binding and faint ruled lines.
