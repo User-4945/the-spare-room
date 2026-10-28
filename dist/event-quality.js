@@ -71,7 +71,7 @@ function createEventPerformanceArt(e){
  return {root,lanterns,rigs,ribbons,clock,hands,pendulum,dust,dustPositions,upgraded:false,week2Upgraded:false};
 }
 function upgradeEventFigures(e,pool){const T=THREE;
- if(e.halloween&&!pool.upgraded){const h=e.halloween;for(const old of [h.guest,...h.walkers]){for(const child of old.children)child.visible=false;const rig=createCitizenRig({name:'masked-procession',coat:'#302736',faceless:true,mask:true,cloak:true});old.add(rig.root);pool.rigs.push({rig,type:'procession'});}pool.upgraded=true;}
+ if(e.halloween&&!pool.upgraded){const h=e.halloween;for(const old of [h.guest,...h.walkers]){for(const child of old.children)child.visible=false;const rig=createCitizenRig({name:'masked-procession',coat:'#302736',faceless:true,mask:true,cloak:true});old.add(rig.root);pool.rigs.push({rig,type:old===h.guest?'guest':'procession',carrier:old});}pool.upgraded=true;}
  if(e.week2&&!pool.week2Upgraded){const w=e.week2;for(const child of w.mannequin.children)child.visible=false;const mannequin=createCitizenRig({name:'jointed-wooden-mannequin',wood:true,faceless:true});w.mannequin.add(mannequin.root);pool.mannequin=mannequin;
   for(const child of w.parade.children)child.visible=false;for(let i=0;i<3;i++){const rig=createCitizenRig({name:'following-neighbour-'+i,coat:i%2?'#4a3b49':'#282b32',faceless:true,mask:true,cloak:true});rig.root.position.x=(i-1)*.72;w.parade.add(rig.root);pool.rigs.push({rig,type:'following'});}
   // A continuous soft-edged silhouette replaces the rectangular detached shadow.
@@ -81,10 +81,41 @@ function upgradeEventFigures(e,pool){const T=THREE;
  }
  if(e.anomalies&&!pool.watcher){const old=e.anomalies.groups.watcher;for(const c of old.children)c.visible=false;const rig=createCitizenRig({name:'the-waiting-figure',coat:'#24252a',skin:'#b9b6a7',faceless:true,cloak:true});rig.root.scale.set(.88,1.13,.85);old.add(rig.root);pool.watcher=rig;}
 }
-const eventArtPreviousVisuals=updateAnomalyVisuals;updateAnomalyVisuals=function(e){eventArtPreviousVisuals(e);const q=e.eventPerformance||(e.eventPerformance=createEventPerformanceArt(e));upgradeEventFigures(e,q);const active3=typeof week3Active==='function'&&week3Active(),active2=typeof week2WorldActive==='function'&&week2WorldActive(),time=s.worldSeconds||0,dt=paused()?0:Math.min(.08,Math.max(0,time-(q.lastTime??time)));q.lastTime=time;
+// Collision checks do not use canWalk: admin flight must not make the procession noclip.
+function processionOutdoors(x,z){
+ if(!Number.isFinite(x)||!Number.isFinite(z)||x< -45||x>64||z< -89||z>=-.2)return false;
+ if(x< -4&&x> -8.8&&z< -5&&z> -10.8)return false;
+ if(x>50&&x<62&&z> -38&&z< -28||x>51&&x<61&&z> -60&&z< -50)return false;
+ return !cityWorld().some(c=>Math.abs(x-c.x)<5.3&&z>c.z-6.3&&z<c.z+4.5);
+}
+function processionClear(x,z){
+ if(!processionOutdoors(x,z))return false;const floor=supportAt(x,z);if(!Number.isFinite(floor)||floor>.45||floor<-.3)return false;
+ return !house.solids.some(b=>Math.abs(x-b.x)<b.w/2+.24&&Math.abs(z-b.z)<b.d/2+.24&&floor<b.y+b.h-.02&&floor+1.78>b.y);
+}
+function processionSweep(a,b){const n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.z-a.z)/.12));for(let i=0;i<=n;i++)if(!processionClear(a.x+(b.x-a.x)*i/n,a.z+(b.z-a.z)*i/n))return false;return true;}
+function processionTrailPoint(path,d){if(!path.length||d<path[0].d)return null;if(d>=path.at(-1).d){const p=path.at(-1);return {x:p.x,z:p.z};}let low=1,high=path.length-1;while(low<high){const mid=(low+high)>>1;if(path[mid].d<d)low=mid+1;else high=mid;}const a=path[low-1],b=path[low],t=(d-a.d)/Math.max(.00001,b.d-a.d);return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t};}
+function processionHeading(entry,target,dt){if(entry.heading===undefined)entry.heading=target;else{const angle=Math.atan2(Math.sin(target-entry.heading),Math.cos(target-entry.heading));entry.heading+=Math.max(-dt*4,Math.min(dt*4,angle));}return entry.heading;}
+function processionRoutePoint(station,d){const top=station.z+9,bottom=top-18,corners=[[-43,top],[43,top],[43,bottom],[-43,bottom]],perimeter=208;let distance=((station.x+43+d)%perimeter+perimeter)%perimeter;for(let i=0;i<4;i++){const a=corners[i],b=corners[(i+1)%4],length=Math.hypot(b[0]-a[0],b[1]-a[1]);if(distance<=length){const t=distance/length;return {x:a[0]+(b[0]-a[0])*t,z:a[1]+(b[1]-a[1])*t,yaw:Math.atan2(b[0]-a[0],-(b[1]-a[1]))};}distance-=length;}}
+function poseProcessionRig(rig,dt,speed){rig.action.setEffectiveWeight(Math.min(1,speed/.5));rig.action.timeScale=speed>0?speed/1.5:0;rig.mixer.update(dt);rig.head.rotation.z=0;}
+function updateProcessionMotion(e,q,dt){
+ const first=typeof releaseAccess==='undefined'||releaseAccess==='week1',second=typeof week2Active==='function'&&week2Active(),h=halloweenState();
+ if(e.halloween){const pool=e.halloween,station=cityWorld().find(c=>c.id==='station');pool.parade.position.set(0,0,0);pool.parade.rotation.set(0,0,0);pool.parade.visible=first&&pool.parade.visible;
+  for(let i=0;i<pool.walkers.length;i++){const carrier=pool.walkers[i],entry=q.rigs.find(r=>r.carrier===carrier);if(!entry)continue;const p=processionRoutePoint(station,Math.max(0,h.elapsed-90)*.85-i*1.2);carrier.visible=!!p&&processionClear(p.x,p.z);if(carrier.visible){carrier.position.set(p.x,supportAt(p.x,p.z),-p.z);carrier.rotation.set(0,processionHeading(entry,p.yaw,dt),0);}poseProcessionRig(entry.rig,dt,pool.parade.visible&&carrier.visible?.85:0);}
+ }
+ for(const entry of q.rigs.filter(r=>r.type==='guest'))poseProcessionRig(entry.rig,dt,0);
+ if(!e.week2)return;const parade=e.week2.parade,w=week2State(),eligible=second&&!!w.mask&&w.worn>=45&&!s.ending&&!s.sanityLost&&(house.jumpHeight||0)<1.5&&processionOutdoors(house.x,house.z);parade.position.set(0,0,0);parade.rotation.set(0,0,0);
+ if(!eligible){parade.visible=false;q.followTrail=null;for(const entry of q.rigs.filter(r=>r.type==='following')){entry.rig.root.visible=false;entry.progress=null;poseProcessionRig(entry.rig,dt,0);}return;}
+ let trail=q.followTrail,last=trail?.at(-1);if(!trail||last&&Math.hypot(last.x-house.x,last.z-house.z)>2){trail=[];const far={x:house.x-Math.sin(house.a)*6.2,z:house.z-Math.cos(house.a)*6.2},near={x:house.x,z:house.z};if(processionSweep(far,near)){for(let d=0;d<6.2;d+=.2)trail.push({x:far.x+Math.sin(house.a)*d,z:far.z+Math.cos(house.a)*d,d});trail.push({...near,d:6.2});}else trail.push({...near,d:0});q.followTrail=trail;for(const entry of q.rigs.filter(r=>r.type==='following'))entry.progress=null;last=trail.at(-1);}
+ const moved=Math.hypot(house.x-last.x,house.z-last.z);if(moved>=.015){if(!processionSweep(last,{x:house.x,z:house.z})){q.followTrail=null;parade.visible=false;return;}trail.push({x:house.x,z:house.z,d:last.d+moved});last=trail.at(-1);}
+ while(trail.length>2&&trail[1].d<last.d-20)trail.shift();let visible=0;
+ q.rigs.filter(r=>r.type==='following').forEach((entry,i)=>{const desired=last.d-3.2-i*1.15,rig=entry.rig;if(desired<trail[0].d){rig.root.visible=false;return;}const before=entry.progress??desired,next=Math.min(desired,before+dt*2.65),point=processionTrailPoint(trail,next),previous=processionTrailPoint(trail,before);if(!point||!previous||!processionSweep(previous,point)){rig.root.visible=false;return;}entry.progress=next;rig.root.visible=true;visible++;rig.root.position.set(point.x,supportAt(point.x,point.z),-point.z);const ahead=processionTrailPoint(trail,Math.min(last.d,next+.12));if(ahead&&Math.hypot(ahead.x-point.x,ahead.z-point.z)>.001)rig.root.rotation.y=processionHeading(entry,Math.atan2(ahead.x-point.x,-(ahead.z-point.z)),dt);poseProcessionRig(rig,dt,dt>0?Math.max(0,next-before)/dt:0);});
+ parade.visible=visible>0;
+}
+
+const eventArtPreviousVisuals=updateAnomalyVisuals;updateAnomalyVisuals=function(e){eventArtPreviousVisuals(e);const q=e.eventPerformance||(e.eventPerformance=createEventPerformanceArt(e));upgradeEventFigures(e,q);const active3=typeof week3Active==='function'&&week3Active(),active2=typeof week2WorldActive==='function'&&week2WorldActive(),time=s.worldSeconds||0,motionTime=citizenMotionClock,dt=paused()?0:Math.min(.08,Math.max(0,motionTime-(q.lastTime??motionTime)));q.lastTime=motionTime;
  q.root.visible=!s.ending&&!s.sanityLost;for(const l of q.lanterns){l.root.visible=l.week===1||l.week===2&&active2||l.week===3&&active3;l.flame.scale.y=1.8+Math.sin(time*2.2+l.root.position.x)*.12;l.flame.material.emissiveIntensity=1.8+Math.sin(time*1.7)*.18;}
  q.ribbons.forEach((r,i)=>{r.rotation.z=Math.sin(time*.7+i)*.12;r.rotation.x=Math.sin(time*.5+i)*.08;});q.clock.visible=q.pendulum.visible=active3;q.hands[0].rotation.z=-time*.008;q.hands[1].rotation.z=-time*.09;q.pendulum.rotation.z=Math.sin(time*2.1)*.12;
- for(const {rig,type}of q.rigs){rig.action.timeScale=type==='following'?.45:.65;rig.mixer.update(dt);rig.head.rotation.z=Math.sin(time*.5)*.025;}
+ updateProcessionMotion(e,q,dt);
  if(q.mannequin){q.mannequin.action.setEffectiveWeight(0);q.mannequin.mixer.update(0);if(q.mannequinIndex!==week2State().mannequin){q.mannequinIndex=week2State().mannequin;q.mannequinYaw=e.week2.mannequin.rotation.y;q.mannequin.head.rotation.y=.13*(q.mannequinIndex-1);}e.week2.mannequin.rotation.y=q.mannequinYaw;q.mannequin.limbs.forEach(l=>{l.elbow.rotation.x=-.12;l.arm.rotation.z=l.side*.035;});}
  if(q.detachedShadow){const sh=week2Runtime.shadow;q.detachedShadow.material.opacity=sh?Math.max(0,.65*(1-sh.time/3)):0;q.detachedShadow.scale.x=1+Math.sin((sh?.time||0)*3)*.025;}
  if(q.knocker)q.knocker.rotation.x=Math.sin((week2Runtime.effect?.time||0)*8)*.15;
