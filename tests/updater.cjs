@@ -69,3 +69,21 @@ test('macOS and Linux select their own downloads and never execute a Windows ins
   await f.service.install();assert.equal(f.installs,0);assert.equal(f.downloads,0);assert.equal(f.service.state().phase,'fallback');
  }
 });
+test('same-version refreshes use a strictly newer revision, install once and retain notes',async t=>{
+ const f=fixture(t,{version:'2.0.0',tag:'v.2.0.0',revision:100});const r=release();r.assets.push({id:30,name:'BUILD-REFRESH.json',state:'uploaded',size:140});
+ f.transport.json=async()=>r;let revision=101;f.transport.text=async()=>JSON.stringify({schema:1,version:'2.0.0',tag:r.tag_name,release_id:r.id,revision});
+ await f.service.check(true);assert.equal(f.service.state().release.refresh,true);assert.equal(f.service.state().release.revision,101);await f.service.install();assert.equal(f.installs,1);
+ const updated=new UpdateService({...f.options,revision:101});assert.equal(updated.state().notes.body,r.body);await updated.check(true);assert.equal(updated.state().phase,'current');
+ revision=99;await updated.check(true);assert.equal(updated.state().phase,'current');revision=102;await updated.check(true);assert.equal(updated.state().release.revision,102);
+});
+test('installed prerelease refresh is allowed when opted out without accepting other prereleases or downgrades',async t=>{
+ const f=fixture(t,{version:'2.7.5',tag:'v.2.7.5',revision:10,prerelease:true});const own={...release('2.7.5'),prerelease:true};own.assets.push({id:30,name:'BUILD-REFRESH.json',state:'uploaded',size:150});const urls=[];
+ f.transport.json=async url=>{urls.push(url);return url.endsWith('/latest')?release('2.5.0'):own};f.transport.text=async()=>JSON.stringify({schema:1,version:'2.7.5',tag:own.tag_name,release_id:own.id,revision:11});
+ await f.service.check(true);assert.equal(f.service.state().release.version,'2.7.5');assert.equal(f.service.state().release.refresh,true);assert.deepEqual(urls,[API+'/releases/latest',API+'/releases/tags/v.2.7.5']);assert.equal(f.service.saved.allowPrereleases,false);
+ f.transport.text=async()=>JSON.stringify({schema:1,version:'2.7.5',tag:own.tag_name,release_id:999,revision:12});await f.service.check(true);assert.equal(f.service.state().phase,'error');assert.equal(f.service.candidate,null);
+});
+test('replaced refresh revision requires another review before execution',async t=>{
+ const f=fixture(t,{version:'2.0.0',tag:'v.2.0.0',revision:1});const r=release();r.assets.push({id:30,name:'BUILD-REFRESH.json',state:'uploaded',size:140});let revision=2;f.transport.json=async()=>r;f.transport.text=async()=>JSON.stringify({schema:1,version:'2.0.0',tag:r.tag_name,release_id:r.id,revision});await f.service.check(true);revision=3;await f.service.install();assert.equal(f.installs,0);assert.equal(f.service.state().phase,'available');assert.equal(f.service.state().release.revision,3);
+});
+
+test('manual same-version reinstall shows refresh notes for a legacy profile',t=>{const f=fixture(t,{version:'2.0.0'});fs.writeFileSync(path.join(f.profile,'updater-state.json'),JSON.stringify({lastLaunchVersion:'2.0.0',allowPrereleases:true}));const next=new UpdateService({...f.options,revision:100,notes:'Refreshed build notes'});assert.equal(next.state().notes.body,'Refreshed build notes');assert.equal(next.state().preferences.allowPrereleases,true);});
