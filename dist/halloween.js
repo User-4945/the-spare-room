@@ -284,7 +284,7 @@ function createHalloweenVisuals(e){
   const batGeometry=new T.BufferGeometry();batGeometry.setAttribute('position',new T.Float32BufferAttribute([-.36,0,0,-.1,.09,0,0,0,0,0,0,0,.1,.09,0,.36,0,0],3));
   const batMaterial=new T.MeshBasicMaterial({color:'#201725',side:T.DoubleSide});
   const bats=Array.from({length:8},()=>mesh(root,batGeometry,batMaterial,0,0,0));
-  e.halloween={root,decorations,home,seals,labels,bell,guest,parade,walkers,bats,seed:null};return e.halloween;
+  e.halloween={root,decorations,home,seals,labels,bell,guest,parade,walkers,bats,seed:null,sky:new T.Color(),nightSky:new T.Color('#292335'),daySky:new T.Color('#a18e87')};return e.halloween;
 }
 const halloweenPreviousVisuals=updateAnomalyVisuals;
 updateAnomalyVisuals=function(e){
@@ -296,7 +296,7 @@ updateAnomalyVisuals=function(e){
     pool.seals.forEach((item,i)=>{const c=cityWorld().find(c=>c.id===item.id);item.group.position.set(c.x+1.8,.96,-(c.z+1));item.group.rotation.y=Math.PI;item.light.position.set(c.x+1.8,1.5,-(c.z+1));pool.labels[i].position.set(c.x+1.8,.87,-(c.z+1.258));});
     const station=cityWorld().find(c=>c.id==='station');pool.parade.position.set(station.x,0,-(station.z+6.2));pool.seed=s.worldSeed;
   }
-  const daylight=worldDaylight(),sky=new THREE.Color().lerpColors(new THREE.Color('#292335'),new THREE.Color('#a18e87'),daylight);
+  const daylight=worldDaylight(),sky=pool.sky.lerpColors(pool.nightSky,pool.daySky,daylight);
   e.scene.background=sky;e.scene.fog.color.copy(sky);e.hemi.color.set('#e2c9d5');
   e.ambient.intensity=Math.max(.43,e.ambient.intensity);e.torch.intensity=Math.max(8,e.torch.intensity);
   pool.seals.forEach(item=>{const lit=h.seals.includes(item.id);item.light.intensity=lit?2.3:0;item.faceMaterial.emissiveIntensity=lit?1.8:.08;item.group.scale.setScalar(lit?1.05:1);});

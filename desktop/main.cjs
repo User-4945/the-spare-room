@@ -70,6 +70,7 @@ s.ending=null;s.sanityLost=false;s.sanity=100;if(!(await admin.dispatch('sanity'
 const flightPoint={x:house.x,z:house.z,y:house.jumpHeight||0};if(!(await admin.dispatch('toggle',{key:'fly',value:true})).ok)throw Error('Installed flight enable failed');house.keys={' ':true};const fy=house.jumpHeight||0;updateJump(.1);if(house.jumpHeight<=fy||!canWalk(100,-100))throw Error('Installed flight failed');await admin.dispatch('toggle',{key:'fly',value:false});if(house.x!==flightPoint.x||house.z!==flightPoint.z||house.jumpHeight!==flightPoint.y)throw Error('Installed flight landing failed');
 if(typeof eventAdminLogin!=='undefined'){eventAdminLogin.click();if(document.getElementById('admin-panel').hidden)throw Error('Installed countdown login failed');for(const week of ['week2',...(typeof week3Active==='function'?['week3']:[])]){if(!(await admin.dispatch('start',{week})).ok||releaseAccess!==week)throw Error('Installed event preview failed');} }
 admin.lock();if(admin.status().tools.fly)throw Error('Installed flight lock failed');admin.close();
+const renderEngine=advancedEngine,renderBefore={...renderEngine.renderStats},renderFog=renderEngine.scene.fog;for(let i=0;i<5;i++)renderAdvanced();if(renderEngine.failed||renderEngine.renderStats.viewportChanges!==renderBefore.viewportChanges||renderEngine.scene.fog!==renderFog||renderEngine.renderer.shadowMap.autoUpdate!==false)throw Error('Installed renderer cache/shadow regression');
 let persisted=localStorage.getItem('desktop-smoke-save');
 if(${verifySave}&&persisted!==${JSON.stringify(version)})throw Error('Save did not survive restart');
 localStorage.setItem('desktop-smoke-save',${JSON.stringify(version)});
@@ -77,7 +78,7 @@ if(${verifyUpgrade}&&localStorage.getItem('desktop-upgrade-save')!=='retained')t
 let networkBlocked=false;try{await fetch('https://example.com/')}catch{networkBlocked=true}
 if(!networkBlocked)throw Error('Network requests are not blocked');
 if(!window.spareUpdates||!Array.from(toolbar.children).some(b=>b.textContent==='SETTINGS'))throw Error('Desktop update controls missing');
-return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,signsChecked:signs.length,encountersRendered:encounters.length,updateControls:true,networkBlocked,saveVerified:${verifySave},upgradeSaveVerified:${verifyUpgrade}};
+return{ok:true,version:${JSON.stringify(version)},locations:cityWorld().length,renderer:'Three.js '+THREE.REVISION,signsChecked:signs.length,encountersRendered:encounters.length,renderOptimizations:true,renderStats:{...advancedEngine.renderStats},updateControls:true,networkBlocked,saveVerified:${verifySave},upgradeSaveVerified:${verifyUpgrade}};
 })()`);
 if(!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/login'&&r.method==='POST')||!adminSmokeTraffic.some(r=>r.allowed&&r.path==='/api/admin/authorize'&&r.method==='POST'))throw Error('Installed admin requests did not pass the native network policy');result.adminNetworkVerified=true;result.promptControls=true;result.adminEventsFlight=true;
 await updates.open(false);let panel=updates.getWindow();
@@ -153,3 +154,4 @@ if(smoke){let timer=setTimeout(()=>report({ok:false,error:'Desktop smoke test ti
 try{await win.loadFile(path.join(gameRoot,'index.html'));if(smokeUpgrade){await win.webContents.executeJavaScript("localStorage.setItem('desktop-upgrade-save','retained')");await updates.service.savePreferences({allowPrereleases:process.env.SPARE_ROOM_SMOKE_TARGET_PRERELEASE==='true'});if(updates.state().phase!=='available')throw Error('Selected update not offered');await updates.service.install();if(updates.state().phase!=='installing')throw Error('Upgrade could not start');}else if(smoke){await win.webContents.executeJavaScript("if(typeof enterReleaseWeek==='function'){if(eventTimeRemaining()>0&&!week2Button.disabled)throw Error('Event unlocked early');enterReleaseWeek('week1')}");await checkDesktop();}else await updates.start()}catch(error){if(smoke)report({ok:false,error:String(error)},1);else dialog.showErrorBox('The Spare Room could not start',String(error))}
 });
 app.on('window-all-closed',()=>app.quit());
+
