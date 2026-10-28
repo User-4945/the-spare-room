@@ -4,6 +4,7 @@ on:
     branches: [interaction-prompts-all-releases]
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: spare-room-interaction-prompts-all-releases
   cancel-in-progress: true
@@ -14,66 +15,6 @@ jobs:
       matrix:
         include:
           - version: "2.7.5"
-            platform: win
-            runner: windows-latest
-          - version: "2.7.5"
-            platform: mac
-            runner: macos-latest
-          - version: "2.7.5"
-            platform: linux
-            runner: ubuntu-latest
-          - version: "2.6.5"
-            platform: win
-            runner: windows-latest
-          - version: "2.6.5"
-            platform: mac
-            runner: macos-latest
-          - version: "2.6.5"
-            platform: linux
-            runner: ubuntu-latest
-          - version: "2.5.0"
-            platform: win
-            runner: windows-latest
-          - version: "2.5.0"
-            platform: mac
-            runner: macos-latest
-          - version: "2.5.0"
-            platform: linux
-            runner: ubuntu-latest
-          - version: "2.0.5"
-            platform: win
-            runner: windows-latest
-          - version: "2.0.5"
-            platform: mac
-            runner: macos-latest
-          - version: "2.0.5"
-            platform: linux
-            runner: ubuntu-latest
-          - version: "2.0.0"
-            platform: win
-            runner: windows-latest
-          - version: "2.0.0"
-            platform: mac
-            runner: macos-latest
-          - version: "2.0.0"
-            platform: linux
-            runner: ubuntu-latest
-          - version: "1.5.1"
-            platform: win
-            runner: windows-latest
-          - version: "1.5.1"
-            platform: mac
-            runner: macos-latest
-          - version: "1.5.1"
-            platform: linux
-            runner: ubuntu-latest
-          - version: "2.1.0"
-            platform: win
-            runner: windows-latest
-          - version: "2.1.0"
-            platform: mac
-            runner: macos-latest
-          - version: "2.1.0"
             platform: linux
             runner: ubuntu-latest
     runs-on: ${{ matrix.runner }}
@@ -191,6 +132,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reuse unchanged app builds that passed in the previous run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh run download 40697381527 --pattern 'prompt-*' --dir prompt-artifacts
       - uses: actions/download-artifact@v4
         with:
           pattern: prompt-*
