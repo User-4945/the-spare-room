@@ -92,6 +92,7 @@ actionPrompt.onclick=activateActionPrompt;
 document.addEventListener('keydown',event=>{
  if((event.key||'').toLowerCase()!=='e'||['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName)||event.target?.isContentEditable||event.ctrlKey||event.metaKey||event.altKey)return;
  event.preventDefault();event.stopImmediatePropagation();
+ if(typeof beginInteractionHold==='function'){if(!event.repeat&&!interactionKeyDown){interactionKeyDown=true;beginInteractionHold('keyboard');}return;}
  if(!event.repeat)activateActionPrompt();
 },true);
 const promptsTargets=updateTargets;

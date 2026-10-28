@@ -5,7 +5,7 @@ function preferenceStatus(){
  $('preferences-status').textContent=changed?'Unsaved changes. Save preferences to apply this choice.':lastState.preferences?.allowPrereleases?'Saved: stable releases and prereleases.':'Saved: latest stable releases only.';
 }
 function render(state){
- lastState=state;
+ lastState=state;document.body.classList.toggle('halloween-settings',!!state.halloween);
  const busy=['checking','downloading','verifying','installing'].includes(state.phase);
  const notes=state.notes||state.release&&{version:state.release.version,body:state.release.notes};
  if(!dirty||saving)$('prereleases').checked=!!state.preferences?.allowPrereleases;

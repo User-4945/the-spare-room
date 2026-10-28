@@ -1,0 +1,63 @@
+/* Shared All Hallows' Eve skin. Layout and countdown numeral proportions stay intact. */
+body.halloween-ui{--ember:#f5a25b;--gold:#ffd18a;--violet:#bf9bdd;--ink:#17121c;--paper:#f1e4d1;color:var(--paper);background:radial-gradient(ellipse at 15% 0,#3b2339 0,transparent 45%),radial-gradient(ellipse at 95% 100%,#442719 0,transparent 45%),#100e14;color-scheme:dark}
+.halloween-ui .wrap{color:var(--paper)}
+.halloween-ui .heading,.halloween-ui header{border-color:#a3673e}
+.halloween-ui .heading>span,.halloween-ui .small,.halloween-ui .muted{color:#d4bfcb}
+.halloween-ui h1,.halloween-ui h2,.halloween-ui .heading,.halloween-ui .task-heading{color:var(--gold);font-family:Georgia,'Times New Roman',serif}
+.halloween-ui button{background:linear-gradient(135deg,#392638,#271e2a);color:#ffead1;border-color:#a16c49;border-radius:7px;box-shadow:inset 0 1px #ffffff0a;font-family:Georgia,serif}
+.halloween-ui button:hover{background:#503044;border-color:var(--ember)}
+.halloween-ui button:focus-visible,.halloween-ui input:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.halloween-ui button:disabled{color:#b8a8b5;border-color:#665063;opacity:.65}
+.halloween-ui input,.halloween-ui select,.halloween-ui textarea{background:#16121c;color:#fff0d9;border-color:#996c55;accent-color:var(--ember)}
+.halloween-ui .scene{border-color:#a3673e;box-shadow:0 0 0 1px #20131c,0 12px 50px #0009}
+.halloween-ui .overlay{background:#0d0914cf;backdrop-filter:blur(3px)}
+.halloween-ui #modal,.halloween-ui .modal,.halloween-ui .title-modal,.halloween-ui .halloween-title{color:var(--paper);background:radial-gradient(ellipse at top,#3d283f,#1c1622 70%);border:1px solid #bd8255;border-radius:14px;box-shadow:0 16px 70px #000b,inset 0 0 0 5px #e6aa5d0a}
+.halloween-ui #modal h2{color:#ffd18a;text-shadow:0 2px #0007}
+.halloween-ui #modal p{color:#ead8cd;line-height:1.65}
+.halloween-ui .difficulty-card,.halloween-ui .difficulty-card.selected{background:#2b2032;border-color:#9c6c91;color:#f4dfce}
+.halloween-ui .difficulty-card:hover,.halloween-ui .difficulty-card.selected{border-color:#ffad61;box-shadow:0 0 16px #ed87351a}
+.halloween-ui .difficulty-card strong{color:#ffc07d}
+.halloween-ui .event-chips span,.halloween-ui .event-week-label{color:#e9ba89}
+.halloween-ui .event-card,.halloween-ui .event-week-card{background:linear-gradient(145deg,#2c2033,#1a1520);border-color:#a56d4d;box-shadow:inset 0 0 0 1px #ffb65c0b}
+.halloween-ui .event-card h1,.halloween-ui .event-card h2{color:#ffd18a}
+.halloween-ui .event-message,.halloween-ui .event-card p{color:#e3cfd4}
+.halloween-ui .event-time{background:#141019;border-color:#7d5475}
+.halloween-ui .event-time strong{color:#ffbf74;text-shadow:0 0 20px #ef84331f}
+.halloween-ui .event-time span,.halloween-ui .event-date{color:#d6b8d5}
+.halloween-ui .event-primary,.halloween-ui #sleep,.halloween-ui #install-game{background:linear-gradient(#b86b35,#8a472c);color:#fff0dc;border-color:#e1a367}
+.halloween-ui .task-hud,.halloween-ui .sanity-hud,.halloween-ui .world-clock,.halloween-ui .halloween-hud{background:#1c1422ed;border-color:#9c6747;color:#f1d2b2;box-shadow:0 5px 24px #0006}
+.halloween-ui .task-row{color:#cfb9c7}
+.halloween-ui .task-row.current{background:#d4792e1f;border-color:#ffc76e;color:#ffe5ad}
+.halloween-ui .task-row.completed{color:#c9d7a3}
+.halloween-ui .task-check{border-color:#b99ac1}
+.halloween-ui .task-row.current .task-check{border-color:#ffc76e}
+.halloween-ui .task-heading:before{content:'🎃 ';letter-spacing:0}
+.halloween-ui .task-note,.halloween-ui .secret-count,.halloween-ui .sanity-hud small{color:#d9bcc5}
+.halloween-ui progress{accent-color:#f0a359}
+.halloween-ui .stamina-hud{color:#f7c98c}
+.halloween-ui .game-toolbar button,.halloween-ui .walk-controls button{background:#26182be8;border-color:#aa774d;color:#ffe0b2}
+.halloween-ui aside,.halloween-ui .sidebar,.halloween-ui .panel{background:#1c1622;border-color:#8e604b;color:#ead7cc}
+.halloween-ui #inventory>*,.halloween-ui .pocket{background:#2a1d2f;border-color:#90634b;color:#ffe0b2}
+.halloween-ui #nav{border-color:#8c5c45}
+.halloween-ui #admin-panel,.halloween-ui .admin-card,.halloween-ui .install-panel{background:linear-gradient(140deg,#2d2034,#19141e);color:#f1dfcf;border-color:#b17a52}
+.halloween-ui #admin-panel h2,.halloween-ui .install-panel h2{color:#ffc786}
+.halloween-ui #admin-panel button,.halloween-ui .install-panel button{border-color:#a36f4d}
+.halloween-ui #action-prompt{background:linear-gradient(135deg,#39213aef,#211726f5);border:1px solid #e39a54;border-radius:13px;color:#ffe5c3;box-shadow:0 7px 28px #0009,inset 0 0 0 3px #f4a74b09;user-select:none;-webkit-user-select:none;touch-action:none}
+.halloween-ui #action-prompt .action-key{position:relative;isolation:isolate;background:#201523;color:#ffe3ba;font-family:Georgia,serif;font-weight:bold;flex-basis:43px}
+.halloween-ui #action-prompt .action-key:before{display:none}
+.halloween-ui #action-prompt .action-key:after{content:'';position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(#ffc16e var(--hold-progress,0deg),#ba7a524d 0deg);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);pointer-events:none}
+.halloween-ui .action-copy{display:flex;flex-direction:column;gap:4px}
+.halloween-ui .action-help{font:10px/1.2 system-ui,sans-serif;letter-spacing:1.3px;color:#d5b6d5}
+.halloween-ui #action-prompt.holding{border-color:#ffcf83;box-shadow:0 0 25px #f5a25b24,0 7px 28px #0009}
+.halloween-ui #crosshair.ready{border-color:#ffbd68}
+@media(prefers-reduced-motion:reduce){.halloween-ui *{scroll-behavior:auto!important}.halloween-ui .overlay{backdrop-filter:none}}
+.halloween-ui #admin-panel .admin-card,.halloween-ui #install-panel{background:linear-gradient(145deg,#302037,#19131f);border-color:#bc8052;color:#f1dfcf}
+.halloween-ui #admin-panel button,.halloween-ui #install-panel button{background:#3c263f;border-color:#b47c52;color:#ffe3be}
+.halloween-ui #admin-panel input,.halloween-ui #admin-panel select{background:#18111e;color:#ffe8d1;border-color:#a77051}
+.halloween-ui #admin-panel .admin-group{border-color:#865a7a;background:#251a2d}
+.halloween-ui #admin-panel small,.halloween-ui #admin-panel .admin-stats{color:#d9bfce}
+.halloween-ui #install-panel::backdrop{background:#100a18db}
+.halloween-ui #offline-status,.halloween-ui #halloween-hud{background:#25192eea;border-color:#bc8052;color:#ffcf92}
+.halloween-ui .objective{border-left-color:#ed9a53}.halloween-ui .panel p,.halloween-ui .text{color:#dac5cf}
+.halloween-ui .tag{background:#2b1d30;border-color:#95684d;color:#f2d7bd}.halloween-ui .meter span{background:linear-gradient(90deg,#9d6aaf,#f4a65c)}
+.halloween-ui .top{border-bottom-color:#7e503c}.halloween-ui .logo{color:#ffc587}
