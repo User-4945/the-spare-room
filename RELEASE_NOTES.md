@@ -1,37 +1,40 @@
-# The Spare Room v2.6.5 — All Hallows’ Eve: The Houses That Answer
+# The Spare Room v.2.7.5 — Halloween Departs: The Last Knock
 
-**Week 2 · Prerelease**
+A Halloween prerelease with a quieter finale, three new ending paths, and an optional third-person camera. Week 1 remains playable now; the next weeks use fixed worldwide unlock times.
 
-Week 2 unlocks on **Friday 30 October 2026 at 5:00 PM UK time (GMT / 17:00 UTC)**. The live countdown enables Week 2 automatically. **Play Week 1** remains available while waiting; its gameplay and 38 ending paths are unchanged.
+## Event access
 
-## The city starts recognising you
+- **Week 1 — All Hallows’ Eve:** play now. Its 38 ending paths and original quests remain available.
+- **Week 2 — The Houses That Answer:** unlocks **Friday 30 October 2026, 17:00 GMT / UTC**. Its six answering doors, tricks and treats, masks, Velvet & Ash, basement and three endings are preserved.
+- **Week 3 — Halloween Departs: The Last Knock:** unlocks **Tuesday 3 November 2026, 15:00 GMT / UTC**. The event hub shows a separate live countdown and offers earlier unlocked weeks while waiting. Date gates use UTC instants and are unaffected by timezone or DST changes.
 
-- **Six answering doors:** knock at the station, archives, cinema, clinic, chapel and clock repair shop. Residents offer sweets, instructions and errands. Mother answers one door far from home. A wrapped treat may turn into ash.
-- **Velvet & Ash:** explore an abandoned costume shop reached through a new east-side passage. Borrow masks, find the clockmaker’s missing key and unlock a basement below the shop by delivering the projectionist’s misaddressed parcel from the Dead Letter Office. A faceless mannequin changes position when you look away.
-- **Useful masks:** the crow mask lets you return stolen things; the moth mask exposes a false treat and earns a frightened voice’s trust; the neighbour’s mask makes the porter recognise you. Wear one for 45 seconds of active play and the procession begins following. Take it off from WEEK 2 QUEST to disperse them. Reading pauses the exposure timer.
-- **Three new anomalies:** a ringing doorbell appears behind you, a detached shadow continues walking after you stop, and an extra house appears beyond the shop after two door visits and 45 seconds of active play.
-- **Three new endings (41 total):** return the stolen face to its wooden owner, rescue Ada from behind the impossible door, or become the neighbour everybody remembers. Each ending requires its own discoveries and an explicit final choice.
-- **Contextual interaction buttons:** aim at an object within reach to see its action. Press E, click or tap. Targets are checked for range and visibility again when clicked.
-- **Quest journal and checklist:** WEEK 2 QUEST tracks errands, masks and door tasks, with directions to the shop, parcel, residents and extra house. New games reset quest progress while preserving your ending journal.
-- Disturbing discoveries apply sanity loss after closing their reading popup. Door rewards and quest exchanges cannot be collected repeatedly.
+## Week 3, after unlock
+
+Say goodbye at the garden bell, the archive entrance and Velvet & Ash. Keep or return three keepsakes, then enter a furnished memory house through the final garden door. Explore three displays recalling the earlier weeks; your discovered endings personalise the open journal while unfamiliar memories stay closed.
+
+The neighbourhood gradually loses its decorations and pumpkin light as farewells are completed. Leaves drift across the streets. Week 3 pauses passive sanity drain and random anomaly encounters so the farewell can be explored at your own pace.
+
+Choose what to do with the knocking suitcase. When you explicitly begin the last in-game hour, 45 seconds of active play lead to nine seconds of final chimes, lifting fog and a brighter sky. Reading and menus pause the finale. Midnight is part of the chosen scene; you cannot miss it by arriving late.
+
+Three paths bring the total to **44**:
+
+- **Until Next October:** leave the suitcase behind.
+- **The Guest Who Stayed:** carry the unopened suitcase home.
+- **Leave a Light On:** return all three keepsakes before choosing the final farewell.
+
+Every finale awards **The Last Knock — Witnessed the departure of Halloween 2026.** The award and ending journal persist through a new run. Reset to replay a different final choice.
+
+## Improved play
+
+- **V** or the **CAMERA** toolbar button switches first and third person in all weeks, including touch devices through the button. The preference is saved separately from story progress.
+- Third person includes an animated player, an over-the-shoulder view, camera collision probes and interaction projection from the actual camera. Tight spaces pull the camera close and hide the avatar when necessary. Sprinting, jumping and existing interaction ranges remain available.
+- **WEEK 3 QUEST** gives a checklist, directions and travel to each farewell. Each week's quest progress stays separate when switching through the event hub.
+- Existing Easy, Intermediate and Hard modes, sandwiches, city generation codes, saves, Admin Panel and update settings are retained. Native admin networking includes the corrected endpoint allowlist and installed-app login regression checks.
 
 ## Downloads and updates
 
-Windows x64 installer, universal Mac DMG, Linux x64 AppImage and DEB, browser ZIP, installable web ZIP, and matching desktop source are included. Android, iPhone and iPad use the installable web version (no native APK/IPA). Mac builds are ad-hoc signed, not notarized.
+Windows x64 Setup EXE; universal Intel/Apple Silicon Mac DMG; Linux x64 AppImage and DEB; browser ZIP; installable web ZIP; matching desktop source and SHA-256 checksums.
 
-This replaces the earlier countdown-only v2.6.5 preview. **If you installed that preview already, download and reinstall this refreshed v2.6.5 build**: the updater correctly avoids reinstalling an equal version. Your existing app identity, saves and preferences are retained.
+Mac builds are ad-hoc signed, not notarized. Mobile uses the installable web app, not native APK/IPA packages. Normal gameplay works offline after installation; admin authorization and update checks need internet. Daily/manual updates remain stable-only by default, prereleases are opt-in, and newer installed versions are never downgraded.
 
-v.2.5.0 remains the latest stable release. Prerelease updates are opt-in, and newer installed versions cannot downgrade to stable. The countdown uses the device clock, including offline. All new content stays locked until the event’s fixed unlock time.
-
-
-## Local game admin panel
-
-- Open **ADMIN** or press **F8**, then sign in with the owner-supplied credentials. Credentials are checked online by the game’s admin service. No password or verifier ships in the game files.
-- Teleport between the house, upstairs rooms and all city venues. Week 2 destinations remain behind the existing release gate and quest prerequisites.
-- Spawn the eight house/city anomalies with the usual safe placement checks; Week 2’s bell, shadow and extra house are available in Week 2. Clear active effects.
-- Set sanity, add/remove 10%, revive after sanity loss, restore stamina, refill sandwiches and grant sweets.
-- Select story night 1–3, set daylight time or trigger Halloween midnight.
-- Session-only tools freeze sanity loss, provide infinite stamina or freeze the daylight clock. Locking, inactivity or reloading disables them.
-- Failed login attempts are throttled by the admin service. Sessions expire after ten minutes; authorized actions renew them. Credentials and session tokens are not written to saves or browser storage.
-
-Admin login and commands require an internet connection. The single-player game remains playable offline. Commands affect only this device’s current run; the service authorizes tools but does not host or control game saves. Client-side game code remains inspectable and this panel is not a DRM mechanism. Updated builds retain the current version number; reinstall if you already installed v2.6.5.
+This is a prerelease. Stable v.2.5.0 and existing release downloads remain unchanged. Please report your platform, difficulty, camera mode, location and world generation code with any issue. Unlocks follow the device clock; this single-player offline build is not a tamper-proof timed service.
