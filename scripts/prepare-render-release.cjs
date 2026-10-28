@@ -1,0 +1,14 @@
+const fs=require('node:fs'),{execFileSync}=require('node:child_process');
+const v={version:'2.7.5',tag:'v.2.7.5',id:426674255,ref:'9cc65b564f8b2f06c4fb0a5afb7cce678a5bf811'};
+const git=(...a)=>execFileSync('git',a,{encoding:'utf8'}).trim();
+if(process.argv[2]!==v.version||!['win','mac','linux'].includes(process.argv[3]))throw Error('Wrong build target');
+const r=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GH_REPO+'/releases/'+v.id],{encoding:'utf8'}));if(r.tag_name!==v.tag||!r.prerelease||r.draft||git('rev-parse','refs/tags/'+v.tag)!==v.ref)throw Error('Release state changed');
+for(const n of ['citizen-rig.js','event-quality.js','action-prompts.js','admin-panel.js','week3.js','third-person.js'])if(!fs.existsSync('dist/'+n))throw Error('Missing web fix '+n);
+if(!fs.readFileSync('dist/week3.js','utf8').includes('event-columns')||!fs.readFileSync('dist/event-quality.js','utf8').includes('processionSweep')||!fs.readFileSync('dist/advanced.js','utf8').includes('updateRenderViewport'))throw Error('Incomplete web/render fixes');
+const note=require('./render-refresh-note.cjs');
+fs.writeFileSync('RELEASE_NOTES.md',r.body.replace(/\n*<!-- web-render-refresh-start -->[\s\S]*?<!-- web-render-refresh-end -->/g,'')+note);
+fs.appendFileSync('DESKTOP_README.md',note);
+const info=JSON.parse(fs.readFileSync('release.json'));if(info.version!==v.version)throw Error('Wrong runtime version');
+execFileSync('git',['restore','--source',v.ref,'--worktree','--','desktop/icon.ico','platforms/icons']);
+fs.writeFileSync('installer-build.json',JSON.stringify({game_version:v.version,game_tag:v.tag,game_commit:v.ref,game_tree:git('rev-parse',v.ref+':dist'),runtime_commit:process.env.GITHUB_SHA,runtime_tree:git('rev-parse',process.env.GITHUB_SHA+':dist'),web_render_patch_commit:process.env.GITHUB_SHA,prerelease:true,platform:process.argv[3],week2:true,week3:true,third_person:true,all_web_fixes:true,update_settings:{default:'stable',prereleases:'opt-in',never_downgrade:true}},null,2));
+console.log('Prepared complete web fixes and renderer for '+v.tag+' / '+process.argv[3]);
