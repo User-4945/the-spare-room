@@ -41,7 +41,7 @@ const eventStyle=document.createElement('style');eventStyle.textContent=`
 `;
 document.body.append(eventStyle);
 const eventPreviousPaused=paused;paused=function(){return !eventOverlay.hidden||releaseAccess==='locked'||eventPreviousPaused();};
-const eventPreviousPrompt=updateActionPrompt;updateActionPrompt=function(){if(!['week2','week3'].includes(releaseAccess)||!eventOverlay.hidden)return hideActionPrompt();eventPreviousPrompt();};
+const eventPreviousPrompt=updateActionPrompt;updateActionPrompt=function(){if(releaseAccess==='locked'||!eventOverlay.hidden)return hideActionPrompt();eventPreviousPrompt();};
 const eventPreviousTitle=titleScreen;
 titleScreen=function(){
  if(releaseAccess==='locked')return showReleaseEvent();

@@ -80,12 +80,20 @@ function updateActionPrompt() {
   const use=document.getElementById('touch-use');
   if (use) {use.textContent=text;use.setAttribute('aria-label',text);}
 }
-actionPrompt.onclick=()=>{
+function activateActionPrompt(){
   if(paused() || s.ending || s.sanityLost)return hideActionPrompt();
   // Re-evaluate range, aim and occlusion: a stale prompt cannot activate an object.
   updateTargets();
   if(house.target){tone();house.target.fn();updateActionPrompt();}
-};
+}
+actionPrompt.onclick=activateActionPrompt;
+// Capture E before the legacy world handler so keyboard and click use the same
+// fresh range/aim/occlusion check and never invoke an action twice.
+document.addEventListener('keydown',event=>{
+ if((event.key||'').toLowerCase()!=='e'||['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName)||event.target?.isContentEditable||event.ctrlKey||event.metaKey||event.altKey)return;
+ event.preventDefault();event.stopImmediatePropagation();
+ if(!event.repeat)activateActionPrompt();
+},true);
 const promptsTargets=updateTargets;
 updateTargets=function(){promptsTargets();updateActionPrompt();};
 const promptsModal=modal;

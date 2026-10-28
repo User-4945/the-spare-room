@@ -10,7 +10,7 @@ check(refreshReleaseEvent(cutoff)&&!week2Button.disabled&&week2Button.textConten
 check(eventCountdown(cutoff-90061000).days===1&&eventCountdown(cutoff-90061000).hours===1&&eventCountdown(cutoff-90061000).minutes===1&&eventCountdown(cutoff-90061000).seconds===1,'Countdown arithmetic wrong');
 const realNow=Date.now;Date.now=()=>cutoff-1000;showReleaseEvent();check(paused(),'Waiting screen does not pause gameplay');check(!enterReleaseWeek('week2')&&releaseAccess==='locked','Locked week can start');
 check(enterReleaseWeek('week1')&&eventOverlay.hidden&&releaseAccess==='week1','Week 1 unavailable');
-house.target={name:'Brass key',fn(){}};s.started=true;s.ending=null;s.sanityLost=false;updateActionPrompt();check(actionPrompt.hidden,'Week 2 prompt leaks into Week 1');
+house.target={name:'Brass key',fn(){}};s.started=true;s.ending=null;s.sanityLost=false;close();updateActionPrompt();check(!actionPrompt.hidden&&actionLabel.textContent==='Pick up key','Week 1 action prompt missing');
 showReleaseEvent();Date.now=()=>cutoff;refreshReleaseEvent();check(enterReleaseWeek('week2')&&releaseAccess==='week2'&&eventOverlay.hidden,'Week 2 cannot open at cutoff');
 showReleaseEvent();check(!week2Button.disabled,'Unlocked event relocks on return');Date.now=realNow;
 console.log('PASS: exact UK/GMT unlock instant, second/day arithmetic, no early entry, automatic zero transition, paused waiting room and playable Week 1 fallback');
