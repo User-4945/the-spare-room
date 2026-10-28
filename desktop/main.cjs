@@ -56,11 +56,11 @@ if(encounters.length){anomalyRuntime.active=null;s=fresh();save();updateAnomalyV
 if(!window.document.getElementById('action-prompt'))throw Error('Installed prompt missing');
 const promptLock=locked;locked=()=>true;s.started=true;s.ending=null;s.sanityLost=false;s.room='hall';house.x=0;house.z=3;house.a=-Math.PI/2;house.pitch=.03;house.jumpHeight=0;buildHouse();close();renderAdvanced();updateTargets();
 if(house.target?.name!=='Childhood photograph'||actionPrompt.hidden||actionLabel.textContent!=='Examine photograph')throw Error('Installed Week1 prompt missing');
-s.seen=[];window.dispatchEvent(new KeyboardEvent('keydown',{key:'e',code:'KeyE',bubbles:true}));window.dispatchEvent(new KeyboardEvent('keyup',{key:'e',code:'KeyE',bubbles:true}));if(!s.seen.includes('photo')||!actionPrompt.hidden)throw Error('Installed E interaction failed');
+s.seen=[];canvas.dispatchEvent(new KeyboardEvent('keydown',{key:'e',code:'KeyE',bubbles:true}));canvas.dispatchEvent(new KeyboardEvent('keyup',{key:'e',code:'KeyE',bubbles:true}));if(!s.seen.includes('photo')||!actionPrompt.hidden)throw Error('Installed E interaction failed');
 close();renderAdvanced();updateTargets();s.seen=[];actionPrompt.click();if(!s.seen.includes('photo'))throw Error('Installed prompt click failed');
 close();renderAdvanced();updateTargets();document.body.classList.add('touch-game');updateActionPrompt();if(actionKey.textContent!=='TAP'||actionPrompt.hidden)throw Error('Installed touch prompt failed');document.body.classList.remove('touch-game');
 if(typeof setThirdPerson==='function'){setThirdPerson(true);renderAdvanced();updateTargets();if(actionPrompt.hidden||house.target?.name!=='Childhood photograph')throw Error('Third-person prompt failed');setThirdPerson(false);}
-house.z=-13;renderAdvanced();updateTargets();if(!actionPrompt.hidden)throw Error('Installed out-of-range prompt');locked=promptLock;house.keys={};
+const stalePrompt=house.target;house.z=-13;renderAdvanced();updateTargets();house.target=stalePrompt;s.seen=[];canvas.dispatchEvent(new KeyboardEvent('keydown',{key:'e',code:'KeyE',bubbles:true}));if(s.seen.includes('photo'))throw Error('Stale E action accepted');if(!actionPrompt.hidden)throw Error('Installed out-of-range prompt');locked=promptLock;house.keys={};
 const admin=window.spareAdmin;if(!admin)throw Error('Installed Admin Panel missing');
 admin.open();if((await admin.authenticate('qa-admin','wrong')).ok)throw Error('Installed wrong-password accepted');
 const au=document.querySelector('#admin-panel input[name="admin-username"]'),ap=document.querySelector('#admin-panel input[name="admin-password"]');au.value='qa-admin';ap.value='qa-password';document.querySelector('#admin-panel form').requestSubmit();
