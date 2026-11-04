@@ -5,8 +5,7 @@ try{
  const out=path.join(folder,'game');
  cp.execFileSync(process.execPath,['scripts/prepare-halloween.cjs',out]);
  const html=fs.readFileSync(path.join(out,'index.html'),'utf8'),city=fs.readFileSync(path.join(out,'city.js'),'utf8');
- assert(html.includes("localStorage.getItem('spare-room-halloween-v1')"));
- assert(html.includes("localStorage.setItem('spare-room-halloween-v1'"));
+ if(html.includes('save-store.js')){const store=fs.readFileSync(path.join(out,'save-store.js'),'utf8');assert(store.includes("STORY_KEY='spare-room-halloween-v1'"));assert(html.includes('loadStorySave(fresh)')&&html.includes('persistStorySave(s)'));}else{assert(html.includes("localStorage.getItem('spare-room-halloween-v1')"));assert(html.includes("localStorage.setItem('spare-room-halloween-v1'"));}
  assert(!html.includes("'spare-room-v1'"));
  assert(city.includes("'spare-room-halloween-endings'"));
  assert(!city.includes("'spare-room-endings'"));

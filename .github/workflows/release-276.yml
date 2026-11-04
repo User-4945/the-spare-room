@@ -101,6 +101,7 @@ jobs:
       - name: Package browser and source downloads
         if: matrix.platform == 'linux'
         run: |
+          node scripts/prepare-halloween.cjs
           node scripts/prepare-pwa.cjs dist pwa-build release.json
           node --test tests/pwa.cjs
           xvfb-run -a npx electron --no-sandbox scripts/smoke-wall-secrets.cjs

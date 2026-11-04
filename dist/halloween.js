@@ -322,7 +322,7 @@ titleScreen=function(){
   const panel=$('modal');panel.classList.remove('title-modal');panel.classList.add('halloween-title');panel.replaceChildren();
   function add(tag,cls,text){const el=document.createElement(tag);el.className=cls;el.textContent=text;panel.append(el);return el;}
   const moon=add('div','halloween-moon','');moon.setAttribute('aria-hidden','true');
-  add('p','event-kicker','v.2.5.0 · HALLOWEEN UPDATE');
+  add('p','event-kicker','v2.7.6 · PRERELEASE');
   add('h2','','THE SPARE ROOM');add('p','event-subtitle','All Hallows’ Eve');
   add('p','event-story','The neighbourhood has dressed for Halloween. The people behind the masks have not. Find three lanterns before you answer the midnight bell. Mother has left a light on for you.');
   const chips=add('div','event-chips','');for(const text of ['7 NEW ENDINGS','3 LANTERN SEALS','A SEPARATE SAVE']){let chip=document.createElement('span');chip.textContent=text;chips.append(chip);}
