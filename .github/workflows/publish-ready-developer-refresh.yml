@@ -5,6 +5,9 @@ on:
 permissions:
   contents: write
   actions: read
+concurrency:
+  group: publish-ready-desktop
+  cancel-in-progress: true
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -22,19 +25,45 @@ jobs:
           const r=require('/tmp/source-run.json'),jobs=require('/tmp/source-jobs.json').jobs.filter(j=>/build .*?, (win|linux),/.test(j.name));
           if(r.head_sha!=='49e22e5b1653c2a7b68fbbff45cfc2525d4e5a70'||jobs.length!==17||jobs.some(j=>j.conclusion!=='success'))throw Error('Native build verification incomplete');
           JS
-      - name: Download completed verified artifacts
-        run: gh run download 41897144092 --pattern 'developer-refresh-*' --dir refresh-results
+      - run: gh run download 41897144092 --pattern 'developer-refresh-*' --dir refresh-results
       - name: Publish verified downloads
         run: |
           for folder in refresh-results/developer-refresh-*; do
             rm -rf platform-build
             mkdir platform-build
-            cp "$folder"/* platform-build/
+            find "$folder" -maxdepth 2 -type f ! -name installer-build.json -exec cp {} platform-build/ \;
             cp "$folder/installer-build.json" installer-build.json
             version=$(node -p 'require("./installer-build.json").game_version')
             platform=$(node -p 'require("./installer-build.json").platform')
             if [ "$version" = "3.0.0" ]; then cp developer-game/RELEASE_NOTES_DRAFT.md RELEASE_NOTES.md; fi
             GITHUB_SHA=49e22e5b1653c2a7b68fbbff45cfc2525d4e5a70 node scripts/publish-developer-refresh.cjs "$version" "$platform"
           done
-      - name: Finalize developer channel notes and checksums
-        run: node scripts/finalize-developer-refresh.cjs
+      - run: node scripts/finalize-developer-refresh.cjs
+  remaining_mac:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for remaining verified Mac builds
+        run: |
+          node - <<'JS'
+          const {execFileSync}=require('child_process');
+          (async()=>{for(;;){const jobs=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GH_REPO+'/actions/runs/41897144092/jobs?per_page=100'],{encoding:'utf8'})).jobs.filter(j=>/^build \((2\.7\.5|2\.0\.5|2\.1\.0), mac,/.test(j.name));if(jobs.length!==3)throw Error('Missing Mac jobs');if(jobs.some(j=>j.status==='completed'&&j.conclusion!=='success'))throw Error('Mac verification failed');if(jobs.every(j=>j.conclusion==='success'))break;console.log('Waiting for Mac runner availability…');await new Promise(r=>setTimeout(r,30000));}})().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Download verified Mac installers
+        run: gh run download 41897144092 --pattern 'developer-refresh-2.7.5-mac' --pattern 'developer-refresh-2.0.5-mac' --pattern 'developer-refresh-2.1.0-mac' --dir remaining-results
+      - name: Publish remaining Mac refreshes
+        run: |
+          for folder in remaining-results/*; do
+            rm -rf platform-build
+            mkdir platform-build
+            find "$folder" -maxdepth 2 -type f ! -name installer-build.json -exec cp {} platform-build/ \;
+            cp "$folder/installer-build.json" installer-build.json
+            version=$(node -p 'require("./installer-build.json").game_version')
+            GITHUB_SHA=49e22e5b1653c2a7b68fbbff45cfc2525d4e5a70 node scripts/publish-developer-refresh.cjs "$version" mac
+          done
+      - run: node scripts/finalize-developer-refresh.cjs
