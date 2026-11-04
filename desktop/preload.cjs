@@ -1,6 +1,8 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('spareUpdates',Object.freeze({
  open:()=>ipcRenderer.invoke('updates:open'),
+ adminLogin:credentials=>ipcRenderer.invoke('updates:admin-login',credentials),
+ adminLock:()=>ipcRenderer.invoke('updates:admin-lock'),
  state:()=>ipcRenderer.invoke('updates:state'),
  check:()=>ipcRenderer.invoke('updates:check'),
  savePreferences:preferences=>ipcRenderer.invoke('updates:preferences',preferences),

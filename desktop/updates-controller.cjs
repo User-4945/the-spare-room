@@ -1,12 +1,14 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const {spawn}=require('node:child_process');
+const {createAdminAuth}=require('./settings-admin-auth.cjs');
 const {UpdateService,createTransport,readJSON}=require('./updater-core.cjs');
 function setupUpdates({app,BrowserWindow,ipcMain,safeStorage,net,shell,win,profile,version,smoke=false,transport,runInstaller}){
  const info=readJSON(path.join(__dirname,'release-info.json')),tokenFile=path.join(profile,'github-access.bin');let token='',window=null,pauseOwned=false,opening=null;
  try{if(safeStorage.isEncryptionAvailable()&&fs.existsSync(tokenFile))token=safeStorage.decryptString(fs.readFileSync(tokenFile))}catch{}
  const service=new UpdateService({profile,version,platform:process.platform,prerelease:!!info.prerelease,revision:info.build_revision||0,tag:info.tag||'',notes:info.notes,transport:transport||createTransport(()=>token),isOnline:()=>smoke?true:net.isOnline(),prepareInstall:async()=>{if(!win.isDestroyed())await win.webContents.executeJavaScript("if(typeof save==='function')save();");await win.webContents.session.flushStorageData();},runInstaller:runInstaller||((file,args)=>new Promise((resolve,reject)=>{const child=spawn(file,[...args,'/D='+path.dirname(app.getPath('exe'))],{detached:true,stdio:'ignore',windowsHide:true});child.once('error',reject);child.once('spawn',()=>{child.unref();resolve();app.quit()})}))});
- const state=()=>({...service.state(),hasToken:!!token,halloween:!!info.halloween_ui});
+ const settingsAdmin=createAdminAuth({endpoint:'https://the-spare-room.udammi26.chatgpt.site/api/admin'});
+ const state=()=>({...service.state(),hasToken:!!token,adminAuthenticated:settingsAdmin.isAuthenticated(),halloween:!!info.halloween_ui});
  function open(check=false){if(opening)return opening;opening=openWindow(check).finally(()=>opening=null);return opening}
  async function openWindow(check=false){
   if(window&&!window.isDestroyed()){window.show();window.focus();if(check)void service.check(true);return state()}
@@ -19,7 +21,9 @@ function setupUpdates({app,BrowserWindow,ipcMain,safeStorage,net,shell,win,profi
  service.on('status',()=>{if(window&&!window.isDestroyed())window.webContents.send('updates:status',state());if(service.status.phase==='available'&&!smoke)void open().catch(()=>{});});
  function handle(channel,fn,settingsOnly=false){ipcMain.handle(channel,async(event,...args)=>{if(event.senderFrame!==event.sender.mainFrame||!(event.sender===win.webContents||window&&event.sender===window.webContents)||settingsOnly&&event.sender!==window?.webContents)throw Error('Untrusted update request');return fn(...args)})}
  handle('updates:open',()=>open(false));handle('updates:state',state);handle('updates:check',async()=>{await service.check(true);return state()});handle('updates:install',async()=>{await service.install();return state()});
- handle('updates:preferences',async value=>{await service.savePreferences(value);return state()},true);
+ handle('updates:admin-login',async value=>{if(!value||typeof value.username!=='string'||typeof value.password!=='string'||value.username.length>128||value.password.length>256)throw Error('Invalid sign-in');const result=await settingsAdmin.authenticate(value.username,value.password);return {...state(),adminMessage:result.message}},true);
+ handle('updates:admin-lock',()=>{settingsAdmin.lock();return state()},true);
+ handle('updates:preferences',async value=>{if(value?.allowDeveloperVersions===true){const result=await settingsAdmin.authorize('toggle');if(!result.ok)throw Error(result.message);}await service.savePreferences(value);return state()},true);
  handle('updates:latest',async()=>{await shell.openExternal(service.state().latestPage);return state()});handle('updates:close',()=>{if(window)window.close();return null});
  handle('updates:token',async value=>{if(typeof value!=='string'||!/^[a-zA-Z0-9_]{20,255}$/.test(value.trim()))return {...state(),message:'Enter a valid GitHub access token.'};if(!safeStorage.isEncryptionAvailable())return {...state(),message:'Windows credential protection is unavailable. Use Open latest release instead.'};token=value.trim();fs.writeFileSync(tokenFile,safeStorage.encryptString(token),{mode:0o600});await service.check(true);return state()},true);
  handle('updates:clear-token',()=>{token='';fs.rmSync(tokenFile,{force:true});return state()},true);

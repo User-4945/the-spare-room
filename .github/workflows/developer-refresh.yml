@@ -1,0 +1,129 @@
+name: Developer settings and v2.7.5 indoor doorway refresh
+on:
+  push:
+    branches: [developer-refresh]
+permissions:
+  contents: write
+concurrency:
+  group: developer-settings-refresh
+  cancel-in-progress: false
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test tests/updater.cjs tests/developer-updates.cjs tests/admin-auth.cjs
+      - id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/releases?per_page=100 > /tmp/releases.json
+          node - <<'JS'
+          const fs=require('fs'),list=require('/tmp/releases.json').filter(r=>!r.draft&&r.assets.some(a=>a.name.endsWith('.exe'))),include=[];
+          for(const r of list){const version=r.tag_name.replace(/^v\.?/,'');if(!/^\d+\.\d+\.\d+$/.test(version))throw Error('Invalid version');for(const platform of ['win','mac','linux'])include.push({version,platform,runner:platform==='win'?'windows-latest':platform==='mac'?'macos-latest':'ubuntu-latest'});}
+          include.push({version:'3.0.0',platform:'win',runner:'windows-latest'});
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,'matrix='+JSON.stringify({include})+'\n');
+          JS
+  build:
+    needs: inventory
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 9
+      matrix: ${{ fromJSON(needs.inventory.outputs.matrix) }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node scripts/prepare-developer-refresh.cjs '${{ matrix.version }}' '${{ matrix.platform }}'
+      - run: node --test tests/updater.cjs tests/developer-updates.cjs
+      - if: matrix.version != '3.0.0'
+        run: node tests/game-smoke.cjs
+      - if: matrix.version == '2.7.5'
+        run: node tests/week3.cjs
+      - if: matrix.version == '3.0.0'
+        run: node tests/beneath.cjs
+      - run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --${{ matrix.platform }} --publish never
+      - name: Verify installed Windows app twice
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem platform-build/*Setup*.exe | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP 'spare-refresh-installed'
+          $p = Start-Process $installer.FullName -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Installation failed' }
+          $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-refresh-profile'
+          foreach ($attempt in 1,2) {
+            $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP "smoke-$attempt.json"
+            $argsList = @('--smoke-test')
+            if ($attempt -eq 2) { $argsList += '--smoke-verify-save' }
+            $p = Start-Process (Join-Path $installDir 'The Spare Room.exe') -ArgumentList $argsList -PassThru
+            if (!$p.WaitForExit(180000)) { $p.Kill(); throw 'Launch timeout' }
+            $r = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+            if ($p.ExitCode -ne 0 -or !$r.ok) { throw 'Installed renderer failed' }
+            if ($attempt -eq 2 -and !$r.saveVerified) { throw 'Save persistence failed' }
+          }
+      - name: Verify Mac universal bundle signature
+        if: matrix.platform == 'mac'
+        run: codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+      - name: Package matching source and v2.7.5 browser build
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p installer-output
+          python3 scripts/package-desktop-source.py
+          cp installer-output/*.zip platform-build/
+          if [ '${{ matrix.version }}' = '2.7.5' ]; then
+            python3 scripts/package-release.py
+            cp release-build/*.zip platform-build/
+            node scripts/prepare-pwa.cjs dist pwa-build release.json
+            python3 -c "import shutil;shutil.make_archive('The-Spare-Room-v2.7.5-installable-web','zip','pwa-build')"
+            cp The-Spare-Room-v2.7.5-installable-web.zip platform-build/
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: developer-refresh-${{ matrix.version }}-${{ matrix.platform }}
+          path: |
+            platform-build/*.exe
+            platform-build/*.dmg
+            platform-build/*.AppImage
+            platform-build/*.deb
+            platform-build/*.zip
+            installer-build.json
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: developer-refresh-*
+          path: refresh-results
+      - name: Publish verified installers, revisions and matching checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          for folder in refresh-results/developer-refresh-*; do
+            rm -rf platform-build
+            mkdir platform-build
+            cp "$folder"/* platform-build/
+            cp "$folder/installer-build.json" installer-build.json
+            version=$(node -p 'require("./installer-build.json").game_version')
+            platform=$(node -p 'require("./installer-build.json").platform')
+            node scripts/publish-developer-refresh.cjs "$version" "$platform"
+          done
+
