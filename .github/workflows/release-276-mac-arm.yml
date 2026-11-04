@@ -1,0 +1,98 @@
+name: Verify v2.7.6 on Apple Silicon and publish prerelease
+on:
+  push:
+    branches: [release-v2.7.6-mac-arm]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: spare-room-276-mac-arm
+  cancel-in-progress: true
+jobs:
+  mac:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      SPARE_BUILD_REVISION: '4187283050801'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: bef2f7204d266910220f55558012c2c55b606d1d
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: node --test tests/admin-auth.cjs tests/admin-network.cjs
+      - name: Record the exact checked-out product source and shared revision
+        run: node -e "if(require('child_process').execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!=='bef2f7204d266910220f55558012c2c55b606d1d')throw Error('Wrong source');process.env.GITHUB_SHA='bef2f7204d266910220f55558012c2c55b606d1d';process.argv=['node','record','mac'];require('./scripts/record-276-build.cjs')"
+      - name: Build universal Mac installer
+        run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --mac --publish never
+      - name: Verify universal signature, real renderer and save persistence
+        shell: bash
+        run: |
+          export SPARE_ROOM_TEST_ANGLE=default
+          APP='platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room'
+          codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+          lipo -info "$APP"
+          export SPARE_ROOM_SMOKE_PROFILE="$RUNNER_TEMP/spare-276-profile"
+          for attempt in 1 2; do
+            export SPARE_ROOM_SMOKE_REPORT="$RUNNER_TEMP/smoke-$attempt.json"
+            EXTRA=''
+            if [ "$attempt" = 2 ]; then EXTRA='--smoke-verify-save'; fi
+            "$APP" --smoke-test $EXTRA
+            node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences||!r.adminNetworkVerified||!r.promptControls||!r.adminEventsFlight)process.exit(1)"
+          done
+      - run: |
+          mkdir -p release-output
+          cp platform-build/*.dmg release-output/
+          cp installer-build.json release-output/mac-BUILD.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: halloween-276-mac-arm
+          path: release-output/
+  publish:
+    needs: mac
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 5651bbda7e90a6edb6d95491bd23e19e253f5c27
+          fetch-depth: 0
+      - name: Wait for the matching verified Linux download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          for attempt in $(seq 1 60); do
+            if gh api "repos/$GH_REPO/actions/runs/41875411877/artifacts" --jq '.artifacts[].name' | grep -qx 'halloween-276-linux'; then exit 0; fi
+            sleep 10
+          done
+          echo 'Verified Linux artifact not available'; exit 1
+      - uses: actions/download-artifact@v4
+        with:
+          name: halloween-276-mac-arm
+          path: release-artifacts/halloween-276-mac
+      - uses: actions/download-artifact@v4
+        with:
+          name: halloween-276-win
+          path: release-artifacts/halloween-276-win
+          run-id: 41872830508
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: halloween-276-linux
+          path: release-artifacts/halloween-276-linux
+          run-id: 41875411877
+          github-token: ${{ github.token }}
+      - name: Publish only the exact verified product source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node -e "process.env.GITHUB_SHA='5651bbda7e90a6edb6d95491bd23e19e253f5c27';process.env.GITHUB_REF_NAME='release-v2.7.6-linux-final';require('./scripts/publish-276.cjs')"
