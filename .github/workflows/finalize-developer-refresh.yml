@@ -1,0 +1,20 @@
+name: Finalize developer preview notes
+on:
+  push:
+    branches: [developer-refresh-notes]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for verified installers and publication
+        run: gh run watch 41897144092 --interval 30 --exit-status
+      - name: Finalize developer notes and checksum inventory
+        run: node scripts/finalize-developer-refresh.cjs

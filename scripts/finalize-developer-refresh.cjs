@@ -1,0 +1,20 @@
+const fs=require('node:fs'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+const repo=process.env.GH_REPO,api=(p,method='GET',data)=>JSON.parse(execFileSync('gh',['api','repos/'+repo+'/'+p,'--method',method,...(data?['--input','-']:[])],{encoding:'utf8',input:data?JSON.stringify(data):undefined}));
+const latest=api('releases/latest'),r=api('releases/426674255');
+const asset=r.assets.find(a=>a.name==='DEVELOPER-CHANNEL.json'),exe=r.assets.find(a=>a.name==='The-Spare-Room-Developer-Setup-3.0.0-x64.exe');
+if(!asset||!exe||exe.state!=='uploaded'||!/^sha256:[a-f0-9]{64}$/.test(exe.digest||''))throw Error('Verified developer installer missing');
+const manifest=JSON.parse(execFileSync('gh',['api','repos/'+repo+'/releases/assets/'+asset.id,'-H','Accept: application/octet-stream'],{encoding:'utf8'}));
+if(manifest.version!=='3.0.0'||manifest.channel!=='developer'||manifest.commit!=='49e22e5b1653c2a7b68fbbff45cfc2525d4e5a70')throw Error('Developer provenance mismatch');
+manifest.notes=fs.readFileSync('developer-game/RELEASE_NOTES_DRAFT.md','utf8');
+fs.writeFileSync('DEVELOPER-CHANNEL.json',JSON.stringify(manifest,null,2));
+execFileSync('gh',['release','upload',r.tag_name,'DEVELOPER-CHANNEL.json','--clobber'],{stdio:'inherit'});
+let after=api('releases/'+r.id);
+const expected='sha256:'+crypto.createHash('sha256').update(fs.readFileSync('DEVELOPER-CHANNEL.json')).digest('hex');
+if(!after.assets.some(a=>a.name==='DEVELOPER-CHANNEL.json'&&a.digest===expected))throw Error('Developer notes digest mismatch');
+const sums=after.assets.filter(a=>!a.name.includes('SHA256SUMS')&&/^sha256:[a-f0-9]{64}$/i.test(a.digest||'')).map(a=>a.digest.slice(7)+'  '+a.name).join('\n')+'\n';
+for(const name of new Set(['SHA256SUMS.txt',...after.assets.filter(a=>a.name.includes('SHA256SUMS')).map(a=>a.name)])){fs.writeFileSync(name,sums);execFileSync('gh',['release','upload',r.tag_name,name,'--clobber'],{stdio:'inherit'});}
+const marker='<!-- developer-settings-refresh -->';
+const body=(r.body||'').split(marker)[0].trim()+'\n\n'+marker+'\n### Desktop settings and indoor doorway refresh\nThe memory-house entrance is now on the left-hand wall near the end of the ground-floor hallway. Its return door leads safely back to the hallway; passages remain clear. Other v2.7.5 gameplay is preserved.\n\nAll desktop versions now include Settings → Admin sign in. Signing in online reveals **Include developer versions**. It is off by default; save preferences to check immediately. Stable and prerelease preferences stay separate, same-version refreshes remain supported, and newer versions are never downgraded. Passwords are never saved.\n\nThe separately named **The-Spare-Room-Developer-Setup-3.0.0-x64.exe** is an unfinished Windows developer preview of Beneath the House, offered only by the opted-in developer update channel. It uses a separate story save. It is an auxiliary download here; no public v3.0.0 release or tag has been created. Normal stable and prerelease checks do not offer it.\n';
+api('releases/'+r.id,'PATCH',{body,prerelease:r.prerelease,make_latest:r.id===latest.id?'true':'false'});
+if(api('releases/latest').id!==latest.id)throw Error('Latest changed');
+console.log(JSON.stringify({ok:true,release:r.html_url,version:manifest.version,revision:manifest.revision,installer:exe.name,sha256:exe.digest,publicV3ReleaseCreated:false}));
