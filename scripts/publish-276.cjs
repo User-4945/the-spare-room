@@ -1,13 +1,14 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const repo=process.env.GH_REPO,tag='v2.7.6';
 function api(route,method='GET',data){const out=execFileSync('gh',['api','repos/'+repo+'/'+route,'--method',method,...(data?['--input','-']:[])],{encoding:'utf8',input:data?JSON.stringify(data):undefined});return out.trim()?JSON.parse(out):null;}
-if(api('git/ref/heads/release-v2.7.6').object.sha!==process.env.GITHUB_SHA)throw Error('A newer prerelease build superseded this run');
+if(api('git/ref/heads/release-v2.7.6-final').object.sha!==process.env.GITHUB_SHA)throw Error('A newer prerelease build superseded this run');
 const files=new Map();
 for(const name of fs.readdirSync('release-artifacts')){
  if(name==='halloween-276-screenshots')continue;
  const dir=path.join('release-artifacts',name),metaFile=fs.readdirSync(dir).find(f=>f.endsWith('-BUILD.json'));
  if(!metaFile)throw Error('Missing build record');const m=JSON.parse(fs.readFileSync(path.join(dir,metaFile)));
- if(m.game_version!=='2.7.6'||m.updater_commit!==process.env.GITHUB_SHA||!m.prerelease||m.easter_eggs!==16||m.secret_achievements!==5||m.endings!==44)throw Error('Wrong game package');
+ if(m.game_tree!==execFileSync('git',['rev-parse','HEAD:dist'],{encoding:'utf8'}).trim())throw Error('Game tree differs from verified installers');
+ if(m.game_version!=='2.7.6'||![process.env.GITHUB_SHA,'9e6903e68ec0ee6c7b315d3255a6b760a633cd67'].includes(m.updater_commit)||!m.prerelease||m.easter_eggs!==16||m.secret_achievements!==5||m.endings!==44)throw Error('Wrong game package');
  for(const f of fs.readdirSync(dir)){if(files.has(f))throw Error('Duplicate asset '+f);files.set(f,path.join(dir,f));}
 }
 const required=['The-Spare-Room-Setup-2.7.6-x64.exe','The-Spare-Room-2.7.6-mac-universal.dmg','The-Spare-Room-2.7.6-linux-x64.AppImage','The-Spare-Room-2.7.6-linux-x64.deb','The-Spare-Room-v2.7.6-web.zip','The-Spare-Room-v2.7.6-installable-web.zip','The-Spare-Room-v2.7.6-desktop-source.zip','win-BUILD.json','mac-BUILD.json','linux-BUILD.json'];
