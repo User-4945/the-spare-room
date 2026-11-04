@@ -25,7 +25,7 @@ const wallAchievements=[
  {id:'space',name:'Leave Sufficient Space',description:'You noticed what had been left out.',all:true}
 ];
 let wallRunTainted=false;
-function wallPreview(){return wallRunTainted||!!window.spareAdmin?.isAuthenticated?.();}
+function wallPreview(){return wallRunTainted||!!s.adminUsed||!!window.spareAdmin?.isAuthenticated?.();}
 function wallState(){if(!s.wallSecrets||s.wallSecrets.schema!==1)s.wallSecrets={schema:1,found:[],achievements:[],compared:false,visits:0,revisited:false};return s.wallSecrets;}
 function wallPosition(n){if(!n.venue)return n.p;const c=cityWorld().find(c=>c.id===n.venue);return [c.x+n.offset[0],n.offset[1],c.z+n.offset[2]];}
 function wallAvailable(n){return !n.event||week2WorldActive();}
