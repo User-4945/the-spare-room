@@ -9,6 +9,8 @@ if (out === root || out === source || source.startsWith(out + path.sep) || out.s
 }
 fs.rmSync(out, {recursive: true, force: true});
 fs.cpSync(source, out, {recursive: true});
+// A complete seasonal source already has the correct dependency order.
+if(fs.existsSync(path.join(source,'wall-secrets.js'))){console.log('Copied complete Secrets in the Walls seasonal build.');process.exit(0);}
 for (const name of ['halloween.js', 'halloween.css', 'more-halloween.js']) {
   fs.copyFileSync(path.join(root, 'events/halloween', name), path.join(out, name));
 }

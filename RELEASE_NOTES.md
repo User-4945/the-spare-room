@@ -1,49 +1,56 @@
-# The Spare Room v.2.7.5 — Halloween Departs: The Last Knock
+# THE SPARE ROOM v2.7.6 — Secrets in the Walls
 
-A Halloween prerelease with a quieter finale, three new ending paths, and an optional third-person camera. Week 1 remains playable now; the next weeks use fixed worldwide unlock times.
+**Prerelease · Maintenance and secrets update**
 
-## Event access
+A few things needed fixing around the house.
 
-- **Week 1 — All Hallows’ Eve:** play now. Its 38 ending paths and original quests remain available.
-- **Week 2 — The Houses That Answer:** unlocks **Friday 30 October 2026, 17:00 GMT / UTC**. Its six answering doors, tricks and treats, masks, Velvet & Ash, basement and three endings are preserved.
-- **Week 3 — Halloween Departs: The Last Knock:** unlocks **Tuesday 3 November 2026, 15:00 GMT / UTC**. The event hub shows a separate live countdown and offers earlier unlocked weeks while waiting. Date gates use UTC instants and are unaffected by timezone or DST changes.
+Some papers turned up during the work.
 
-## Week 3, after unlock
+## Fixes and stability
 
-Say goodbye at the garden bell, the archive entrance and Velvet & Ash. Keep or return three keepsakes, then enter a furnished memory house through the final garden door. Explore three displays recalling the earlier weeks; your discovered endings personalise the open journal while unfamiliar memories stay closed.
+- Fixed sticky-note text and wall-attached collectible overlays showing through opaque upstairs floors and ceilings.
+- Added exact segment/box visibility checks, architectural floor-slab occlusion and a geometry-versioned spatial index.
+- Improved multi-storey object occlusion and third-person overlay visibility. Genuine openings and exterior stairs remain visible.
+- Improved anomaly placement with bounded retries at several distances, floor-height checks and clearance validation.
+- Improved collision handling for short movement steps around thin obstacles and door frames.
+- Added validation and backup recovery for story saves, while retaining legacy progress and unknown gameplay fields.
+- Avoided redundant writes for unchanged story snapshots; added a visible warning if saving fails.
+- Reduced procedural texture-generation work on startup and reused the visibility index until geometry changes.
+- Improved interaction reliability by applying the same precise occlusion checks to nearby-object selection.
+- Updated the admin service endpoint and exact desktop allowlist for the current hosted address, avoiding blocked cross-domain redirects. Existing credentials and server authorization remain unchanged.
+- General stability improvements, with regression checks for existing stories, event access, ending paths and updater behaviour.
 
-The neighbourhood gradually loses its decorations and pumpkin light as farewells are completed. Leaves drift across the streets. Week 3 pauses passive sanity drain and random anomaly encounters so the farewell can be explored at your own pace.
+## Small discoveries
 
-Choose what to do with the knocking suitcase. When you explicitly begin the last in-game hour, 45 seconds of active play lead to nine seconds of final chimes, lifting fog and a brighter sky. Reading and menus pause the finale. Midnight is part of the chosen scene; you cannot miss it by arriving late.
+- Added 16 optional Easter eggs throughout the house, upstairs rooms, garden and existing city locations.
+- Find household records, hidden objects, a maker’s mark, references to earlier discoveries and a rare answering-wall interaction.
+- Added **Unfiled Evidence**, a readable journal unlocked by your first new discovery.
+- Added five secret achievements with saved discovery progress.
+- New evidence causes no sanity loss and changes no existing ending requirements.
+- Admin-assisted stories cannot earn the new achievements. Start a new story to return to normal achievement tracking.
 
-Three paths bring the total to **44**:
+Some documents disagree with the building.
 
-- **Until Next October:** leave the suitcase behind.
-- **The Guest Who Stayed:** carry the unopened suitcase home.
-- **Leave a Light On:** return all three keepsakes before choosing the final farewell.
+Please retain them for your records.
 
-Every finale awards **The Last Knock — Witnessed the departure of Halloween 2026.** The award and ending journal persist through a new run. Reset to replay a different final choice.
+## Existing content
 
-## Improved play
-
-- **V** or the **CAMERA** toolbar button switches first and third person in all weeks, including touch devices through the button. The preference is saved separately from story progress.
-- Third person includes an animated player, an over-the-shoulder view, camera collision probes and interaction projection from the actual camera. Tight spaces pull the camera close and hide the avatar when necessary. Sprinting, jumping and existing interaction ranges remain available.
-- **WEEK 3 QUEST** gives a checklist, directions and travel to each farewell. Each week's quest progress stays separate when switching through the event hub.
-- Existing Easy, Intermediate and Hard modes, sandwiches, city generation codes, saves, Admin Panel and update settings are retained. Native admin networking includes the corrected endpoint allowlist and installed-app login regression checks.
+Weeks 1, 2 and 3 retain their existing access rules and stories. This update adds optional secrets rather than another chapter or new ending paths. Existing ending counts are unchanged. Household evidence remains available after Halloween departs; the tailor’s record requires legitimate access to Velvet & Ash.
 
 ## Downloads and updates
 
-Windows x64 Setup EXE; universal Intel/Apple Silicon Mac DMG; Linux x64 AppImage and DEB; browser ZIP; installable web ZIP; matching desktop source and SHA-256 checksums.
+Windows installer, universal macOS disk image, Linux AppImage/DEB, browser build, installable web build and matching desktop source are attached with SHA-256 checksums.
 
-Mac builds are ad-hoc signed, not notarized. Mobile uses the installable web app, not native APK/IPA packages. Normal gameplay works offline after installation; admin authorization and update checks need internet. Daily/manual updates remain stable-only by default, prereleases are opt-in, and newer installed versions are never downgraded.
+This is a **prerelease**, not the stable latest release. Enable prerelease updates in desktop Settings to receive it through the updater, or download a build below. Updates never downgrade an installed newer version. Same-version refresh support is retained.
 
-This is a prerelease. Stable v.2.5.0 and existing release downloads remain unchanged. Please report your platform, difficulty, camera mode, location and world generation code with any issue. Unlocks follow the device clock; this single-player offline build is not a tamper-proof timed service.
+For an installed web version, use **INSTALL → Save and apply update**. Your existing story, ending journal and preferences are retained.
 
+macOS builds are ad-hoc signed and not notarized. Android, iPhone and iPad use the web build; this release does not include native mobile installers.
 
-## Admin event previews and flight
+## Reporting problems
 
-Halloween countdown screens offer **Admin login / event previews**. Sign in with the existing online admin account, then choose a preview in the panel. Only events included in that game version appear. Public unlock dates stay unchanged: Week 2 on 30 October 2026 at 17:00 GMT; Week 3 on 3 November 2026 at 15:00 GMT. A still-locked preview closes when the session locks, expires or fails authorization.
+Include your platform, build revision, world generation code, location and what happened. Mention first-person or third-person view. Screenshots or a short recording help. Please mark hidden discoveries as spoilers.
 
-In **ADMIN → Session tools**, enable **Fly / pass through walls**. Use WASD to move, Space to rise, Ctrl to descend and Shift to move faster. Disable flight to return to the take-off point. Teleporting or changing event stops flight first. Flight and preview access are never saved. F8 opens the admin panel.
+---
 
-The same shared admin controls are included in all refreshed release downloads without adding newer game content to older releases. Existing same-version installs require a one-time re-download and reinstall; save profiles and update preferences are preserved.
+The maintenance record lists one more room than you remember.
