@@ -6,7 +6,7 @@ permissions:
   contents: write
 concurrency:
   group: developer-settings-refresh
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   inventory:
     runs-on: ubuntu-latest
@@ -74,9 +74,15 @@ jobs:
             $p = Start-Process (Join-Path $installDir 'The Spare Room.exe') -ArgumentList $argsList -PassThru
             if (!$p.WaitForExit(180000)) { $p.Kill(); throw 'Launch timeout' }
             $r = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+            $r | ConvertTo-Json -Depth 10
             if ($p.ExitCode -ne 0 -or !$r.ok) { throw 'Installed renderer failed' }
             if ($attempt -eq 2 -and !$r.saveVerified) { throw 'Save persistence failed' }
           }
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.platform == 'win'
+        with:
+          name: native-diagnostics-${{ matrix.version }}
+          path: ${{ runner.temp }}/smoke-*.json
       - name: Verify Mac universal bundle signature
         if: matrix.platform == 'mac'
         run: codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'

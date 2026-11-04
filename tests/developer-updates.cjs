@@ -25,3 +25,8 @@ test('settings admin login and preference mutations are restricted to the truste
  assert(!fs.readFileSync(path.join(profile,'updater-state.json'),'utf8').includes('password'));
  }finally{fs.rmSync(profile,{recursive:true,force:true});}
 });
+test('a final stable release wins over a same-version developer revision',async()=>{
+ const profile=fs.mkdtempSync(path.join(os.tmpdir(),'spare-dev-promote-'));
+ const transport={json:async url=>url.endsWith('/426674255')?release:{id:4,tag_name:'v3.0.0',draft:false,prerelease:false,assets:[]},text:async()=>JSON.stringify(manifest)};
+ try{const s=new UpdateService({profile,version:'3.0.0',prerelease:true,revision:998,transport});s.saved.allowDeveloperVersions=true;await s.check(true);assert(s.candidate);assert.equal(s.candidate.prerelease,false);assert(!s.candidate.developer);}finally{fs.rmSync(profile,{recursive:true,force:true});}
+});

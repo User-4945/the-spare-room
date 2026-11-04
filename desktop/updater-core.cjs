@@ -116,7 +116,7 @@ class UpdateService extends EventEmitter{
   if(!this.saved.allowDeveloperVersions)return normal;
   const developer=await this.findDeveloperRelease();
   if(!developer)return normal;
-  return !normal||compareVersions(developer.version,normal.version)>0||compareVersions(developer.version,normal.version)===0&&developer.revision>normal.revision?developer:normal;
+  return !normal||compareVersions(developer.version,normal.version)>0||compareVersions(developer.version,normal.version)===0&&normal.prerelease&&developer.revision>normal.revision?developer:normal;
  }
  async findPublicRelease(){
   if(!this.saved.allowPrereleases){

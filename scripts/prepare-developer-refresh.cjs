@@ -22,6 +22,8 @@ z.extractall('refresh-original/extracted')`]);
  const root='refresh-original/extracted/the-spare-room',old=JSON.parse(fs.readFileSync(root+'/release.json'));if(old.version!==version)throw Error('Wrong game version');
  fs.rmSync('dist',{recursive:true,force:true});fs.cpSync(root+'/dist','dist',{recursive:true});fs.copyFileSync(root+'/tests/game-smoke.cjs','tests/game-smoke.cjs');fs.copyFileSync(root+'/desktop/main.cjs','desktop/main.cjs');
  {const p='desktop/main.cjs';let t=fs.readFileSync(p,'utf8');t=t.replace("if(url===API+'/releases/latest')return stable;","if(url===API+'/releases/latest')return stable;\n  if(url.startsWith(API+'/releases/tags/'))return {...stable,tag_name:decodeURIComponent(url.split('/').at(-1))};");fs.writeFileSync(p,t);}
+ // Migrate the retired hosting origin without altering the release's gameplay.
+ for(const p of ['dist/admin-auth-config.js','desktop/main.cjs'])if(fs.existsSync(p))fs.writeFileSync(p,fs.readFileSync(p,'utf8').replaceAll('https://the-spare-room.sunsetjelly6.chatgpt.site','https://the-spare-room.udammi26.chatgpt.site'));
  // The shell keeps the matching release's smoke and game behavior. Shared settings are separate modules.
  for(const p of ['desktop/icon.ico','platforms/icons']){fs.rmSync(p,{recursive:true,force:true});fs.cpSync(root+'/'+p,p,{recursive:true});}
  if(version==='2.7.5')execFileSync('node',['scripts/move-memory-door.cjs']);
