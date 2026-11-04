@@ -1,0 +1,49 @@
+name: Complete queued Mac desktop refreshes
+on:
+  push:
+    branches: [developer-refresh-mac-finish]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  finish:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node scripts/prepare-developer-refresh.cjs 2.7.5 mac
+      - run: node tests/week3.cjs
+      - run: node --test tests/updater.cjs tests/developer-updates.cjs
+      - run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --mac --publish never
+          codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+      - name: Wait for verified Windows and Linux publication
+        run: |
+          node - <<'JS'
+          const {execFileSync}=require('child_process');(async()=>{for(;;){const j=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GH_REPO+'/actions/runs/41899724890/jobs?per_page=100'],{encoding:'utf8'})).jobs.find(j=>j.name==='publish');if(j?.conclusion==='success')break;if(j?.status==='completed')throw Error('Desktop publishing failed');await new Promise(r=>setTimeout(r,30000));}})().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - run: node scripts/publish-developer-refresh.cjs 2.7.5 mac
+      - name: Publish the two later Mac builds
+        run: |
+          gh run download 41897144092 --pattern 'developer-refresh-2.0.5-mac' --pattern 'developer-refresh-2.1.0-mac' --dir late-mac-results
+          for folder in late-mac-results/*; do
+            rm -rf platform-build
+            mkdir platform-build
+            find "$folder" -maxdepth 2 -type f ! -name installer-build.json -exec cp {} platform-build/ \;
+            cp "$folder/installer-build.json" installer-build.json
+            version=$(node -p 'require("./installer-build.json").game_version')
+            GITHUB_SHA=49e22e5b1653c2a7b68fbbff45cfc2525d4e5a70 node scripts/publish-developer-refresh.cjs "$version" mac
+          done
+      - run: node scripts/finalize-developer-refresh.cjs
