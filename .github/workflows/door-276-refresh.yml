@@ -1,0 +1,121 @@
+name: v2.7.6 indoor memory-house doorway refresh
+on:
+  push:
+    branches: [door-276-refresh]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: door-276-refresh
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {version: '2.7.6', platform: win, runner: windows-latest}
+          - {version: '2.7.6', platform: linux, runner: ubuntu-latest}
+          - {version: '2.7.6', platform: mac, runner: macos-15}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node scripts/prepare-developer-refresh.cjs '${{ matrix.version }}' '${{ matrix.platform }}'
+      - run: node --test tests/updater.cjs tests/developer-updates.cjs
+      - if: matrix.version != '3.0.0'
+        run: node tests/game-smoke.cjs
+      - if: matrix.version == '2.7.6'
+        run: node tests/week3.cjs
+      - if: matrix.version == '3.0.0'
+        run: node tests/beneath.cjs
+      - run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --${{ matrix.platform }} --publish never
+      - name: Verify installed Windows app twice
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem platform-build/*Setup*.exe | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP 'spare-refresh-installed'
+          $p = Start-Process $installer.FullName -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Installation failed' }
+          $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-refresh-profile'
+          foreach ($attempt in 1,2) {
+            $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP "smoke-$attempt.json"
+            $argsList = @('--smoke-test')
+            if ($attempt -eq 2) { $argsList += '--smoke-verify-save' }
+            $p = Start-Process (Join-Path $installDir 'The Spare Room.exe') -ArgumentList $argsList -PassThru
+            if (!$p.WaitForExit(180000)) { $p.Kill(); throw 'Launch timeout' }
+            $r = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+            $r | ConvertTo-Json -Depth 10
+            if ($p.ExitCode -ne 0 -or !$r.ok) { throw 'Installed renderer failed' }
+            if ($attempt -eq 2 -and !$r.saveVerified) { throw 'Save persistence failed' }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.platform == 'win'
+        with:
+          name: native-diagnostics-${{ matrix.version }}
+          path: ${{ runner.temp }}/smoke-*.json
+      - name: Verify Mac universal bundle signature
+        if: matrix.platform == 'mac'
+        run: codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+      - name: Package matching source and v2.7.5 browser build
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p installer-output
+          python3 scripts/package-desktop-source.py
+          cp installer-output/*.zip platform-build/
+          if [ '${{ matrix.version }}' = '2.7.6' ]; then
+            python3 scripts/package-release.py
+            cp release-build/*.zip platform-build/
+            cp RELEASE_NOTES.md platform-build/
+            node scripts/prepare-pwa.cjs dist pwa-build release.json
+            python3 -c "import shutil;shutil.make_archive('The-Spare-Room-v2.7.6-installable-web','zip','pwa-build')"
+            cp The-Spare-Room-v2.7.6-installable-web.zip platform-build/
+          fi
+      - name: Stage flat verified release files
+        shell: bash
+        run: |
+          mkdir -p door-output
+          find platform-build -maxdepth 1 -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.zip' -o -name '*.md' \) -exec cp {} door-output/ \;
+          cp installer-build.json door-output/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: door-276-${{ matrix.platform }}
+          path: door-output/
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: door-276-*
+          path: refresh-results
+      - name: Publish verified installers, revisions and matching checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          for folder in refresh-results/door-276-*; do
+            rm -rf platform-build
+            mkdir platform-build
+            find "$folder" -maxdepth 2 -type f ! -name installer-build.json -exec cp {} platform-build/ \;
+            cp "$folder/installer-build.json" installer-build.json
+            version=$(node -p 'require("./installer-build.json").game_version')
+            platform=$(node -p 'require("./installer-build.json").platform')
+            node scripts/publish-developer-refresh.cjs "$version" "$platform"
+          done
+

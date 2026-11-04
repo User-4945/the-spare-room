@@ -26,9 +26,9 @@ z.extractall('refresh-original/extracted')`]);
  for(const p of ['dist/admin-auth-config.js','desktop/main.cjs'])if(fs.existsSync(p))fs.writeFileSync(p,fs.readFileSync(p,'utf8').replaceAll('https://the-spare-room.sunsetjelly6.chatgpt.site','https://the-spare-room.udammi26.chatgpt.site'));
  // The shell keeps the matching release's smoke and game behavior. Shared settings are separate modules.
  for(const p of ['desktop/icon.ico','platforms/icons']){fs.rmSync(p,{recursive:true,force:true});fs.cpSync(root+'/'+p,p,{recursive:true});}
- if(version==='2.7.5')execFileSync('node',['scripts/move-memory-door.cjs']);
+ if(['2.7.5','2.7.6'].includes(version))execFileSync('node',['scripts/move-memory-door.cjs']);
  info={...old,tag:release.tag_name,prerelease:release.prerelease,build_revision:revision};origin={release_id:release.id,source_asset:a.id,source_sha256:a.digest};
- fs.writeFileSync('RELEASE_NOTES.md',release.body+'\n\n### Desktop developer-channel refresh\nSettings now includes online Admin sign in. After signing in, enable Include developer versions and Save preferences. Stable and prerelease choices remain separate; no downgrades. Original game content is preserved.'+(version==='2.7.5'?' The Final House doorway is now on the left wall near the end of the indoor hallway, clear of routes.':''));
+ fs.writeFileSync('RELEASE_NOTES.md',release.body+'\n\n### Desktop developer-channel refresh\nSettings now includes online Admin sign in. After signing in, enable Include developer versions and Save preferences. Stable and prerelease choices remain separate; no downgrades. Original game content is preserved.'+(['2.7.5','2.7.6'].includes(version)?' The Final House doorway is now on the left wall near the end of the indoor hallway, clear of routes.':''));
 }
 for(const file of ['package.json','package-lock.json']){const p=JSON.parse(fs.readFileSync(file));p.version=version;if(p.packages)p.packages[''].version=version;fs.writeFileSync(file,JSON.stringify(p,null,2)+'\n');}
 fs.writeFileSync('release.json',JSON.stringify(info,null,2));
