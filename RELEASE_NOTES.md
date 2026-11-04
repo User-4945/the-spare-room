@@ -17,6 +17,7 @@ Some papers turned up during the work.
 - Avoided redundant writes for unchanged story snapshots; added a visible warning if saving fails.
 - Reduced procedural texture-generation work on startup and reused the visibility index until geometry changes.
 - Improved interaction reliability by applying the same precise occlusion checks to nearby-object selection.
+- Updated the admin service endpoint and exact desktop allowlist for the current hosted address, avoiding blocked cross-domain redirects. Existing credentials and server authorization remain unchanged.
 - General stability improvements, with regression checks for existing stories, event access, ending paths and updater behaviour.
 
 ## Small discoveries

@@ -137,7 +137,7 @@ ses.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss
 // HTTPS protocol path. The real request filter above still runs unchanged.
 if(smoke&&!smokeUpgrade)ses.protocol.handle('https',request=>{
  const u=new URL(request.url),headers={'Content-Type':'application/json','Access-Control-Allow-Origin':'null','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Cache-Control':'no-store'};
- if(u.origin!=='https://the-spare-room.sunsetjelly6.chatgpt.site'||!['/api/admin/login','/api/admin/authorize'].includes(u.pathname))return new Response('Blocked fixture route',{status:403});
+ if(u.origin!=='https://the-spare-room.udammi26.chatgpt.site'||!['/api/admin/login','/api/admin/authorize'].includes(u.pathname))return new Response('Blocked fixture route',{status:403});
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
  return request.json().then(body=>{const ok=u.pathname.endsWith('/login')?body.username==='qa-admin'&&body.password==='qa-password':request.headers.get('Authorization')==='Bearer installed-app-test-token';return new Response(JSON.stringify(ok?{ok:true,token:'installed-app-test-token',expiresAt:Date.now()+600000}:{ok:false,message:'Incorrect username or password.'}),{status:ok?200:401,headers});});
 });
