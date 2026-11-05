@@ -7,6 +7,7 @@ local TweenService = game:GetService("TweenService")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("SpareRoomEvent")
+local Avatars = require(ReplicatedStorage:WaitForChild("SpareRoomAvatars"))
 local Config = require(ReplicatedStorage:WaitForChild("SpareRoomConfig"))
 local gui = Instance.new("ScreenGui")
 gui.Name = "SpareRoomHUD"
@@ -43,6 +44,8 @@ local function frame(parent, name, pos, size)
  f.BackgroundColor3 = Color3.fromRGB(20, 22, 21)
  f.BackgroundTransparency = 0.08
  f.BorderColor3 = Color3.fromRGB(119, 108, 86)
+ f.BorderSizePixel=0
+ local stroke=Instance.new("UIStroke") stroke.Color=Color3.fromRGB(119,108,86) stroke.Transparency=0.5 stroke.Parent=f
  f.Parent = parent
  local corner = Instance.new("UICorner")
  corner.CornerRadius = UDim.new(0,5)
@@ -75,6 +78,9 @@ local function button(parent, content, pos, size, callback)
  local corner = Instance.new("UICorner")
  corner.CornerRadius = UDim.new(0,4)
  corner.Parent = b
+ local stroke=Instance.new("UIStroke") stroke.Color=Color3.fromRGB(143,128,94) stroke.Transparency=0.6 stroke.Parent=b
+ b.MouseEnter:Connect(function() TweenService:Create(b,TweenInfo.new(0.18),{BackgroundColor3=Color3.fromRGB(70,66,51)}):Play() end)
+ b.MouseLeave:Connect(function() TweenService:Create(b,TweenInfo.new(0.18),{BackgroundColor3=Color3.fromRGB(48,47,40)}):Play() end)
  b.Activated:Connect(callback)
  return b
 end
@@ -99,14 +105,31 @@ cross.BackgroundColor3 = gold
 cross.BorderSizePixel = 0
 local title = frame(canvas, "TitleScreen", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
 title.ZIndex = 10
-text(title, "THE SPARE ROOM", UDim2.fromScale(0.1, 0.12), UDim2.fromScale(0.8, 0.12), 32)
-text(title, "BENEATH THE HOUSE\nThere was always something underneath.\n\nRoblox Studio starter · six ending paths", UDim2.fromScale(0.1, 0.27), UDim2.fromScale(0.8, 0.2), 19)
+title.BackgroundTransparency=0.3
+local shade=Instance.new("UIGradient")
+shade.Color=ColorSequence.new(Color3.fromRGB(8,14,12),Color3.fromRGB(35,37,31))
+shade.Rotation=25 shade.Parent=title
+local edition=text(title,"A HOUSE THAT REMEMBERS",UDim2.fromOffset(64,60),UDim2.fromOffset(640,32),14)
+edition.TextXAlignment=Enum.TextXAlignment.Left
+local masthead=text(title,"THE SPARE\nROOM",UDim2.fromOffset(60,106),UDim2.fromOffset(800,174),70)
+masthead.Font=Enum.Font.Garamond masthead.TextXAlignment=Enum.TextXAlignment.Left masthead.TextYAlignment=Enum.TextYAlignment.Top
+local subtitle=text(title,"BENEATH THE HOUSE",UDim2.fromOffset(64,290),UDim2.fromOffset(650,40),22)
+subtitle.TextXAlignment=Enum.TextXAlignment.Left
+local tagline=text(title,"There was always something underneath.",UDim2.fromOffset(64,340),UDim2.fromOffset(780,32),17)
+tagline.TextXAlignment=Enum.TextXAlignment.Left tagline.TextColor3=Color3.fromRGB(179,179,158)
+local titleHousehold=text(title,"EXPLORERS CONNECTED · 1",UDim2.fromOffset(880,60),UDim2.fromOffset(330,32),14)
+text(title,"CHOOSE HOW THE HOUSE REMEMBERS YOU",UDim2.fromOffset(64,426),UDim2.fromOffset(800,28),13).TextXAlignment=Enum.TextXAlignment.Left
+local descriptions={"A gentler descent. More recovery, quieter nights.","The house notices. Balanced sanity and disturbances.","Memories slip faster. Less comfort, more disturbances."}
 for i, mode in ipairs({"Easy", "Intermediate", "Hard"}) do
- button(title, mode, UDim2.fromScale(0.32, 0.5 + (i - 1) * 0.1), UDim2.fromScale(0.36, 0.08), function()
-  remote:FireServer("Start", mode)
- end)
+ local card=button(title,"",UDim2.fromOffset(64+(i-1)*390,472),UDim2.fromOffset(370,116),function() remote:FireServer("Start",mode) end)
+ local label=text(card,string.upper(mode),UDim2.fromOffset(20,15),UDim2.fromOffset(330,28),21)
+ label.TextXAlignment=Enum.TextXAlignment.Left
+ local detail=text(card,descriptions[i],UDim2.fromOffset(20,52),UDim2.fromOffset(330,50),14)
+ detail.TextXAlignment=Enum.TextXAlignment.Left detail.TextColor3=Color3.fromRGB(187,183,162)
 end
-text(title, "WASD · Shift sprint · Space jump · V camera\nHold E, click, touch or controller X near an object.\nRead the hallway invitation, then inspect the maintenance hatch.", UDim2.fromScale(0.1, 0.83), UDim2.fromScale(0.8, 0.14), 14)
+text(title,"EXPLORE TOGETHER / Your clues, sanity and endings remain your own.",UDim2.fromOffset(64,616),UDim2.fromOffset(1150,28),14).TextXAlignment=Enum.TextXAlignment.Left
+text(title,"WASD move · Hold E interact · M release mouse · G district guide · F flashlight",UDim2.fromOffset(64,662),UDim2.fromOffset(1150,24),12).TextXAlignment=Enum.TextXAlignment.Left
+local menuBlur=Instance.new("BlurEffect") menuBlur.Name="SpareRoomMenuBlur" menuBlur.Size=6 menuBlur.Parent=game:GetService("Lighting")
 local modal = frame(canvas, "Reading", UDim2.fromScale(0.12, 0.13), UDim2.fromScale(0.76, 0.72))
 modal.ZIndex = 20
 modal.Visible = false
@@ -133,6 +156,7 @@ local function closeModal()
  if reason == "read" then remote:FireServer("ReadClosed", readingId)
  elseif reason == "confirm" then remote:FireServer("CancelEnding")
  elseif reason == "admin" then remote:FireServer("Pause", false)
+ elseif reason == "household" then remote:FireServer("Pause", false)
  elseif reason == "map" then remote:FireServer("Pause", false)
  elseif reason == "journal" then remote:FireServer("Pause", false)
  elseif reason == "ending" then remote:FireServer("Start", current.mode) end
@@ -184,6 +208,16 @@ local function openMap()
  remote:FireServer("Pause",true)
 end
 local mapButton=button(canvas,"MAP / G",UDim2.fromOffset(1136,236),UDim2.fromOffset(116,36),openMap)
+local householdButton=button(canvas,"HOUSEHOLD",UDim2.fromOffset(1136,278),UDim2.fromOffset(116,36),function()
+ if blocked() then return end
+ modalReason="household"
+ heading.Text="EXPLORING TOGETHER"
+ local lines={}
+ for _,member in ipairs(current.household or {}) do table.insert(lines,member.name.." — "..(not member.started and "choosing a difficulty" or member.paused and "reading / resting" or "exploring")) end
+ body.Text=table.concat(lines,"\n").."\n\nThe house and its residents are shared. Your clues, sanity, sandwiches, anomalies and ending choices belong to you. Reading pauses only your own timers."
+ closeButton.Text="Return to the house" chooseButton.Visible=false modal.Visible=true
+ remote:FireServer("Pause",true)
+end)
 local touchSprint = false
 local sprintButton = button(canvas, "SPRINT", UDim2.fromScale(0.02, 0.72), UDim2.fromOffset(110, 36), function()
  if blocked() then return end
@@ -308,6 +342,43 @@ local function anomalyPart(model, size, color)
  part.Parent = model
  return part
 end
+-- Pose native Motor6D avatar joints without third-party animation assets.
+local jointCache=setmetatable({},{__mode="k"})
+local function poseAvatar(model,t,moving,look)
+ local joints=jointCache[model]
+ if not joints then
+  joints={}
+  for _,joint in ipairs(model:GetDescendants()) do if joint:IsA("Motor6D") then table.insert(joints,joint) end end
+  jointCache[model]=joints
+ end
+ local swing=math.sin(t*(moving and 7 or 1.2))*(moving and 0.52 or 0.035)
+ for _,joint in ipairs(joints) do
+  local name=string.gsub(joint.Name," ","")
+  if name=="LeftShoulder" or name=="RightHip" then joint.Transform=CFrame.Angles(swing,0,0)
+  elseif name=="RightShoulder" or name=="LeftHip" then joint.Transform=CFrame.Angles(-swing,0,0)
+  elseif name=="LeftKnee" then joint.Transform=CFrame.Angles(math.max(0,-swing)*0.6,0,0)
+  elseif name=="RightKnee" then joint.Transform=CFrame.Angles(math.max(0,swing)*0.6,0,0)
+  elseif name=="Waist" then joint.Transform=CFrame.Angles(0,math.sin(t)*0.025,0)
+  elseif name=="Neck" then joint.Transform=CFrame.Angles(math.sin(t*0.6)*0.035,look or math.sin(t*0.4)*0.07,0) end
+ end
+end
+local residentTime=0
+RunService.PreSimulation:Connect(function(dt)
+ residentTime+=dt
+ local npcs=workspace:FindFirstChild("SpareRoomNPCs")
+ if npcs then
+  for _,model in ipairs(npcs:GetChildren()) do
+   local root=model.PrimaryPart
+   if root then
+    local moving=root.AssemblyLinearVelocity.Magnitude>1 and not root.Anchored
+    poseAvatar(model,residentTime+(model:GetAttribute("Phase") or 0),moving,model:GetAttribute("Role")=="Watcher" and math.sin(residentTime*0.1)*0.3 or nil)
+   end
+  end
+ end
+ if active and active.rigs then
+  for i,rig in ipairs(active.rigs) do poseAvatar(rig,active.time+i,false,active.id=="doll" and math.sin(active.time*0.35)*0.9 or 0) end
+ end
+end)
 local function startAnomaly(data)
  endAnomaly()
  local model = Instance.new("Model")
@@ -318,6 +389,7 @@ local function startAnomaly(data)
  local eye = camera.CFrame.Position
  local base = CFrame.lookAt(p, Vector3.new(eye.X, p.Y, eye.Z))
  local parts = {}
+ local rigs={}
  if data.id == "coat" then
   parts[1] = anomalyPart(model, Vector3.new(1.2, 2.1, 0.4), Color3.fromRGB(89, 106, 91))
   parts[2] = anomalyPart(model, Vector3.new(0.6, 0.5, 0.4), Color3.fromRGB(158, 147, 113))
@@ -341,9 +413,14 @@ local function startAnomaly(data)
   for i=3,4 do parts[i]=anomalyPart(model,Vector3.new(0.16,5.1,0.3),Color3.fromRGB(138,119,86)) end
   parts[5]=anomalyPart(model,Vector3.new(2.8,0.2,0.3),Color3.fromRGB(138,119,86))
  elseif data.id == "family" then
-  for i=1,8 do
-   parts[i]=anomalyPart(model,i%2==0 and Vector3.new(0.55,0.6,0.55) or Vector3.new(0.7,1.6,0.35),Color3.fromRGB(31,39,35))
-   if i%2==0 then parts[i].Shape=Enum.PartType.Ball end
+  local templates=ReplicatedStorage:FindFirstChild("SpareRoomAvatarTemplates")
+  local template=templates and templates:FindFirstChild("Watcher")
+  if template then
+   for i=1,4 do
+    local rig=template:Clone() rig:ScaleTo(i==4 and 0.42 or 0.58)
+    rig.PrimaryPart.Anchored=true rig.Parent=model rigs[i]=rig
+    for _,part in ipairs(rig:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide=false part.Transparency=part.Name=="HumanoidRootPart" and 1 or 0.35 table.insert(parts,part) end end
+   end
   end
  elseif data.id == "blocks" then
   for i=1,5 do
@@ -363,8 +440,17 @@ local function startAnomaly(data)
   parts[3]=anomalyPart(model,Vector3.new(1.1,0.1,1.1),Color3.fromRGB(79,79,60))
   local light=Instance.new("PointLight") light.Range=10 light.Color=Color3.fromRGB(237,207,143) light.Parent=parts[2]
  end
- for _,part in ipairs(parts) do part.CFrame=base end
- active = {model = model, parts = parts, base = base, id = data.id, time = 0, duration = data.duration or 12}
+ if data.id=="watcher" or data.id=="doll" then
+  local templates=ReplicatedStorage:FindFirstChild("SpareRoomAvatarTemplates")
+  local template=templates and templates:FindFirstChild(data.id=="watcher" and "Watcher" or "Doll")
+  if template then
+   local rig=template:Clone() rig.Parent=model rig.PrimaryPart.Anchored=true rigs[1]=rig
+   for _,part in ipairs(rig:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide=false table.insert(parts,part) end end
+  end
+ end
+ if #rigs==0 then for _,part in ipairs(parts) do part.CFrame=base end end
+ for i,rig in ipairs(rigs) do Avatars.place(rig,p+Vector3.new((i-(#rigs+1)/2)*0.95,0,0)) end
+ active = {model = model, parts = parts, base = base, id = data.id, time = 0, duration = data.duration or 12, rigs=rigs}
  showCaption(data.title .. " — " .. data.text, data.duration or 12)
 end
 UserInputService.InputBegan:Connect(function(input, processed)
@@ -384,6 +470,8 @@ UserInputService.WindowFocusReleased:Connect(function() remote:FireServer("Sprin
 remote.OnClientEvent:Connect(function(action, data)
  if action == "State" then
   current = data
+  titleHousehold.Text="EXPLORERS CONNECTED · "..#(data.household or {})
+  householdButton.Text="HOUSEHOLD / "..#(data.household or {})
   adminButton.Visible = data.admin and data.started and not data.ended
   if not data.started or data.ended then adminPanel.Visible=false end
   title.Visible = not data.started
@@ -435,12 +523,21 @@ end)
 RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value + 1, function(dt)
  fitCanvas()
  local isBlocked = blocked()
+ menuBlur.Size=not current.started and 6 or modalReason and 3 or 0
+ local camera=workspace.CurrentCamera
+ if camera then
+  if not current.started then
+   camera.CameraType=Enum.CameraType.Scriptable
+   camera.CFrame=CFrame.lookAt(Vector3.new(math.sin(os.clock()*0.08)*1.2,8,-38),Vector3.new(0,5,-12))
+  elseif camera.CameraType==Enum.CameraType.Scriptable then camera.CameraType=Enum.CameraType.Custom end
+ end
  controlHints.Visible=not isBlocked
  journalButton.Visible=current.started and not current.ended
  cameraButton.Visible=current.started and not current.ended
  mouseButton.Visible=current.started and not current.ended
  lampButton.Visible=current.started and not current.ended
  mapButton.Visible=current.started and not current.ended
+ householdButton.Visible=current.started and not current.ended
  mouseButton.Modal=cursorFree and not isBlocked
  mouseButton.Text=cursorFree and "CAPTURE / M" or "MOUSE / M"
  if current.admin and current.flying and not current.ended and current.started then
@@ -510,7 +607,22 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
  if active and not isBlocked then
   active.time += dt
   local t, parts, base = active.time, active.parts, active.base
-  if active.id == "pages" then
+  if active.id == "watcher" then
+   local rig=active.rigs[1]
+   if rig then
+    local projected,onScreen=workspace.CurrentCamera:WorldToViewportPoint(rig.PrimaryPart.Position)
+    if not onScreen or projected.Z<0 then active.unwatched=(active.unwatched or 0)+dt end
+    local angle=(active.unwatched or 0)>1.1 and math.pi or 0
+    Avatars.place(rig,base.Position)
+    rig:PivotTo(CFrame.lookAt(rig.PrimaryPart.Position,rig.PrimaryPart.Position+base.LookVector)*CFrame.Angles(0,angle,0))
+   end
+  elseif active.id == "doll" then
+   local rig=active.rigs[1]
+   if rig then
+    Avatars.place(rig,base.Position)
+    rig:PivotTo(CFrame.lookAt(rig.PrimaryPart.Position,rig.PrimaryPart.Position+base.LookVector)*CFrame.Angles(0,math.sin(t*0.25)*0.4,0))
+   end
+  elseif active.id == "pages" then
    for i,part in ipairs(parts) do
     local angle=t*0.45+i*math.pi/4
     part.CFrame=base*CFrame.new(math.cos(angle)*1.1,1.8+math.sin(t+i)*0.25,math.sin(angle)*1.1)*CFrame.Angles(0,angle,math.sin(t+i)*0.2)
@@ -523,14 +635,10 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
    parts[4].CFrame=base*CFrame.new(1.35,2.55,0)
    parts[5].CFrame=base*CFrame.new(0,5.05,0)
   elseif active.id == "family" then
-   for i=1,4 do
-    local x=(i-2.5)*0.9
-    local small=i==4 and 0.65 or 1
-    local sway=math.sin(t*0.35+i)*0.06
-    parts[i*2-1].CFrame=base*CFrame.new(x+sway,small*1.5,0)
-    parts[i*2].CFrame=base*CFrame.new(x+sway,small*2.55,0)
-    parts[i*2-1].Transparency=0.35+math.sin(t*0.5+i)*0.1
-    parts[i*2].Transparency=parts[i*2-1].Transparency
+   for i,rig in ipairs(active.rigs) do
+    local point=base.Position+base.RightVector*((i-2.5)*0.95)
+    Avatars.place(rig,point)
+    rig:PivotTo(CFrame.lookAt(rig.PrimaryPart.Position,rig.PrimaryPart.Position+base.LookVector))
    end
   elseif active.id == "blocks" then
    for i,part in ipairs(parts) do

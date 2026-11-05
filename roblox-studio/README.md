@@ -1,4 +1,4 @@
-# The Spare Room — Roblox Studio prototype 0.3
+# The Spare Room — Roblox Studio prototype 0.4
 
 An importable Roblox Studio place, rebuilt in Luau from the core ideas of The Spare Room.
 This is a starter adaptation, not a complete port of the browser/desktop releases.
@@ -22,9 +22,9 @@ Opening the place does not publish it to Roblox. You decide when to publish from
 - Easy, Intermediate and Hard modes.
 - Server-maintained sanity, deferred reading costs, a 2.2-second loss flash, and a zero-sanity restart screen.
 - Sandwiches restore 15/12/10 percent by mode and refill after 120 seconds of active play.
-- Ten locally animated anomalies with captions; menus and reading pause their timers.
+- Twelve locally animated anomalies with captions; menus and reading pause their timers.
 - Six ending paths and a per-player journal for the current server.
-- 1,277 anchored map parts. All art is primitive geometry that you can edit in Studio.
+- 1,276 anchored map parts. All art is primitive geometry that you can edit in Studio.
 
 ## Controls
 | Action | Control |
@@ -84,7 +84,7 @@ Use a separate test experience rather than a live production data store for pers
 
 ## Deliberately not ported yet
 The procedural city/chunk generator, upstairs expansion, Halloween quests, the full 61-ending collection,
-Roblox badges, custom avatar animations and true mirror reflections.
+Roblox badges, fully authored animation assets and true mirror reflections.
 The mirror is an interactive lore prop. The starter contains no real family voice recordings or external music.
 
 ## Validation limits
@@ -99,7 +99,7 @@ prompt visuals, physics, touch layouts and performance before public publication
 - Try E, click/touch and controller hold prompts.
 - Eat a sandwich twice: the second interaction should show its cooldown.
 - Unlock the chamber using the actual evidence and key.
-- Observe all ten anomalies while standing still, then pause with a page and resume.
+- Observe all twelve anomalies while standing still, then pause with a page and resume.
 - Trigger the five chosen endings and the sanity-loss ending; restart each time.
 - Test with two local clients: reading, sandwiches and sanity must remain independent.
 - Inspect View → Output for errors. Report the exact message and what you were doing.
@@ -118,7 +118,7 @@ The HUD now uses a centered 1280×720 design canvas scaled to the viewport: sani
 
 Press **F8** or **ADMIN** after starting a run. Access is checked by the server on every command. Studio playtest users are authorized; in a published user-owned experience, its creator is authorized. For other users or group-owned experiences, edit `ADMIN_USER_IDS` near the top of `SpareRoomServer.server.lua` to add numeric Roblox UserIds, e.g. `{[123456789] = true}`. Do not enter the web version's password or username: Roblox identity replaces password authentication here.
 
-Tools: teleport to house/garden/basement/all eight venues; spawn any of the ten animated anomalies; clear anomalies; add/remove sanity; toggle flight; skip a day (advances active event timers). Anomalies use the normal floor and clearance checks; move to open floor space if a spawn is postponed. Close the admin panel to resume the paused game and see the anomaly.
+Tools: teleport to house/garden/basement/all eight venues; spawn any of the twelve animated anomalies; clear anomalies; add/remove sanity; toggle flight; skip a day (advances active event timers). Anomalies use the normal floor and clearance checks; move to open floor space if a spawn is postponed. Close the admin panel to resume the paused game and see the anomaly.
 
 Flight: WASD direction, Space up, Left Ctrl down; toggling flight off returns normal movement. Keyboard flight is intended for desktop Studio testing. Day skipping changes the run's day counter and timers; this prototype does not yet implement a complete day/night schedule or calendar-gated events.
 
@@ -143,3 +143,22 @@ Custom prompt rendering and manual input forwarding have been removed. Roblox re
 - Natural anomalies can appear in the house, basement or district when a nearby floor area has sufficient clearance. A shuffled bag ensures every type is seen before that cycle repeats, without immediate repetition between cycles. Admin spawns do not consume this bag.
 - Animation, captions and cleanup share a 14-second active-play lifetime, including a final two-second fade. Menus pause all three. Lamp pulses are gentle and local rather than rapid full-screen flashes.
 - These are local visual anomalies without collision. Studio playtesting is still needed to verify actual rendering, mouse recapture and every input method.
+
+
+## Avatars, Watcher, doll and multiplayer refresh
+
+The server now creates **11 native Roblox avatar NPCs**: Mum, the garden Watcher, the doll in the spare room, and eight citizens. Roblox's HumanoidDescription API builds R15 models; an embedded R6 rig factory provides a fallback when avatar creation fails. These use curated body colours and simple hair, not real users' outfits or commissioned character art. No player account lookup, external avatar IDs or paid animation assets are needed.
+
+Citizens follow server-owned pathfinding routes on the pavements and offer eight short family clues via default Roblox hold prompts. If a path fails, the NPC stops and recomputes later instead of teleporting through geometry. Client-side Motor6D poses add walk cycles, arm swing, knee movement, breathing and head motion. The Watcher and doll also appear as two new animated anomalies, bringing the total to **12**. Family silhouettes use avatar rigs too. The doll in the spare room has a readable lore interaction; its first reading costs sanity after the popup closes.
+
+The title screen now frames the house with a slow camera movement, serif title, three difficulty cards, hover transitions and a live connected-player count. **HOUSEHOLD** shows who's exploring or reading. Each player chooses their own difficulty; there is no shared host difficulty or combined ending vote.
+
+### Multiplayer
+
+Multiple players can explore the same server, house, district and NPCs. Player/NPC collision groups keep residents and explorers from blocking doorways. All walking NPC movement comes from the server. Evidence, sanity, sandwich timers, anomaly schedules, menus and endings remain individual. A player reading never pauses someone else's run. Personal anomalies remain visible only to that player; the persistent garden Watcher and room doll are shared.
+
+For a Studio test, use the Test controls to start a server with two clients. In each client select a difficulty, meet in the kitchen, open a diary on only one client, and verify that the other can still walk/interact. Speak to a resident and inspect the doll. Test a restart and one player leaving. For friends to join outside Studio, publish the experience in your Roblox account and configure access and a suitable server size (8 players recommended). This file does not publish a live Roblox experience or create a private-server invitation automatically.
+
+### Regression tests
+
+`python roblox-studio/test-multiplayer-state.py /path/to/luau` runs the actual server reset, pause, damage and ending functions with two player stubs. It checks that evidence, timers, menus, sanity, journals and restarts do not leak between players. It is not a Roblox network/physics test. Avatar loading, pathfinding, gait, prompt placement, viewport layout and two-client play still require Studio testing.

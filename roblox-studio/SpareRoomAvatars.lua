@@ -1,0 +1,78 @@
+-- Native Roblox avatar rigs. API-created R15 with a self-contained R6 fallback.
+local Players=game:GetService("Players")
+local Factory={}
+local skin=Color3.fromRGB(194,170,144)
+local function fallback(style)
+ local model=Instance.new("Model")
+ local function part(name,size,color)
+  local p=Instance.new("Part") p.Name=name p.Size=size p.Color=color p.Material=Enum.Material.SmoothPlastic
+  p.TopSurface=Enum.SurfaceType.Smooth p.BottomSurface=Enum.SurfaceType.Smooth p.Parent=model
+  return p
+ end
+ local root=part("HumanoidRootPart",Vector3.new(2,2,1),skin) root.Transparency=1
+ local torso=part("Torso",Vector3.new(2,2,1),style.shirt)
+ local head=part("Head",Vector3.new(2,1,1),style.skin or skin)
+ local mesh=Instance.new("SpecialMesh") mesh.MeshType=Enum.MeshType.Head mesh.Scale=Vector3.new(1.25,1.25,1.25) mesh.Parent=head
+ local la=part("Left Arm",Vector3.new(1,2,1),style.shirt)
+ local ra=part("Right Arm",Vector3.new(1,2,1),style.shirt)
+ local ll=part("Left Leg",Vector3.new(1,2,1),style.pants)
+ local rl=part("Right Leg",Vector3.new(1,2,1),style.pants)
+ local function joint(name,a,b,c0,c1)
+  local m=Instance.new("Motor6D") m.Name=name m.Part0=a m.Part1=b m.C0=c0 m.C1=c1 m.Parent=a
+  b.CFrame=a.CFrame*c0*c1:Inverse()
+ end
+ joint("RootJoint",root,torso,CFrame.new(),CFrame.new())
+ joint("Neck",torso,head,CFrame.new(0,1,0),CFrame.new(0,-0.5,0))
+ joint("Left Shoulder",torso,la,CFrame.new(-1.5,0.5,0),CFrame.new(0,0.5,0))
+ joint("Right Shoulder",torso,ra,CFrame.new(1.5,0.5,0),CFrame.new(0,0.5,0))
+ joint("Left Hip",torso,ll,CFrame.new(-0.5,-1,0),CFrame.new(0,1,0))
+ joint("Right Hip",torso,rl,CFrame.new(0.5,-1,0),CFrame.new(0,1,0))
+ local h=Instance.new("Humanoid") h.RigType=Enum.HumanoidRigType.R6 h.Parent=model
+ model.PrimaryPart=root
+ return model
+end
+function Factory.create(style)
+ local description=Instance.new("HumanoidDescription")
+ description.HeadColor=style.skin or skin
+ description.LeftArmColor=style.shirt description.RightArmColor=style.shirt description.TorsoColor=style.shirt
+ description.LeftLegColor=style.pants description.RightLegColor=style.pants
+ local ok,model=pcall(function() return Players:CreateHumanoidModelFromDescriptionAsync(description,Enum.HumanoidRigType.R15) end)
+ description:Destroy()
+ if not ok or not model then model=fallback(style) end
+ model.Name=style.name
+ local root=model:FindFirstChild("HumanoidRootPart")
+ local humanoid=model:FindFirstChildOfClass("Humanoid")
+ model.PrimaryPart=root
+ humanoid.DisplayDistanceType=Enum.HumanoidDisplayDistanceType.None
+ humanoid.BreakJointsOnDeath=false
+ humanoid.MaxHealth=1000000 humanoid.Health=1000000
+ if not style.faceless then
+  local head=model:FindFirstChild("Head")
+  if head and not head:FindFirstChildOfClass("Decal") then
+   local face=Instance.new("Decal") face.Name="face" face.Texture="rbxasset://textures/face.png" face.Face=Enum.NormalId.Front face.Parent=head
+  end
+ else
+  for _,p in ipairs(model:GetDescendants()) do if p:IsA("Decal") then p:Destroy() end end
+ end
+ local head=model:FindFirstChild("Head")
+ if head then
+  local hair=Instance.new("Part") hair.Name="Hair" hair.Size=Vector3.new(head.Size.X*1.04,head.Size.Y*0.4,head.Size.Z*1.04)
+  hair.Color=style.hair or Color3.fromRGB(43,39,33) hair.CanCollide=false hair.Massless=true
+  hair.CFrame=head.CFrame*CFrame.new(0,head.Size.Y*0.4,0) hair.Parent=model
+  local weld=Instance.new("WeldConstraint") weld.Part0=head weld.Part1=hair weld.Parent=hair
+ end
+ for _,p in ipairs(model:GetDescendants()) do
+  if p:IsA("BasePart") then p.CanCollide=false p.CanTouch=false p.CanQuery=false p.Massless=true end
+ end
+ root.Massless=false
+ if style.scale then model:ScaleTo(style.scale) end
+ model:SetAttribute("SpareRoomAvatar",true)
+ return model
+end
+function Factory.place(model,point)
+ local root=model.PrimaryPart
+ local h=model:FindFirstChildOfClass("Humanoid")
+ local height=h.RigType==Enum.HumanoidRigType.R6 and 3*model:GetScale() or h.HipHeight+root.Size.Y/2
+ model:PivotTo(CFrame.new(point+Vector3.new(0,height,0)))
+end
+return Factory

@@ -44,6 +44,11 @@ end
 local function snapshot(player)
  local s = states[player]
  if not s then return end
+ local household = {}
+ for _, member in ipairs(Players:GetPlayers()) do
+  local state = states[member]
+  table.insert(household,{name=member.DisplayName,started=state and state.started==true,paused=not state or paused(state)})
+ end
  local observed = {}
  for _, a in ipairs(Config.Anomalies) do
   if s.anomalies[a.id] then table.insert(observed, a.title .. " — " .. a.text) end
@@ -55,7 +60,7 @@ local function snapshot(player)
  end
  table.sort(journal)
  remote:FireClient(player, "State", {
-  observed = observed, admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
+  household = household, observed = observed, admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
   diary = count(s.diary), records = count(s.records), rooms = count(s.rooms),
   anomalies = count(s.anomalies), hasKey = s.key, journal = journal,
   sandwich = math.max(0, math.ceil(s.sandwichAt - s.time)),
@@ -126,7 +131,7 @@ local function valid(player, part)
  if (root.Position - part.Position).Magnitude > 7.5 then return false end
  local params = RaycastParams.new()
  params.FilterType = Enum.RaycastFilterType.Exclude
- params.FilterDescendantsInstances = {player.Character}
+ params.FilterDescendantsInstances = {player.Character, workspace:FindFirstChild("SpareRoomNPCs")}
  local head = player.Character and player.Character:FindFirstChild("Head")
  local origin = head and head.Position or root.Position
  local hit = workspace:Raycast(origin, part.Position - origin, params)
@@ -156,6 +161,10 @@ local function interact(player, part)
  elseif role == "mum" then
   s.flags.mum = true
   read(player, part, "“I remember making up the beds,” Mum says. “Please do not give me an answer just because I cannot find one.”", 0)
+ elseif role == "doll" then
+  local first = not s.flags.doll
+  s.flags.doll=true
+  read(player,part,"A small cloth tag reads: PROPERTY OF THE CHILDREN. Someone has crossed out the final letters, then carefully stitched them back.\n\nMum remembers buying it. She cannot remember how many hands reached for the box.",first and 4 or 0)
  elseif role == "mirror" then
   local first = not s.flags.mirror
   s.flags.mirror = true
@@ -371,6 +380,13 @@ remote.OnServerEvent:Connect(function(player, action, data)
   elseif data.command == "Anomaly" and typeof(data.value) == "string" then
    for _, a in ipairs(Config.Anomalies) do
     if a.id == data.value then
+     if a.id=="watcher" or a.id=="doll" or a.id=="family" then
+      local templates=ReplicatedStorage:FindFirstChild("SpareRoomAvatarTemplates")
+      if not templates or not templates:FindFirstChild(a.id=="doll" and "Doll" or "Watcher") then
+       tell(player,"The house is still preparing its visitors. Try this avatar anomaly again shortly.")
+       return
+      end
+     end
      -- Use the same floor/clearance checks as natural anomalies.
      s.adminAnomaly = a.id
      s.nextAnomaly = s.time
@@ -431,7 +447,7 @@ local function eventPoint(player)
  if not root then return nil end
  local params = RaycastParams.new()
  params.FilterType = Enum.RaycastFilterType.Exclude
- params.FilterDescendantsInstances = {player.Character}
+ params.FilterDescendantsInstances = {player.Character, workspace:FindFirstChild("SpareRoomNPCs")}
  for _, offset in ipairs({Vector3.new(4, 0, 0), Vector3.new(-4, 0, 0), Vector3.new(0, 0, 4), Vector3.new(0, 0, -4)}) do
   if not workspace:Raycast(root.Position, offset, params) then
    local down = workspace:Raycast(root.Position + offset, Vector3.new(0, -8, 0), params)
@@ -487,6 +503,10 @@ RunService.Heartbeat:Connect(function(dt)
        for _, candidate in ipairs(Config.Anomalies) do if candidate.id == s.adminAnomaly then a = candidate break end end
        s.adminAnomaly = nil
       else a = nextNaturalAnomaly(s) end
+      local templates=ReplicatedStorage:FindFirstChild("SpareRoomAvatarTemplates")
+      if (a.id=="watcher" or a.id=="doll" or a.id=="family") and (not templates or not templates:FindFirstChild(a.id=="doll" and "Doll" or "Watcher")) then
+       a=Config.Anomalies[3] -- API avatar creation may still be loading; retry through the next bag.
+      end
       s.active = {elapsed = 0, duration = 14, floor = root.Position.Y < -6 and "below" or "above"}
       s.anomalies[a.id] = true
       remote:FireClient(player, "Anomaly", {id = a.id, title = a.title, text = a.text, position = point, duration = s.active.duration})

@@ -21,7 +21,7 @@ const buildPlace=function buildRobloxPlace(sources) {
  const world=[], interactions=[];
  const add=(...a)=>world.push(part(...a));
  const prop=(name,role,title,action,x,y,z,w,h,d,extra={},color=[205,190,150])=>{
-  interactions.push(part(name,x,y,z,w,h,d,color,role==="key"?"Metal":"Wood",{Role:role,Title:title,Action:action,...extra},false));
+  interactions.push(part(name,x,y,z,w,h,d,color,role==="key"?"Metal":"Wood",{Role:role,Title:title,Action:action,...extra},false,(role==="doll"||role==="mum")?1:0));
  };
  function wall(name,x,y,z,w,h,d){add(name,x,y+h/2,z,w,h,d,[106,113,103],"Concrete");}
  function desk(x,y,z,w=4,d=2){
@@ -63,8 +63,7 @@ const buildPlace=function buildRobloxPlace(sources) {
  desk(-14,0,-6,7,4);chair(-14,0,-3);chair(-17,0,-6);chair(-11,0,-6);
  for(const x of [-21,-18,-15]){add("KitchenCabinet",x,1.6,-13.8,2.8,3.2,3,[91,105,90]);add("Countertop",x,3.35,-13.8,2.9,.2,3.2,[159,161,145],"Marble");}
  prop("Sandwich","sandwich","Kitchen sandwich","Eat sandwich",-18,3.65,-13.8,1.2,.25,.8);
- add("MumBody",-14,2.3,-2.1,1.5,2.5,1,[88,105,94],"Fabric");
- add("MumHead",-14,4.1,-2.1,1,1.1,1,[187,171,139],"SmoothPlastic");
+ prop("DollEvidence","doll","The doll that remembers","Inspect the doll",-16,5.5,16,.3,.3,.3,{},[151,127,107]);
  prop("MumConversation","mum","Mum","Speak with Mum",-14,4.2,-1.5,.7,.7,.2,{});
  prop("OrdinaryMemory","anchor","The repaired chair","Hold an ordinary memory",-17,2.5,-5,1,.2,.7);
  prop("MorningChoice","ending","The kitchen window","Choose an ordinary morning",-21,4.6,-8,1.4,.8,.2,{Ending:"morning"});
@@ -204,11 +203,11 @@ const buildPlace=function buildRobloxPlace(sources) {
  const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>0</X><Y>0.1</Y><Z>-11</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
- const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:10,venues:8}};
+ const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:12,venues:8,npcs:11}};
 };
 const dir=__dirname;
-const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8")});
+const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});
 fs.writeFileSync(path.join(dir,"The-Spare-Room.rbxlx"),result.xml);
 fs.writeFileSync(path.join(dir,"build-stats.json"),JSON.stringify(result.stats,null,2)+"\n");
 console.log(result.stats);

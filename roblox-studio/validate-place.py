@@ -15,6 +15,8 @@ def string(item, name):
 services = {string(i, "Name"): i for i in data.findall("Item")}
 assert {"Workspace", "ReplicatedStorage", "ServerScriptService", "StarterPlayer", "Lighting"} <= services.keys()
 scripts = {
+    "SpareRoomAvatars": "SpareRoomAvatars.lua",
+    "SpareRoomNPCs": "SpareRoomNPCs.server.lua",
     "SpareRoomConfig": "SpareRoomConfig.lua",
     "SpareRoomServer": "SpareRoomServer.server.lua",
     "SpareRoomClient": "SpareRoomClient.client.lua",
@@ -38,8 +40,8 @@ for node in all_items:
     parts.append(info)
     if "Role" in extra:
         roles.append(info)
-assert len(parts) == 1277
-assert len(roles) == 47
+assert len(parts) == 1276
+assert len(roles) == 48
 assert {int(p["extra"]["Index"]) for p in roles if p["extra"]["Role"] == "diary"} == set(range(1, 21))
 assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 12
 assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} == {"morning", "names", "seal", "tomorrow", "glass"}
@@ -82,7 +84,7 @@ server = (root / "SpareRoomServer.server.lua").read_text()
 assert "prompt.HoldDuration = 0.8" in server and "prompt.RequiresLineOfSight = true" in server
 assert 'damage(player, cost)' in server and 'action == "ReadClosed"' in server
 assert 's.sandwichAt = s.time + 120' in server
-print("PASS: XML, unique references, exact embedded sources, 1277 parts, 47 standing-accessible interactions, 20 diary pages, 10 rooms, chamber gate and six ending paths")
+print("PASS: XML, unique references, exact embedded sources, 1276 parts, 48 standing-accessible interactions, 20 diary pages, 10 rooms, chamber gate and six ending paths")
 
 
 assert len([p for p in parts if p["name"] == "VenueSign"]) == 8
@@ -94,3 +96,7 @@ assert 'prompt.Triggered:Connect' in server and 'valid(player, part)' in server
 assert 'InputHoldBegin' not in client and 'InputHoldEnd' not in client
 assert 'local origin = head and head.Position or root.Position' in server
 print("PASS: eight venue signs, server admin gate, responsive UI and default prompt handling")
+
+assert not any(p['name'] in {'MumBody','MumHead'} for p in parts)
+assert len([p for p in roles if p['extra']['Role']=='doll']) == 1
+print('PASS: native-avatar module and NPC server embedded; block Mum removed; doll interaction reachable')
