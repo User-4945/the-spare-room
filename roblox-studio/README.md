@@ -1,4 +1,4 @@
-# The Spare Room — Roblox Studio prototype 0.1
+# The Spare Room — Roblox Studio prototype 0.2
 
 An importable Roblox Studio place, rebuilt in Luau from the core ideas of The Spare Room.
 This is a starter adaptation, not a complete port of the browser/desktop releases.
@@ -16,15 +16,15 @@ Opening the place does not publish it to Roblox. You decide when to publish from
 ## Included
 - A furnished ground-floor house: hallway, kitchen/Mum, bedroom, sitting room and spare room.
 - A small garden and a permanent basement with ten named rooms.
-- 20 collectible sibling diary pages, four household records, an unnumbered key and a gated chamber.
-- Native Roblox E / touch / controller hold prompts, a progress ring, crosshair and visible-object highlighting.
+- 20 collectible sibling diary pages, twelve household and district records, an unnumbered key and a gated chamber.
+- Custom E / touch / controller hold cards backed by Roblox ProximityPrompts, a progress ring, crosshair and visible-object highlighting.
 - First person, third person (V), jump, sprint and stamina.
 - Easy, Intermediate and Hard modes.
 - Server-maintained sanity, deferred reading costs, a 2.2-second loss flash, and a zero-sanity restart screen.
 - Sandwiches restore 15/12/10 percent by mode and refill after 120 seconds of active play.
 - Four locally animated anomalies with captions; menus and reading pause their timers.
 - Six ending paths and a per-player journal for the current server.
-- 619 anchored map parts. All art is primitive geometry that you can edit in Studio.
+- 1,277 anchored map parts. All art is primitive geometry that you can edit in Studio.
 
 ## Controls
 | Action | Control |
@@ -83,8 +83,8 @@ A failed load does not overwrite the stored journal. Active runs are not saved b
 Use a separate test experience rather than a live production data store for persistence tests.
 
 ## Deliberately not ported yet
-The city/chunk generator, upstairs expansion, Halloween quests, the full 61-ending collection,
-Roblox badges, a player admin interface, custom avatar animations and true mirror reflections.
+The procedural city/chunk generator, upstairs expansion, Halloween quests, the full 61-ending collection,
+Roblox badges, custom avatar animations and true mirror reflections.
 The mirror is an interactive lore prop. The starter contains no real family voice recordings or external music.
 
 ## Validation limits
@@ -127,3 +127,4 @@ Flight: WASD direction, Space up, Left Ctrl down; toggling flight off returns no
 This is still a Roblox starter, not a graphics-identical or complete port. It does not include every original quest, procedural city generation, full avatar animations, a functioning mirror reflection, or all original endings. Existing browser and desktop releases are unchanged.
 
 Automated checks validate XML, exact embedded source, map reachability, sealed-chamber isolation, admin authorization hooks and Luau compilation. They do not replace testing camera, UI, interaction input, lighting, flight or multiplayer in Roblox Studio. Recommended tests: all three difficulty buttons, resize Studio viewport, hold E and hold click on the same prop, close a diary and inspect sanity, visit every venue, test F8 flight and all anomalies, reset a run, and verify a non-admin cannot use tools in a published test experience.
+
