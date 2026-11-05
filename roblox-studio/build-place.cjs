@@ -11,11 +11,12 @@ const buildPlace=function buildRobloxPlace(sources) {
  function part(name,x,y,z,w,h,d,color=[100,105,94],material="WoodPlanks",meta={},solid=true,transparency=0){
   count++;
   let children=val("MaterialName",material);
+  const materials={WoodPlanks:528,Wood:512,Concrete:816,Grass:1280,Slate:800,Metal:1088,Glass:1568,Fabric:1312,Marble:784,Brick:848,SmoothPlastic:272,Neon:288};
   for(const [n,v]of Object.entries(meta))children+=val(n,v);
   if(meta.Role)interactables++;
   const cframe=`<CoordinateFrame name="CFrame"><X>${x}</X><Y>${y}</Y><Z>${z}</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`;
   const size=`<Vector3 name="size"><X>${w}</X><Y>${h}</Y><Z>${d}</Z></Vector3>`;
-  return item("Part",name,cframe+size+bool("Anchored",true)+bool("CanCollide",solid)+bool("CanTouch",false)+bool("CanQuery",true)+num("Transparency",transparency)+`<Color3uint8 name="Color3uint8">${color[0]*65536+color[1]*256+color[2]}</Color3uint8>`+`<token name="TopSurface">0</token><token name="BottomSurface">0</token>`,children);
+  return item("Part",name,cframe+size+bool("Anchored",true)+bool("CanCollide",solid)+bool("CanTouch",false)+bool("CanQuery",true)+num("Transparency",transparency)+`<token name="Material">${materials[material]||528}</token>`+`<Color3uint8 name="Color3uint8">${color[0]*65536+color[1]*256+color[2]}</Color3uint8>`+`<token name="TopSurface">0</token><token name="BottomSurface">0</token>`,children);
  }
  const world=[], interactions=[];
  const add=(...a)=>world.push(part(...a));
@@ -35,7 +36,10 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("GardenGround",0,-.45,15,100,.5,150,[53,68,49],"Grass");
  add("HouseFloor",0,-.25,4,48,.5,40,[116,94,64]);
  add("HouseRoof",0,12.25,4,49,.5,41,[62,66,61],"Slate");
- wall("WestExterior",-24,0,4,.5,12,40);wall("EastExterior",24,0,4,.5,12,40);
+ for(const side of [-1,1]){
+  for(const [a,b]of [[-16,-11],[-5,12],[18,24]])wall("ExteriorPier",side*24,0,(a+b)/2,.5,12,b-a);
+  for(const z of [-8,15]){wall("WindowLowerWall",side*24,0,z,.5,3,6);wall("WindowUpperWall",side*24,8,z,.5,4,6);}
+ }
  wall("BackExterior",0,0,24,48,12,.5);
  wall("FrontLeft",-13.5,0,-16,21,12,.5);wall("FrontRight",13.5,0,-16,21,12,.5);
  wall("FrontHeader",0,9,-16,6,3,.5);
@@ -47,7 +51,8 @@ const buildPlace=function buildRobloxPlace(sources) {
   }
   wall("RoomDivider",side*14,0,4,20,12,.4);
   for(const z of [-8,15]){
-   add("WindowFrame",side*23.55,5.5,z,.25,5,6,[171,165,144]);
+   for(const dz of [-3,3])add("WindowJamb",side*23.55,5.5,z+dz,.35,5,.22,[171,165,144]);
+   for(const y of [3,8])add("WindowRail",side*23.55,y,z,.35,.22,6.2,[171,165,144]);
    add("WindowGlass",side*23.35,5.5,z,.1,4.5,5.4,[82,112,118],"Glass",{},false,.35);
    add("WindowMullion",side*23.2,5.5,z,.15,4.5,.12,[190,179,150]);
   }
@@ -67,7 +72,7 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("Mattress",13,2.15,0,4.8,.5,6.8,[160,153,125],"Fabric");
  add("Pillow",13,2.55,-2.4,3,.3,1.5,[185,178,152],"Fabric");
  add("Wardrobe",21,4,-10,4,8,3,[86,70,56]);
- prop("Mirror","mirror","The covered mirror","Uncover and inspect the mirror",20.5,5,1,2.6,4.5,.2,{});
+ prop("Mirror","mirror","The covered mirror","Uncover and inspect the mirror",23.05,5,1,.2,4.5,2.6,{});
  desk(-16,0,16,6,3);add("SpareBed",-17,1.2,8,5,2.4,5,[112,111,91],"Fabric");
  desk(15,0,17,5,3);chair(15,0,14);
  add("Sofa",19,1.5,10,7,3,3,[81,101,90],"Fabric");
@@ -139,21 +144,72 @@ const buildPlace=function buildRobloxPlace(sources) {
   desk(x,-18,z,3,1.8);
   prop(name,"ending","A decision · "+id,"Consider this ending",x,-14.5,z,1.4,.15,1,{Ending:id});
  }
- // Physical bounds stop accidental falls beyond the prototype's garden.
- for(const x of [-45,45])add("GardenBoundary",x,8,20,1,20,140,[40,50,40],"Concrete",{},true,1);
- for(const z of [-50,90])add("GardenBoundary",0,8,z,90,20,1,[40,50,40],"Concrete",{},true,1);
- for(const x of [-32,32])for(const z of [-27,32]){
+ // Walkable district with solid foundations, open doorways and themed venue interiors.
+ add("DistrictGround",0,-.45,10,300,.5,300,[43,55,43],"Grass");
+ add("Street",0,-.12,-45,260,.24,18,[44,48,49],"Concrete");
+ for(const z of [-57,-33])add("Pavement",0,.05,z,260,.1,6,[127,124,110],"Concrete");
+ for(let x=-120;x<=120;x+=12)add("RoadMark",x,.015,-45,5,.02,.2,[181,169,128],"SmoothPlastic",{},false);
+ for(const x of [-130,130])add("DistrictBoundary",x,6,0,1,16,260,[47,57,49],"Brick");
+ for(const z of [-130,130])add("DistrictBoundary",0,6,z,260,16,1,[47,57,49],"Brick");
+ add("GardenPath",0,.04,-24,6,.08,16,[112,110,96],"Concrete");
+ const venues=[
+  [-96,-79,"CINEMA","THE PALLADIUM",[83,45,44]],[-56,-79,"ARCHIVE","MUNICIPAL ARCHIVE",[62,76,65]],
+  [-16,-79,"CLINIC","ST. AGNES CLINIC",[72,101,108]],[24,-79,"RAILWAY","ASHFIELD STATION",[61,74,87]],
+  [64,-79,"WORKSHOP","WARD & SONS",[100,77,48]],[104,-79,"COSTUME SHOP","VELVET & ASH",[76,49,80]],
+  [-76,-11,"BOOKSHOP","THE SECOND COPY",[76,67,54]],[76,-11,"CAFE","THE EMPTY CHAIR",[70,87,72]]
+ ];
+ for(const [x,z,kind,name,c]of venues){
+  const front=z< -50?z+14:z-14;
+  add("VenueFoundation",x,-.25,z,28,.5,28,[93,91,82],"Concrete");
+  add("VenueRoof",x,14.25,z,29,.5,29,[49,53,51],"Slate");
+  wall("VenueSide",x-14,0,z,.5,14,28);wall("VenueSide",x+14,0,z,.5,14,28);
+  wall("VenueBack",x,0,z+(front<z?14:-14),28,14,.5);
+  for(const dx of [-8.5,8.5])add("VenueFacade",x+dx,7,front,11,14,.6,c,"Brick");
+  add("VenueLintel",x,12,front,6,4,.6,c,"Brick");
+  for(const dx of [-3.2,3.2])add("VenueDoorTrim",x+dx,5,front,.3,10,.9,[160,145,112]);
+  add("VenueSign",x,11.7,front+(front<z?-.5:.5),24,2.5,.25,c,"Metal",{Sign:name,Side:front<z?"Front":"Back",Venue:kind},false);
+  for(const dx of [-9,9]){
+   add("ShopWindow",x+dx,5,front+(front<z?-.4:.4),6,6,.15,[91,117,120],"Glass",{},false,.25);
+   add("WindowSill",x+dx,1.9,front,6.5,.25,1,[157,147,126],"Concrete");
+  }
+  add("Lamp",x,13,z,1.5,.2,1.5,[239,203,143],"Metal",{},false);
+  desk(x,0,z+3,8,3);chair(x-5,0,z+3);chair(x+5,0,z+3);
+  prop("DistrictRecord"+kind,"record",name+" · correspondence","Read correspondence",x,3.5,z+3,1.3,.12,.9,{Index:kind,Text:kind+": The household account still lists four names. A clerk has written: do not correct the original. The delivery address has no room number."});
+  for(const dx of [-10,10])for(let level=1;level<=3;level++){
+   add("VenueShelf",x+dx,level*2,z-9,4,.16,5,[86,72,54]);
+   for(let i=0;i<4;i++)add("VenueContents",x+dx-1.4+i*.8,level*2+.65,z-9,.6,1.2,1,[70+i*18,71+i*9,58+i*6],kind==="CLINIC"?"SmoothPlastic":"Wood");
+  }
+  if(kind==="CINEMA"){
+   add("CinemaScreen",x,7,z-13.5,19,9,.15,[161,158,137],"Fabric");
+   for(let row=0;row<2;row++)for(const dx of [-7,-3,3,7])chair(x+dx,0,z-5+row*4);
+  }
+  if(kind==="RAILWAY")for(const dx of [-7,7])add("PlatformBench",x+dx,1.7,z-5,4,.3,2,[108,89,63]);
+ }
+ for(let x=-116;x<=116;x+=29){
+  add("StreetLampPole",x,7,-59,.22,14,.22,[52,60,55],"Metal");
+  add("Lamp",x,14,-59,1.4,.3,1.4,[232,200,139],"Metal",{},false);
+  add("LampHousing",x,14.4,-59,1.8,.16,1.8,[43,52,46],"Metal");
+ }
+ for(const x of [-35,35])for(const z of [35,60,85]){
   add("TreeTrunk",x,5,z,1.3,10,1.3,[78,65,47]);
   add("TreeCanopy",x,12,z,8,7,8,[34,56,42],"Grass");
  }
+ for(const side of [-1,1])for(const z of [-7,13]){
+  add("Skirting",side*3.65,.3,z,.12,.6,14,[145,132,106],"Wood",{},false);
+  add("WallCornice",side*3.65,11.6,z,.2,.5,14,[167,156,129]);
+ }
+ add("FuseBoxCase",3.6,5,2,.3,2.5,1.8,[68,75,71],"Metal");
+ for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,2,.2,.25,.65,[161,158,135],"SmoothPlastic");
+ add("FuseWarning",3.3,6,2,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
  const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>0</X><Y>0.1</Y><Z>-11</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
- const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting")}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:4}};
+ const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:4,venues:8}};
 };
 const dir=__dirname;
 const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8")});
 fs.writeFileSync(path.join(dir,"The-Spare-Room.rbxlx"),result.xml);
 fs.writeFileSync(path.join(dir,"build-stats.json"),JSON.stringify(result.stats,null,2)+"\n");
 console.log(result.stats);
+

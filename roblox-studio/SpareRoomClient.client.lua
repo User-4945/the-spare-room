@@ -13,6 +13,19 @@ gui.Name = "SpareRoomHUD"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
+local canvas = Instance.new("Frame")
+canvas.Name = "ResponsiveCanvas"
+canvas.AnchorPoint = Vector2.new(0.5,0.5)
+canvas.Position = UDim2.fromScale(0.5,0.5)
+canvas.Size = UDim2.fromOffset(1280,720)
+canvas.BackgroundTransparency = 1
+canvas.Parent = gui
+local uiScale = Instance.new("UIScale")
+uiScale.Parent = canvas
+local function fitCanvas()
+ local c = workspace.CurrentCamera
+ if c then uiScale.Scale = math.min(c.ViewportSize.X / 1280, math.max(1,c.ViewportSize.Y-40) / 720) end
+end
 local current = {started = false, sanity = 100, stamina = 100, journal = {}, mode = "Easy"}
 local modalReason, readingId, confirmationNonce = nil, nil, nil
 local thirdPerson = false
@@ -25,10 +38,13 @@ local function frame(parent, name, pos, size)
  f.Name = name
  f.Position = pos
  f.Size = size
- f.BackgroundColor3 = Color3.fromRGB(18, 30, 27)
+ f.BackgroundColor3 = Color3.fromRGB(20, 22, 21)
  f.BackgroundTransparency = 0.08
- f.BorderColor3 = Color3.fromRGB(117, 127, 103)
+ f.BorderColor3 = Color3.fromRGB(119, 108, 86)
  f.Parent = parent
+ local corner = Instance.new("UICorner")
+ corner.CornerRadius = UDim.new(0,5)
+ corner.Parent = f
  return f
 end
 local function text(parent, content, pos, size, fontSize)
@@ -48,35 +64,38 @@ local function button(parent, content, pos, size, callback)
  local b = Instance.new("TextButton")
  b.Position = pos
  b.Size = size
- b.BackgroundColor3 = Color3.fromRGB(46, 66, 55)
+ b.BackgroundColor3 = Color3.fromRGB(48, 47, 40)
  b.TextColor3 = gold
  b.Font = Enum.Font.GothamBold
  b.TextSize = 16
  b.Text = content
  b.Parent = parent
+ local corner = Instance.new("UICorner")
+ corner.CornerRadius = UDim.new(0,4)
+ corner.Parent = b
  b.Activated:Connect(callback)
  return b
 end
 local function blocked()
  return not current.started or current.ended ~= nil or modalReason ~= nil
 end
-local hud = frame(gui, "Sanity", UDim2.fromScale(0.02, 0.04), UDim2.new(0.28, 0, 0, 92))
+local hud = frame(canvas, "Sanity", UDim2.fromOffset(28,26), UDim2.fromOffset(260,86))
 local sanityText = text(hud, "SANITY 100%", UDim2.fromScale(0.04, 0.03), UDim2.fromScale(0.92, 0.3), 16)
 local sanityTrack = frame(hud, "SanityTrack", UDim2.fromScale(0.06, 0.4), UDim2.fromScale(0.88, 0.08))
 local sanityFill = frame(sanityTrack, "Fill", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
 sanityFill.BackgroundColor3 = gold
 local staminaText = text(hud, "STAMINA 100%", UDim2.fromScale(0.04, 0.56), UDim2.fromScale(0.92, 0.3), 13)
-local tasks = frame(gui, "Tasks", UDim2.fromScale(0.66, 0.4), UDim2.fromScale(0.32, 0.32))
+local tasks = frame(canvas, "Tasks", UDim2.fromOffset(936,438), UDim2.fromOffset(316,216))
 local tasksText = text(tasks, "", UDim2.fromScale(0.05, 0.03), UDim2.fromScale(0.9, 0.94), 14)
 tasksText.TextYAlignment = Enum.TextYAlignment.Top
 tasksText.TextXAlignment = Enum.TextXAlignment.Left
-local caption = frame(gui, "Caption", UDim2.fromScale(0.15, 0.22), UDim2.fromScale(0.7, 0.13))
+local caption = frame(canvas, "Caption", UDim2.fromOffset(310,116), UDim2.fromOffset(660,74))
 caption.Visible = false
 local captionText = text(caption, "", UDim2.fromScale(0.04, 0.05), UDim2.fromScale(0.92, 0.9), 16)
-local cross = frame(gui, "Crosshair", UDim2.new(0.5, -1, 0.5, -1), UDim2.fromOffset(3, 3))
+local cross = frame(canvas, "Crosshair", UDim2.new(0.5, -1, 0.5, -1), UDim2.fromOffset(3, 3))
 cross.BackgroundColor3 = gold
 cross.BorderSizePixel = 0
-local title = frame(gui, "TitleScreen", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
+local title = frame(canvas, "TitleScreen", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
 title.ZIndex = 10
 text(title, "THE SPARE ROOM", UDim2.fromScale(0.1, 0.12), UDim2.fromScale(0.8, 0.12), 32)
 text(title, "BENEATH THE HOUSE\nThere was always something underneath.\n\nRoblox Studio starter · six ending paths", UDim2.fromScale(0.1, 0.27), UDim2.fromScale(0.8, 0.2), 19)
@@ -86,11 +105,21 @@ for i, mode in ipairs({"Easy", "Intermediate", "Hard"}) do
  end)
 end
 text(title, "WASD · Shift sprint · Space jump · V camera\nHold E, click, touch or controller X near an object.\nRead the hallway invitation, then inspect the maintenance hatch.", UDim2.fromScale(0.1, 0.83), UDim2.fromScale(0.8, 0.14), 14)
-local modal = frame(gui, "Reading", UDim2.fromScale(0.12, 0.13), UDim2.fromScale(0.76, 0.72))
+local modal = frame(canvas, "Reading", UDim2.fromScale(0.12, 0.13), UDim2.fromScale(0.76, 0.72))
 modal.ZIndex = 20
 modal.Visible = false
 local heading = text(modal, "", UDim2.fromScale(0.05, 0.03), UDim2.fromScale(0.9, 0.16), 25)
-local body = text(modal, "", UDim2.fromScale(0.06, 0.22), UDim2.fromScale(0.88, 0.56), 17)
+local paper = Instance.new("ScrollingFrame")
+paper.Position = UDim2.fromScale(0.06,0.22)
+paper.Size = UDim2.fromScale(0.88,0.56)
+paper.BackgroundTransparency = 1
+paper.BorderSizePixel = 0
+paper.ScrollBarThickness = 4
+paper.AutomaticCanvasSize = Enum.AutomaticSize.Y
+paper.CanvasSize = UDim2.new()
+paper.Parent = modal
+local body = text(paper, "", UDim2.fromOffset(0,0), UDim2.new(1,-14,0,0), 17)
+body.AutomaticSize = Enum.AutomaticSize.Y
 body.TextYAlignment = Enum.TextYAlignment.Top
 body.TextXAlignment = Enum.TextXAlignment.Left
 local closeButton
@@ -101,6 +130,7 @@ local function closeModal()
  modal.Visible = false
  if reason == "read" then remote:FireServer("ReadClosed", readingId)
  elseif reason == "confirm" then remote:FireServer("CancelEnding")
+ elseif reason == "admin" then remote:FireServer("Pause", false)
  elseif reason == "journal" then remote:FireServer("Pause", false)
  elseif reason == "ending" then remote:FireServer("Start", current.mode) end
 end
@@ -109,7 +139,7 @@ chooseButton = button(modal, "Choose this ending", UDim2.fromScale(0.52, 0.85), 
  if modalReason == "confirm" then remote:FireServer("Finish", confirmationNonce) end
 end)
 chooseButton.Visible = false
-button(gui, "JOURNAL", UDim2.new(0.98, -116, 0.04, 0), UDim2.fromOffset(116, 36), function()
+local journalButton = button(canvas, "JOURNAL", UDim2.fromOffset(1136,26), UDim2.fromOffset(116, 36), function()
  if blocked() then return end
  modalReason = "journal"
  heading.Text = "Ending journal"
@@ -119,16 +149,78 @@ button(gui, "JOURNAL", UDim2.new(0.98, -116, 0.04, 0), UDim2.fromOffset(116, 36)
  modal.Visible = true
  remote:FireServer("Pause", true)
 end)
-button(gui, "CAMERA · V", UDim2.new(0.98, -116, 0.04, 42), UDim2.fromOffset(116, 36), function()
+local cameraButton = button(canvas, "CAMERA · V", UDim2.fromOffset(1136,68), UDim2.fromOffset(116, 36), function()
  if not blocked() then thirdPerson = not thirdPerson end
 end)
 local touchSprint = false
-button(gui, "SPRINT", UDim2.fromScale(0.02, 0.72), UDim2.fromOffset(110, 36), function()
+local sprintButton = button(canvas, "SPRINT", UDim2.fromScale(0.02, 0.72), UDim2.fromOffset(110, 36), function()
  if blocked() then return end
  touchSprint = not touchSprint
  remote:FireServer("Sprint", touchSprint)
 end)
-local flash = frame(gui, "SanityFlash", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
+sprintButton.Visible = UserInputService.TouchEnabled
+local controlHints = text(canvas, "WASD  MOVE     SHIFT  SPRINT     SPACE  JUMP     HOLD E  INTERACT     V  CAMERA", UDim2.fromOffset(250,674), UDim2.fromOffset(780,26),12)
+-- Admin UI is only shown after server-confirmed authorization.
+local adminPanel = frame(canvas, "AdminPanel", UDim2.fromOffset(300,92), UDim2.fromOffset(680,540))
+adminPanel.Visible = false
+adminPanel.ZIndex = 30
+text(adminPanel,"HOUSEKEEPER / ADMIN TOOLS",UDim2.fromOffset(24,12),UDim2.fromOffset(500,38),23)
+local adminScroll = Instance.new("ScrollingFrame")
+adminScroll.Position = UDim2.fromOffset(24,64)
+adminScroll.Size = UDim2.fromOffset(632,404)
+adminScroll.BackgroundTransparency = 1
+adminScroll.ScrollBarThickness = 5
+adminScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+adminScroll.CanvasSize = UDim2.new()
+adminScroll.Parent = adminPanel
+local adminLayout = Instance.new("UIListLayout")
+adminLayout.Padding = UDim.new(0,8)
+adminLayout.SortOrder = Enum.SortOrder.LayoutOrder
+adminLayout.Parent = adminScroll
+local function adminAction(command,value)
+ remote:FireServer("Admin",{command=command,value=value})
+end
+local rowNumber = 0
+local function adminRow(label,command,value)
+ rowNumber += 1
+ local b = button(adminScroll,label,UDim2.new(),UDim2.new(1,-12,0,36),function() adminAction(command,value) end)
+ b.LayoutOrder = rowNumber
+end
+for _, location in ipairs({"House","Garden","Basement","Cinema","Archive","Clinic","Station","Workshop","Costumes","Bookshop","Cafe"}) do
+ adminRow("TELEPORT / "..location,"Teleport",location)
+end
+for _, a in ipairs(Config.Anomalies) do adminRow("ANOMALY / "..a.title,"Anomaly",a.id) end
+adminRow("Clear active anomaly","Clear")
+adminRow("Restore sanity +10%","Sanity",10)
+adminRow("Remove sanity 10% (difficulty adjusted)","Sanity",-10)
+adminRow("Toggle flight (WASD, Space up, Ctrl down)","Fly")
+adminRow("Skip one day / advance event timers","Day")
+button(adminPanel,"Return to game",UDim2.fromOffset(24,482),UDim2.fromOffset(632,38),function()
+ adminPanel.Visible=false
+ modalReason=nil
+ remote:FireServer("Pause",false)
+end)
+local function toggleAdmin()
+ if not current.admin or not current.started or current.ended then return end
+ if adminPanel.Visible then
+  adminPanel.Visible=false modalReason=nil remote:FireServer("Pause",false)
+ elseif not modalReason then
+  adminPanel.Visible=true modalReason="admin" remote:FireServer("Pause",true)
+ end
+end
+local adminButton = button(canvas,"ADMIN / F8",UDim2.fromOffset(1136,110),UDim2.fromOffset(116,36),toggleAdmin)
+adminButton.Visible=false
+local flyAttachment, flyVelocity, flyRoot
+local function stopFlight()
+ if flyVelocity then flyVelocity:Destroy() flyVelocity=nil end
+ if flyAttachment then flyAttachment:Destroy() flyAttachment=nil end
+ if flyRoot and flyRoot.Parent then
+  local h=flyRoot.Parent:FindFirstChildOfClass("Humanoid")
+  if h then h.PlatformStand=false end
+ end
+ flyRoot=nil
+end
+local flash = frame(canvas, "SanityFlash", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
 flash.BackgroundColor3 = Color3.fromRGB(110, 20, 15)
 flash.BackgroundTransparency = 1
 flash.ZIndex = 6
@@ -164,6 +256,45 @@ ProximityPromptService.PromptShown:Connect(function(prompt)
  if prompt:IsDescendantOf(workspace:WaitForChild("SpareRoomWorld"):WaitForChild("Interactables")) then shown[prompt] = true end
 end)
 ProximityPromptService.PromptHidden:Connect(function(prompt) shown[prompt] = nil end)
+local interaction = frame(canvas,"Interaction",UDim2.fromOffset(420,574),UDim2.fromOffset(440,74))
+interaction.Visible=false
+local keyButton = button(interaction,"E",UDim2.fromOffset(15,10),UDim2.fromOffset(54,54),function() end)
+keyButton.BackgroundTransparency=1
+local actionText=text(interaction,"",UDim2.fromOffset(88,8),UDim2.fromOffset(338,28),17)
+actionText.TextXAlignment=Enum.TextXAlignment.Left
+local objectText=text(interaction,"",UDim2.fromOffset(88,37),UDim2.fromOffset(338,24),12)
+objectText.TextXAlignment=Enum.TextXAlignment.Left
+objectText.TextColor3=Color3.fromRGB(169,162,142)
+local segments={}
+for i=1,40 do
+ local angle=(i/40)*math.pi*2-math.pi/2
+ local segment=Instance.new("Frame")
+ segment.AnchorPoint=Vector2.new(0.5,0.5)
+ segment.Position=UDim2.fromOffset(42+math.cos(angle)*26,37+math.sin(angle)*26)
+ segment.Size=UDim2.fromOffset(3,4)
+ segment.Rotation=math.deg(angle)
+ segment.BackgroundColor3=gold
+ segment.BorderSizePixel=0
+ segment.Parent=interaction
+ segments[i]=segment
+end
+local selectedPrompt, heldPrompt, holdStarted=nil,nil,0
+ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
+ if prompt==selectedPrompt then heldPrompt=prompt holdStarted=os.clock() end
+end)
+ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt)
+ if heldPrompt==prompt then heldPrompt=nil end
+end)
+keyButton.InputBegan:Connect(function(input)
+ if selectedPrompt and (input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch) then
+  selectedPrompt:InputHoldBegin()
+ end
+end)
+UserInputService.InputEnded:Connect(function(input)
+ if selectedPrompt and (input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch) then
+  selectedPrompt:InputHoldEnd()
+ end
+end)
 local function showCaption(message, duration)
  captionText.Text = message
  captionRemaining = duration or 7
@@ -214,6 +345,7 @@ local function startAnomaly(data)
 end
 UserInputService.InputBegan:Connect(function(input, processed)
  if processed then return end
+ if input.KeyCode == Enum.KeyCode.F8 then toggleAdmin() return end
  if input.KeyCode == Enum.KeyCode.LeftShift and not blocked() then remote:FireServer("Sprint", true) end
  if input.KeyCode == Enum.KeyCode.V and not blocked() then thirdPerson = not thirdPerson end
 end)
@@ -224,6 +356,8 @@ UserInputService.WindowFocusReleased:Connect(function() remote:FireServer("Sprin
 remote.OnClientEvent:Connect(function(action, data)
  if action == "State" then
   current = data
+  adminButton.Visible = data.admin and data.started and not data.ended
+  if not data.started or data.ended then adminPanel.Visible=false end
   title.Visible = not data.started
   hud.Visible = data.started
   tasks.Visible = data.started
@@ -271,7 +405,39 @@ remote.OnClientEvent:Connect(function(action, data)
  elseif action == "AnomalyEnd" then endAnomaly() end
 end)
 RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value + 1, function(dt)
+ fitCanvas()
  local isBlocked = blocked()
+ controlHints.Visible=not isBlocked
+ journalButton.Visible=current.started and not current.ended
+ cameraButton.Visible=current.started and not current.ended
+ if current.admin and current.flying and not current.ended and current.started then
+  local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+  if root and root ~= flyRoot then
+   stopFlight()
+   flyRoot=root
+   flyAttachment=Instance.new("Attachment") flyAttachment.Parent=root
+   flyVelocity=Instance.new("LinearVelocity")
+   flyVelocity.Attachment0=flyAttachment
+   flyVelocity.MaxForce=math.huge
+   flyVelocity.RelativeTo=Enum.ActuatorRelativeTo.World
+   flyVelocity.Parent=root
+  end
+  if flyVelocity then
+   local h=player.Character:FindFirstChildOfClass("Humanoid")
+   if h then h.PlatformStand=true end
+   local direction=Vector3.zero
+   if not isBlocked and workspace.CurrentCamera then
+    local camera=workspace.CurrentCamera.CFrame
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction+=camera.LookVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction-=camera.LookVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction+=camera.RightVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction-=camera.RightVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then direction+=Vector3.yAxis end
+    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then direction-=Vector3.yAxis end
+   end
+   flyVelocity.VectorVelocity=direction.Magnitude>0 and direction.Unit*28 or Vector3.zero
+  end
+ else stopFlight() end
  if not isBlocked then captionRemaining = math.max(0, captionRemaining - dt) end
  caption.Visible = not isBlocked and captionRemaining > 0
  local mode = isBlocked and "menu" or thirdPerson and "third" or "first"
@@ -293,17 +459,30 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
  cross.Visible = not isBlocked
  torch.Enabled = current.started and not current.ended
  if workspace.CurrentCamera then torchPart.CFrame = workspace.CurrentCamera.CFrame end
- local nearest, distance = nil, math.huge
+ local nearest, nearestPrompt, distance = nil, nil, math.huge
  local character = player.Character
  local root = character and character:FindFirstChild("HumanoidRootPart")
  if root and not isBlocked then
   for prompt in pairs(shown) do
    if prompt.Parent and prompt.Enabled then
     local d = (prompt.Parent.Position - root.Position).Magnitude
-    if d < distance and d <= 6 then nearest = prompt.Parent distance = d end
+    if d < distance and d <= 6 then nearest = prompt.Parent nearestPrompt=prompt distance = d end
    end
   end
  end
+ if selectedPrompt~=nearestPrompt then
+  if selectedPrompt and heldPrompt==selectedPrompt then selectedPrompt:InputHoldEnd() end
+  heldPrompt=nil
+  selectedPrompt=nearestPrompt
+ end
+ interaction.Visible=selectedPrompt~=nil and not isBlocked
+ if selectedPrompt then
+  actionText.Text=selectedPrompt.ActionText
+  objectText.Text=selectedPrompt.ObjectText
+  keyButton.Text=UserInputService.GamepadEnabled and "X" or "E"
+ end
+ local progress=heldPrompt and selectedPrompt and math.clamp((os.clock()-holdStarted)/selectedPrompt.HoldDuration,0,1) or 0
+ for i,segment in ipairs(segments) do segment.BackgroundTransparency=i/40<=progress and 0 or 0.82 end
  highlight.Adornee = nearest
  highlight.Enabled = nearest ~= nil
  if active and not isBlocked then
@@ -336,3 +515,4 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
  end
 end)
 remote:FireServer("Ready")
+

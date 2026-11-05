@@ -10,6 +10,18 @@ local items = world:WaitForChild("Interactables")
 local remote = Instance.new("RemoteEvent")
 remote.Name = "SpareRoomEvent"
 remote.Parent = ReplicatedStorage
+-- Keep this allowlist server-side. Never put passwords in a Roblox place.
+local ADMIN_USER_IDS = {} -- Example: [123456789] = true
+local function isAdmin(player)
+ return RunService:IsStudio() or ADMIN_USER_IDS[player.UserId] == true
+  or (game.CreatorType == Enum.CreatorType.User and game.CreatorId == player.UserId)
+end
+local destinations = {
+ House = Vector3.new(0,4,-11), Garden = Vector3.new(0,4,35), Basement = Vector3.new(0,-14,-12),
+ Cinema = Vector3.new(-96,4,-79), Archive = Vector3.new(-56,4,-79), Clinic = Vector3.new(-16,4,-79),
+ Station = Vector3.new(24,4,-79), Workshop = Vector3.new(64,4,-79), Costumes = Vector3.new(104,4,-79),
+ Bookshop = Vector3.new(-76,4,-11), Cafe = Vector3.new(76,4,-11),
+}
 local states = {}
 local prompts = {}
 local holds = {}
@@ -40,7 +52,7 @@ local function snapshot(player)
  end
  table.sort(journal)
  remote:FireClient(player, "State", {
-  started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
+  admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
   diary = count(s.diary), records = count(s.records), rooms = count(s.rooms),
   anomalies = count(s.anomalies), hasKey = s.key, journal = journal,
   sandwich = math.max(0, math.ceil(s.sandwichAt - s.time)),
@@ -94,7 +106,7 @@ local function reset(player, mode)
   anomalies = {}, journal = old and old.journal or {}, canSave = old and old.canSave or false,
   flags = {}, key = false, sandwichAt = 0, time = 0, nextAnomaly = Config.Modes[mode].delay,
   active = nil, menu = false, reading = nil, ended = nil, sprint = false, exhausted = false,
-  sequence = old and old.sequence or 0, lastRequest = 0, lastStart = os.clock(),
+  day = 1, flying = false, sequence = old and old.sequence or 0, lastRequest = 0, lastStart = os.clock(),
  }
  holds[player] = {}
  remote:FireClient(player, "AnomalyEnd")
@@ -195,12 +207,27 @@ local function interact(player, part)
  snapshot(player)
 end
 Lighting.ClockTime = 0
-Lighting.Brightness = 1
+Lighting.GlobalShadows = true
+Lighting.EnvironmentDiffuseScale = 0.35
+Lighting.EnvironmentSpecularScale = 0.65
+Lighting.ExposureCompensation = -0.15
+Lighting.Brightness = 1.5
+local grade = Instance.new("ColorCorrectionEffect")
+grade.Name = "SpareRoomGrade"
+grade.TintColor = Color3.fromRGB(225, 233, 221)
+grade.Saturation = -0.22
+grade.Contrast = 0.12
+grade.Parent = Lighting
+local bloom = Instance.new("BloomEffect")
+bloom.Intensity = 0.12
+bloom.Size = 24
+bloom.Threshold = 1.6
+bloom.Parent = Lighting
 Lighting.Ambient = Color3.fromRGB(35, 39, 39)
 Lighting.OutdoorAmbient = Color3.fromRGB(50, 57, 63)
 Lighting.FogColor = Color3.fromRGB(17, 24, 25)
-Lighting.FogStart = 65
-Lighting.FogEnd = 170
+Lighting.FogStart = 110
+Lighting.FogEnd = 310
 for _, part in ipairs(world:GetDescendants()) do
  if part:IsA("BasePart") then
   local material = part:FindFirstChild("MaterialName")
@@ -216,7 +243,7 @@ for _, part in ipairs(world:GetDescendants()) do
   local sign = part:FindFirstChild("Sign")
   if sign then
    local gui = Instance.new("SurfaceGui")
-   gui.Face = value(part, "Side") == "Right" and Enum.NormalId.Right or value(part, "Side") == "Left" and Enum.NormalId.Left or Enum.NormalId.Front
+   gui.Face = value(part, "Side") == "Right" and Enum.NormalId.Right or value(part, "Side") == "Left" and Enum.NormalId.Left or value(part, "Side") == "Back" and Enum.NormalId.Back or Enum.NormalId.Front
    gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
    gui.PixelsPerStud = 60
    gui.AlwaysOnTop = false
@@ -225,7 +252,15 @@ for _, part in ipairs(world:GetDescendants()) do
    label.Size = UDim2.fromScale(1, 1)
    label.BackgroundTransparency = 1
    label.TextColor3 = Color3.fromRGB(232, 218, 181)
-   label.Font = Enum.Font.Gotham
+   local kind = value(part, "Venue")
+   label.Font = (kind == "ARCHIVE" or kind == "BOOKSHOP") and Enum.Font.Garamond
+    or kind == "CINEMA" and Enum.Font.GothamBlack or Enum.Font.GothamMedium
+   local padding = Instance.new("UIPadding")
+   padding.PaddingLeft = UDim.new(0.05, 0)
+   padding.PaddingRight = UDim.new(0.05, 0)
+   padding.PaddingTop = UDim.new(0.12, 0)
+   padding.PaddingBottom = UDim.new(0.12, 0)
+   padding.Parent = label
    label.TextScaled = true
    label.TextWrapped = true
    label.Text = sign.Value
@@ -236,6 +271,7 @@ end
 for _, part in ipairs(items:GetChildren()) do
  if part:IsA("BasePart") then
   local prompt = Instance.new("ProximityPrompt")
+  prompt.Style = Enum.ProximityPromptStyle.Custom
   prompt.ActionText = value(part, "Action")
   prompt.ObjectText = value(part, "Title")
   prompt.KeyboardKeyCode = Enum.KeyCode.E
@@ -311,6 +347,41 @@ remote.OnServerEvent:Connect(function(player, action, data)
  local s = states[player]
  if not s or typeof(action) ~= "string" then return end
  local now = os.clock()
+ if action == "Admin" then
+  if not isAdmin(player) or not s.started or s.ended or typeof(data) ~= "table" then return end
+  if now - (s.lastAdmin or 0) < 0.3 then return end
+  s.lastAdmin = now
+  local root = position(player)
+  if data.command == "Teleport" and typeof(data.value) == "string" and destinations[data.value] and root then
+   player.Character:PivotTo(CFrame.new(destinations[data.value]))
+   remote:FireClient(player, "AnomalyEnd")
+   s.active = nil
+  elseif data.command == "Sanity" and typeof(data.value) == "number" and (data.value == 10 or data.value == -10) then
+   if data.value < 0 then damage(player, 10) else s.sanity = math.min(100, s.sanity + 10) end
+  elseif data.command == "Fly" then
+   s.flying = not s.flying
+  elseif data.command == "Day" then
+   s.day = (s.day or 1) + 1
+   s.time += 1200
+   tell(player, "Admin: advanced to day " .. s.day .. ".")
+  elseif data.command == "Clear" then
+   s.active = nil
+   s.nextAnomaly = s.time + Config.Modes[s.mode].delay
+   remote:FireClient(player, "AnomalyEnd")
+  elseif data.command == "Anomaly" and typeof(data.value) == "string" then
+   for _, a in ipairs(Config.Anomalies) do
+    if a.id == data.value then
+     -- Use the same floor/clearance checks as natural anomalies.
+     s.adminAnomaly = a.id
+     s.nextAnomaly = s.time
+     s.active = nil
+     break
+    end
+   end
+  end
+  snapshot(player)
+  return
+ end
  if action == "Ready" then snapshot(player) return end
  if action == "Sprint" then s.sprint = data == true return end
  if action == "Start" then
@@ -385,7 +456,7 @@ RunService.Heartbeat:Connect(function(dt)
    local mode = Config.Modes[s.mode]
    s.sanity = math.max(0, s.sanity - mode.drain * dt)
    if s.sanity <= 0 then finish(player, "consumed") end
-   if root and root.Position.Y < -6 then
+   if root and (root.Position.Y < -6 or s.adminAnomaly) then
     local row = math.floor((root.Position.Z + 18) / 18)
     if row >= 0 and row < 5 and math.abs(root.Position.X) > 4 and math.abs(root.Position.X) < 28 then
      s.rooms[row * 2 + (root.Position.X > 0 and 2 or 1)] = true
@@ -395,16 +466,20 @@ RunService.Heartbeat:Connect(function(dt)
      if point then
       s.sequence += 1
       local a = Config.Anomalies[(s.sequence % #Config.Anomalies) + 1]
-      s.active = {elapsed = 0}
+      if s.adminAnomaly then
+       for _, candidate in ipairs(Config.Anomalies) do if candidate.id == s.adminAnomaly then a = candidate break end end
+       s.adminAnomaly = nil
+      end
+      s.active = {elapsed = 0, floor = root.Position.Y < -6 and "below" or "above"}
       s.anomalies[a.id] = true
       remote:FireClient(player, "Anomaly", {id = a.id, title = a.title, text = a.text, position = point})
       damage(player, 2.5)
-     else s.nextAnomaly = s.time + 8 end
+     else s.nextAnomaly = s.time + 8 if s.adminAnomaly then tell(player, "Move to an open floor area so the anomaly can appear safely.") end end
     end
    end
    if s.active then
     s.active.elapsed += dt
-    if not root or root.Position.Y > -6 or s.active.elapsed >= 12 then
+    if not root or (root.Position.Y < -6 and "below" or "above") ~= s.active.floor or s.active.elapsed >= 12 then
      s.active = nil
      s.nextAnomaly = s.time + mode.delay
      remote:FireClient(player, "AnomalyEnd")
@@ -415,3 +490,4 @@ RunService.Heartbeat:Connect(function(dt)
  end
  if accumulator >= 0.5 then accumulator = 0 end
 end)
+

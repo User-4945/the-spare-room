@@ -38,10 +38,10 @@ for node in all_items:
     parts.append(info)
     if "Role" in extra:
         roles.append(info)
-assert len(parts) == 619
-assert len(roles) == 39
+assert len(parts) == 1277
+assert len(roles) == 47
 assert {int(p["extra"]["Index"]) for p in roles if p["extra"]["Role"] == "diary"} == set(range(1, 21))
-assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 4
+assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 12
 assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} == {"morning", "names", "seal", "tomorrow", "glass"}
 assert len([p for p in parts if p["name"] == "RoomSign"]) == 10
 assert len([i for i in all_items if i.attrib["class"] == "SpawnLocation"]) == 1
@@ -71,7 +71,7 @@ def reachable(floor, start, bounds):
                 seen.add(q)
                 queue.append(q)
     return seen
-surface = reachable(0, (0,-11), (-23,23,-15,23))
+surface = reachable(0, (0,-11), (-129,129,-129,129))
 basement = reachable(-18, (0,-12), (-27,27,-17,71))
 chamber = reachable(-18, (9,63), (5,27,55,71))
 for p in roles:
@@ -82,4 +82,11 @@ server = (root / "SpareRoomServer.server.lua").read_text()
 assert "prompt.HoldDuration = 0.8" in server and "prompt.RequiresLineOfSight = true" in server
 assert 'damage(player, cost)' in server and 'action == "ReadClosed"' in server
 assert 's.sandwichAt = s.time + 120' in server
-print("PASS: XML, unique references, exact embedded sources, 619 parts, 39 standing-accessible interactions, 20 diary pages, 10 rooms, chamber gate and six ending paths")
+print("PASS: XML, unique references, exact embedded sources, 1277 parts, 47 standing-accessible interactions, 20 diary pages, 10 rooms, chamber gate and six ending paths")
+
+
+assert len([p for p in parts if p["name"] == "VenueSign"]) == 8
+assert 'if not isAdmin(player)' in server and 'game.CreatorId == player.UserId' in server
+client = (root / "SpareRoomClient.client.lua").read_text()
+assert 'UIScale' in client and 'PromptButtonHoldBegan' in client and 'InputHoldEnd' in client
+print("PASS: eight venue signs, server admin gate, responsive UI and hold prompt hooks")

@@ -105,3 +105,25 @@ prompt visuals, physics, touch layouts and performance before public publication
 - Inspect View → Output for errors. Report the exact message and what you were doing.
 
 Roblox API references: [proximity prompts](https://create.roblox.com/docs/ui/proximity-prompts), [remote events](https://create.roblox.com/docs/scripting/events/remote), [server validation](https://create.roblox.com/docs/scripting/security/client-server-boundary).
+
+
+
+## District and UI refresh
+
+This refreshed starter adds eight enterable, furnished venues: The Palladium cinema, Municipal Archive, St. Agnes Clinic, Ashfield Station, Ward & Sons workshop, Velvet & Ash costume shop, The Second Copy bookshop and The Empty Chair cafe. Each contains a family correspondence collectible. These are compact prototype interiors, not full ports of the original city quests.
+
+The HUD now uses a centered 1280×720 design canvas scaled to the viewport: sanity at upper left, controls at upper right, objectives at lower right, and one hold-to-interact card with a segmented progress ring at bottom center. Reading panels scroll. Dark paper panels, muted brass typography, natural Roblox materials, shadowed lamps, color grading, bloom, framed window openings and detailed fuse switches bring it closer to the original's atmosphere. No external art assets are required.
+
+## Admin access
+
+Press **F8** or **ADMIN** after starting a run. Access is checked by the server on every command. Studio playtest users are authorized; in a published user-owned experience, its creator is authorized. For other users or group-owned experiences, edit `ADMIN_USER_IDS` near the top of `SpareRoomServer.server.lua` to add numeric Roblox UserIds, e.g. `{[123456789] = true}`. Do not enter the web version's password or username: Roblox identity replaces password authentication here.
+
+Tools: teleport to house/garden/basement/all eight venues; spawn any of the four animated anomalies; clear anomalies; add/remove sanity; toggle flight; skip a day (advances active event timers). Anomalies use the normal floor and clearance checks; move to open floor space if a spawn is postponed. Close the admin panel to resume the paused game and see the anomaly.
+
+Flight: WASD direction, Space up, Left Ctrl down; toggling flight off returns normal movement. Keyboard flight is intended for desktop Studio testing. Day skipping changes the run's day counter and timers; this prototype does not yet implement a complete day/night schedule or calendar-gated events.
+
+## Scope and testing
+
+This is still a Roblox starter, not a graphics-identical or complete port. It does not include every original quest, procedural city generation, full avatar animations, a functioning mirror reflection, or all original endings. Existing browser and desktop releases are unchanged.
+
+Automated checks validate XML, exact embedded source, map reachability, sealed-chamber isolation, admin authorization hooks and Luau compilation. They do not replace testing camera, UI, interaction input, lighting, flight or multiplayer in Roblox Studio. Recommended tests: all three difficulty buttons, resize Studio viewport, hold E and hold click on the same prop, close a diary and inspect sanity, visit every venue, test F8 flight and all anomalies, reset a run, and verify a non-admin cannot use tools in a published test experience.

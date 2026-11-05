@@ -45,3 +45,4 @@ return {
  },
  Rooms = {"Storage Room", "Boiler Room", "Maintenance Tunnel", "Archive Room", "Forgotten Family Room", "Hidden Study", "Sealed Corridor", "Observation Room", "Former Children's Area", "Locked Chamber"},
 }
+
