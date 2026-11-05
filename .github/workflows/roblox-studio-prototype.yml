@@ -35,6 +35,8 @@ jobs:
         run: python3 roblox-studio/test-anomaly-scheduler.py /tmp/luau/luau
       - name: Test multiplayer state isolation
         run: python3 roblox-studio/test-multiplayer-state.py /tmp/luau/luau
+      - name: Test server-verified revive entitlement
+        run: python3 roblox-studio/test-revive.py /tmp/luau/luau
       - name: Package Studio starter project
         run: |
           python3 - <<'PY'

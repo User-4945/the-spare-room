@@ -1,6 +1,10 @@
 -- The Spare Room: Roblox Studio starter. All positions use Roblox studs.
 return {
- Version = "Roblox prototype 0.4",
+ Version = "Roblox prototype 0.5",
+ -- Create a Revive gamepass in your experience and set its base price to 30 Robux.
+ -- Paste the PASS ID here (not a developer-product or catalogue asset ID).
+ ReviveGamePassId = 0,
+ ReviveSanity = 50,
  SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
  Modes = {
   Easy = {drain = 0.025, damage = 0.75, sandwich = 15, delay = 45},

@@ -15,6 +15,7 @@ def string(item, name):
 services = {string(i, "Name"): i for i in data.findall("Item")}
 assert {"Workspace", "ReplicatedStorage", "ServerScriptService", "StarterPlayer", "Lighting"} <= services.keys()
 scripts = {
+    "SpareRoomRevive": "SpareRoomRevive.lua",
     "SpareRoomAvatars": "SpareRoomAvatars.lua",
     "SpareRoomNPCs": "SpareRoomNPCs.server.lua",
     "SpareRoomConfig": "SpareRoomConfig.lua",

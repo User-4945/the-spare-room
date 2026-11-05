@@ -151,6 +151,7 @@ local closeButton
 local chooseButton
 local function closeModal()
  local reason = modalReason
+ if reason=="ending" then remote:FireServer("Start",current.mode) return end
  modalReason = nil
  modal.Visible = false
  if reason == "read" then remote:FireServer("ReadClosed", readingId)
@@ -166,6 +167,12 @@ chooseButton = button(modal, "Choose this ending", UDim2.fromScale(0.52, 0.85), 
  if modalReason == "confirm" then remote:FireServer("Finish", confirmationNonce) end
 end)
 chooseButton.Visible = false
+local reviveButton=button(modal,"Revive / Gamepass",UDim2.fromScale(0.52,0.85),UDim2.fromScale(0.43,0.1),function()
+ if modalReason=="ending" and current.ended=="consumed" then remote:FireServer("Revive") end
+end)
+reviveButton.Visible=false
+local reviveNotice=text(modal,"",UDim2.fromScale(0.06,0.74),UDim2.fromScale(0.88,0.09),12)
+reviveNotice.Visible=false
 local journalButton = button(canvas, "JOURNAL", UDim2.fromOffset(1136,26), UDim2.fromOffset(116, 36), function()
  if blocked() then return end
  modalReason = "journal"
@@ -344,22 +351,22 @@ local function anomalyPart(model, size, color)
 end
 -- Pose native Motor6D avatar joints without third-party animation assets.
 local jointCache=setmetatable({},{__mode="k"})
-local function poseAvatar(model,t,moving,look)
+local function poseAvatar(model,t,moving,look,natural)
  local joints=jointCache[model]
  if not joints then
   joints={}
   for _,joint in ipairs(model:GetDescendants()) do if joint:IsA("Motor6D") then table.insert(joints,joint) end end
   jointCache[model]=joints
  end
- local swing=math.sin(t*(moving and 7 or 1.2))*(moving and 0.52 or 0.035)
+ local swing=math.sin(t*(moving and 7 or 1.2))*(moving and 0.4 or natural and 0 or 0.035)
  for _,joint in ipairs(joints) do
   local name=string.gsub(joint.Name," ","")
   if name=="LeftShoulder" or name=="RightHip" then joint.Transform=CFrame.Angles(swing,0,0)
   elseif name=="RightShoulder" or name=="LeftHip" then joint.Transform=CFrame.Angles(-swing,0,0)
   elseif name=="LeftKnee" then joint.Transform=CFrame.Angles(math.max(0,-swing)*0.6,0,0)
   elseif name=="RightKnee" then joint.Transform=CFrame.Angles(math.max(0,swing)*0.6,0,0)
-  elseif name=="Waist" then joint.Transform=CFrame.Angles(0,math.sin(t)*0.025,0)
-  elseif name=="Neck" then joint.Transform=CFrame.Angles(math.sin(t*0.6)*0.035,look or math.sin(t*0.4)*0.07,0) end
+  elseif name=="Waist" then joint.Transform=CFrame.Angles(0,natural and 0 or math.sin(t)*0.025,0)
+  elseif name=="Neck" then joint.Transform=CFrame.Angles(natural and 0 or math.sin(t*0.6)*0.035,look or (natural and 0 or math.sin(t*0.4)*0.07),0) end
  end
 end
 local residentTime=0
@@ -371,7 +378,9 @@ RunService.PreSimulation:Connect(function(dt)
    local root=model.PrimaryPart
    if root then
     local moving=root.AssemblyLinearVelocity.Magnitude>1 and not root.Anchored
-    poseAvatar(model,residentTime+(model:GetAttribute("Phase") or 0),moving,model:GetAttribute("Role")=="Watcher" and math.sin(residentTime*0.1)*0.3 or nil)
+    if model:GetAttribute("NaturalResident") then
+     if not model:GetAttribute("UsingAnimator") then poseAvatar(model,residentTime+(model:GetAttribute("Phase") or 0),moving,0,true) end
+    else poseAvatar(model,residentTime+(model:GetAttribute("Phase") or 0),moving,model:GetAttribute("Role")=="Watcher" and math.sin(residentTime*0.1)*0.3 or nil) end
    end
   end
  end
@@ -470,6 +479,9 @@ UserInputService.WindowFocusReleased:Connect(function() remote:FireServer("Sprin
 remote.OnClientEvent:Connect(function(action, data)
  if action == "State" then
   current = data
+  if not data.ended and modalReason=="ending" then
+   modalReason=nil modal.Visible=false reviveButton.Visible=false reviveNotice.Visible=false
+  end
   titleHousehold.Text="EXPLORERS CONNECTED · "..#(data.household or {})
   householdButton.Text="HOUSEHOLD / "..#(data.household or {})
   adminButton.Visible = data.admin and data.started and not data.ended
@@ -488,6 +500,8 @@ remote.OnClientEvent:Connect(function(action, data)
    .. mark(data.rooms >= 10) .. "Explore the rooms (" .. data.rooms .. "/10)\n"
    .. "Sandwich: " .. (data.sandwich == 0 and "ready" or data.sandwich .. "s")
  elseif action == "Read" then
+  paper.Size=UDim2.fromScale(0.88,0.56)
+  reviveButton.Visible=false reviveNotice.Visible=false
   modalReason = "read"
   readingId = data.id
   heading.Text = data.title
@@ -496,6 +510,8 @@ remote.OnClientEvent:Connect(function(action, data)
   chooseButton.Visible = false
   modal.Visible = true
  elseif action == "Confirm" then
+  paper.Size=UDim2.fromScale(0.88,0.56)
+  reviveButton.Visible=false reviveNotice.Visible=false
   modalReason = "confirm"
   confirmationNonce = data.nonce
   heading.Text = data.title
@@ -508,9 +524,20 @@ remote.OnClientEvent:Connect(function(action, data)
   modalReason = "ending"
   heading.Text = data.id == "consumed" and "YOU LOST: YOUR SANITY GOT CONSUMED" or data.title
   body.Text = data.text
-  closeButton.Text = "Start again"
+  closeButton.Text = "Restart / Free"
+  reviveButton.Visible=data.id=="consumed"
+  reviveNotice.Visible=data.id=="consumed"
+  paper.Size=UDim2.fromScale(0.88,0.48)
+  reviveButton.Text=Config.ReviveGamePassId>0 and "Revive / Gamepass" or "Revive / Setup pending"
+  reviveNotice.Text=Config.ReviveGamePassId>0 and "One-time pass unlocks future revives. Roblox shows the purchase price. Owners revive at no extra charge." or "The creator must connect the 30 Robux revive pass. Restarting is free."
   chooseButton.Visible = false
   modal.Visible = true
+ elseif action == "ReviveStatus" then
+  if modalReason=="ending" then reviveNotice.Text=data reviveNotice.Visible=true end
+ elseif action == "Revived" then
+  modalReason=nil modal.Visible=false reviveButton.Visible=false reviveNotice.Visible=false
+  cursorFree=false
+  showCaption(data,8)
  elseif action == "Caption" then showCaption(data, 7)
  elseif action == "SanityHit" then
   if flashTween then flashTween:Cancel() end

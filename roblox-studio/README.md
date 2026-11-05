@@ -1,4 +1,4 @@
-# The Spare Room — Roblox Studio prototype 0.4
+# The Spare Room — Roblox Studio prototype 0.5
 
 An importable Roblox Studio place, rebuilt in Luau from the core ideas of The Spare Room.
 This is a starter adaptation, not a complete port of the browser/desktop releases.
@@ -162,3 +162,29 @@ For a Studio test, use the Test controls to start a server with two clients. In 
 ### Regression tests
 
 `python roblox-studio/test-multiplayer-state.py /path/to/luau` runs the actual server reset, pause, damage and ending functions with two player stubs. It checks that evidence, timers, menus, sanity, journals and restarts do not leak between players. It is not a Roblox network/physics test. Avatar loading, pathfinding, gait, prompt placement, viewport layout and two-client play still require Studio testing.
+
+
+## Natural residents and revive-pass refresh
+
+Mum always uses the female NPC style pool; citizens alternate female/male character roles with random looks from curated pools. These are fictional NPC roles, not guesses about the gender of Roblox users. Hair, classic shirts and trousers use Roblox-published catalogue assets, with random complexions and proportions. Four male hairstyles, three female hairstyles and multiple clothing combinations replace the matching grey bodies. If avatar services fail, the self-contained R6 fallback remains available.
+
+Ordinary NPCs now use Roblox idle/walk animation tracks with per-resident timing, different walking speeds, random destinations and rest breaks. The old procedural head/torso sway is disabled for ordinary NPCs. A simple neutral gait remains as a fallback if animation assets cannot load. Mum independently walks between kitchen spots, and her interaction prompt follows her head. Residents stop walking briefly when someone begins speaking to them. The Watcher and doll intentionally retain their unsettling movement.
+
+### Zero sanity, death and reviving
+
+At zero sanity, the server kills the player's Humanoid and keeps that run on the death screen. Automatic character spawning is managed explicitly so sanity death cannot silently revive the character. The **Restart / Free** button begins a fresh run without buying anything.
+
+The **Revive / Gamepass** button checks pass ownership on the server. Owners revive at home with 50% sanity and keep their clues, keys, flags, explored rooms, day/timers and journal. Non-owners see Roblox's native purchase window. Cancelled, failed or unverified purchases never revive the player. An owned pass works on future sanity deaths without a second charge. This is a permanent gamepass, not a consumable product charging 30 Robux per death.
+
+### Connect the 30 Robux pass
+
+1. Publish your experience under your Roblox account/group.
+2. In Creator Hub, select that experience and open its **Monetization → Passes** area (some Creator Hub layouts group monetization items under Shop).
+3. Create a pass named **Revive**, with a description explaining that it permanently unlocks reviving after sanity death. Set it on sale with a **base price of 30 Robux**. Roblox's checkout determines the actual displayed price, including regional pricing if enabled.
+4. Copy the **pass ID**, not a developer-product ID or clothing asset ID.
+5. In Studio open **ReplicatedStorage → SpareRoomConfig** and set `ReviveGamePassId = YOUR_PASS_ID` in place of `0`. Publish the updated place.
+6. Verify ownership, cancellation and a purchase in a controlled test. Studio purchase simulations and avatar loading need checking separately; automated tests make no real purchases.
+
+The code cannot create the pass or set its price. Until the ID is configured, the button says **Setup pending** and does not open checkout. No password, payment details or Roblox credentials are needed in these scripts.
+
+Run `python roblox-studio/test-revive.py /path/to/luau` to exercise the actual entitlement gate with mocked Marketplace responses. These checks cover owners, non-owners, cancellation, false purchase completion, wrong passes, repeated events, temporary service failures and two-player isolation. They do not certify Roblox checkout, animation permissions, networking or physics.

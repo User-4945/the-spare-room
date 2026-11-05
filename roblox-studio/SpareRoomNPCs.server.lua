@@ -32,56 +32,109 @@ local function setup(model,point,anchored)
 end
 local green=Color3.fromRGB(77,100,87)
 local dark=Color3.fromRGB(44,49,49)
+local mumRandom=Random.new()
 local styles={
- {name="Mum",shirt=green,pants=Color3.fromRGB(65,65,57),hair=Color3.fromRGB(74,66,53)},
+ Factory.randomStyle("Mum","Female",mumRandom),
  {name="Watcher",shirt=Color3.fromRGB(29,34,33),pants=dark,skin=Color3.fromRGB(111,115,101),faceless=true,scale=1.12},
  {name="Doll",shirt=Color3.fromRGB(125,88,86),pants=Color3.fromRGB(162,150,122),skin=Color3.fromRGB(203,192,165),scale=0.48},
 }
--- Each character loads independently, so one failed avatar request cannot block the game.
+local function naturalAnimation(model,h)
+ local animator=h:FindFirstChildOfClass("Animator") or Instance.new("Animator",h)
+ local r15=h.RigType==Enum.HumanoidRigType.R15
+ local ids=r15 and {idle=507766666,walk=507777826} or {idle=180435571,walk=180426354}
+ local tracks={}
+ for name,id in pairs(ids) do
+  local anim=Instance.new("Animation") anim.AnimationId="rbxassetid://"..id
+  local ok,track=pcall(function() return animator:LoadAnimation(anim) end)
+  anim:Destroy()
+  if ok then track.Looped=true track.Priority=name=="walk" and Enum.AnimationPriority.Movement or Enum.AnimationPriority.Idle tracks[name]=track end
+ end
+ if tracks.idle then tracks.idle:Play(0.25,1,0.9+math.random()*0.2) end
+ local walking=false
+ h.Running:Connect(function(speed)
+  local moving=speed>0.5
+  if moving~=walking then
+   walking=moving
+   if tracks.walk then if moving then tracks.walk:Play(0.2) else tracks.walk:Stop(0.25) end end
+   if tracks.idle then if moving then tracks.idle:Stop(0.2) else tracks.idle:Play(0.25) end end
+  end
+  if moving and tracks.walk then tracks.walk:AdjustSpeed(math.clamp(speed/9,0.55,1.3)) end
+ end)
+ task.spawn(function()
+  for _=1,10 do
+   if tracks.walk and tracks.idle and tracks.walk.Length>0 and tracks.idle.Length>0 then model:SetAttribute("UsingAnimator",true) return end
+   task.wait(0.5)
+  end
+ end)
+end
+local function walkRoute(model,h,route,rng)
+ local root=model.PrimaryPart
+ h.WalkSpeed=rng:NextNumber(4.8,7.6)
+ while model.Parent and h.Health>0 do
+  while os.clock()<(model:GetAttribute("TalkingUntil") or 0) do task.wait(0.25) end
+  local target=route[rng:NextInteger(1,#route)]
+  local path=Pathfinding:CreatePath({AgentRadius=1.5,AgentHeight=5,AgentCanJump=false,WaypointSpacing=5})
+  local ok=pcall(function() path:ComputeAsync(root.Position,target) end)
+  model:SetAttribute("Activity","Walking")
+  if ok and path.Status==Enum.PathStatus.Success then
+   for _,waypoint in ipairs(path:GetWaypoints()) do
+    if not model.Parent then return end
+    if os.clock()<(model:GetAttribute("TalkingUntil") or 0) then break end
+    h:MoveTo(waypoint.Position)
+    if not h.MoveToFinished:Wait() then break end
+   end
+  else h:MoveTo(root.Position) end
+  model:SetAttribute("Activity","Resting")
+  task.wait(rng:NextNumber(2.5,8))
+ end
+end
+-- Mum has her own kitchen routine; the Watcher and doll retain their uncanny stillness.
 for i,style in ipairs(styles) do
  task.spawn(function()
   local model=Factory.create(style)
   local template=model:Clone() template.Name=style.name template.Parent=templates
   local point=i==1 and Vector3.new(-14,0,-2.1) or i==2 and Vector3.new(0,0,55) or Vector3.new(-16,3.35,16)
-  setup(model,point,true)
+  local h=setup(model,point,i~=1)
   model:SetAttribute("Role",style.name)
- end)
-end
-local function walkRoute(model,h,route)
- local root=model.PrimaryPart
- local index=1
- h.WalkSpeed=6
- while model.Parent and h.Health>0 do
-  local target=route[index]
-  local path=Pathfinding:CreatePath({AgentRadius=1.5,AgentHeight=5,AgentCanJump=false,WaypointSpacing=5})
-  local ok=pcall(function() path:ComputeAsync(root.Position,target) end)
-  if ok and path.Status==Enum.PathStatus.Success then
-   for _,waypoint in ipairs(path:GetWaypoints()) do
-    if not model.Parent then return end
-    h:MoveTo(waypoint.Position)
-    if not h.MoveToFinished:Wait() then break end
-   end
-  else
-   -- Recompute later rather than walking through a building or teleporting.
-   h:MoveTo(root.Position)
+  if i==1 then
+   model:SetAttribute("NaturalResident",true)
+   naturalAnimation(model,h)
+   local anchor=workspace:WaitForChild("SpareRoomWorld"):WaitForChild("Interactables"):WaitForChild("MumConversation")
+   local prompt=anchor:WaitForChild("ProximityPrompt")
+   prompt.PromptButtonHoldBegan:Connect(function() model:SetAttribute("TalkingUntil",os.clock()+4) h:MoveTo(model.PrimaryPart.Position) end)
+   task.spawn(function()
+    while model.Parent do
+     local head=model:FindFirstChild("Head")
+     if head then anchor.Position=head.Position+Vector3.new(0,0,-0.7) end
+     task.wait(0.1)
+    end
+   end)
+   task.wait(0.35)
+   walkRoute(model,h,{Vector3.new(-18,0,-10),Vector3.new(-10,0,-10),Vector3.new(-14,0,-2)},mumRandom)
   end
-  index=index%#route+1
-  task.wait(1.5)
- end
+ end)
 end
 for i=1,8 do
  task.spawn(function()
   local x=-110+(i-1)*30
   local z=i%2==0 and -57 or -33
-  local model=Factory.create({name="Resident "..i,shirt=Color3.fromRGB(60+i*8,77+i*4,72+i*3),pants=dark,hair=Color3.fromRGB(33+i*5,31+i*4,27+i*3)})
+  local rng=Random.new()
+  local gender=i%2==0 and "Female" or "Male"
+  local model=Factory.create(Factory.randomStyle("Resident "..i,gender,rng))
+  model:SetAttribute("NaturalResident",true)
   model:SetAttribute("Role","Citizen") model:SetAttribute("Phase",i)
   local h=setup(model,Vector3.new(x,0,z),false)
+  naturalAnimation(model,h)
   local head=model:FindFirstChild("Head")
   if head then
    local prompt=Instance.new("ProximityPrompt")
    prompt.ActionText="Speak with resident" prompt.ObjectText="Neighbour"
    prompt.HoldDuration=0.8 prompt.MaxActivationDistance=6 prompt.RequiresLineOfSight=true
    prompt.Style=Enum.ProximityPromptStyle.Default prompt.ClickablePrompt=true prompt.Parent=head
+   prompt.PromptButtonHoldBegan:Connect(function()
+    model:SetAttribute("TalkingUntil",os.clock()+4)
+    h:MoveTo(model.PrimaryPart.Position)
+   end)
    local last={}
    local lines={
     "Your mother used to take the long way home. There were more hands to hold.",
@@ -102,6 +155,6 @@ for i=1,8 do
    end)
   end
   task.wait(0.35)
-  walkRoute(model,h,{Vector3.new(math.max(-120,x-12),0,z),Vector3.new(math.min(120,x+12),0,z)})
+  walkRoute(model,h,{Vector3.new(math.max(-120,x-22),0,z),Vector3.new(math.min(120,x+22),0,z),Vector3.new(x,0,z)},rng)
  end)
 end

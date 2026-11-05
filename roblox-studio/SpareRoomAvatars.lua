@@ -2,6 +2,20 @@
 local Players=game:GetService("Players")
 local Factory={}
 local skin=Color3.fromRGB(194,170,144)
+-- Curated NPC presentation pools; no gender is inferred from real Roblox users.
+local looks={
+ Female={hair={451220849,915267638,915267120},shirts={398634295,398635081,144076436,4047886060}},
+ Male={hair={63690008,16630147,376548738,417457139},shirts={607785314,144076358,398633584,4047884046}},
+}
+local complexions={Color3.fromRGB(234,204,170),Color3.fromRGB(199,156,119),Color3.fromRGB(148,105,77),Color3.fromRGB(100,72,55)}
+local trousers={382537569,382538503,129458426,398634487}
+function Factory.randomStyle(name,gender,rng)
+ local pool=looks[gender] or looks.Female
+ return {name=name,gender=gender,skin=complexions[rng:NextInteger(1,#complexions)],
+  shirt=Color3.fromRGB(235,231,220),pants=Color3.fromRGB(72,75,78),
+  hairAsset=pool.hair[rng:NextInteger(1,#pool.hair)],shirtAsset=pool.shirts[rng:NextInteger(1,#pool.shirts)],
+  pantsAsset=trousers[rng:NextInteger(1,#trousers)],height=rng:NextNumber(0.94,1.04),width=rng:NextNumber(0.88,1.02)}
+end
 local function fallback(style)
  local model=Instance.new("Model")
  local function part(name,size,color)
@@ -34,8 +48,14 @@ end
 function Factory.create(style)
  local description=Instance.new("HumanoidDescription")
  description.HeadColor=style.skin or skin
- description.LeftArmColor=style.shirt description.RightArmColor=style.shirt description.TorsoColor=style.shirt
+ local armColor=style.shirtAsset and (style.skin or skin) or style.shirt
+ description.LeftArmColor=armColor description.RightArmColor=armColor description.TorsoColor=style.shirt
  description.LeftLegColor=style.pants description.RightLegColor=style.pants
+ if style.hairAsset then description.HairAccessory=tostring(style.hairAsset) end
+ if style.shirtAsset then description.Shirt=style.shirtAsset end
+ if style.pantsAsset then description.Pants=style.pantsAsset end
+ description.HeightScale=style.height or 1
+ description.WidthScale=style.width or 1
  local ok,model=pcall(function() return Players:CreateHumanoidModelFromDescriptionAsync(description,Enum.HumanoidRigType.R15) end)
  description:Destroy()
  if not ok or not model then model=fallback(style) end
@@ -55,10 +75,11 @@ function Factory.create(style)
   for _,p in ipairs(model:GetDescendants()) do if p:IsA("Decal") then p:Destroy() end end
  end
  local head=model:FindFirstChild("Head")
- if head then
+ if head and not model:FindFirstChildWhichIsA("Accessory") then
   local hair=Instance.new("Part") hair.Name="Hair" hair.Size=Vector3.new(head.Size.X*1.04,head.Size.Y*0.4,head.Size.Z*1.04)
   hair.Color=style.hair or Color3.fromRGB(43,39,33) hair.CanCollide=false hair.Massless=true
   hair.CFrame=head.CFrame*CFrame.new(0,head.Size.Y*0.4,0) hair.Parent=model
+  local round=Instance.new("SpecialMesh") round.MeshType=Enum.MeshType.Sphere round.Parent=hair
   local weld=Instance.new("WeldConstraint") weld.Part0=head weld.Part1=hair weld.Parent=hair
  end
  for _,p in ipairs(model:GetDescendants()) do
@@ -67,6 +88,7 @@ function Factory.create(style)
  root.Massless=false
  if style.scale then model:ScaleTo(style.scale) end
  model:SetAttribute("SpareRoomAvatar",true)
+ if style.gender then model:SetAttribute("Gender",style.gender) end
  return model
 end
 function Factory.place(model,point)

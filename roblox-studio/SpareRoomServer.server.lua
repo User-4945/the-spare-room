@@ -1,5 +1,8 @@
 -- ServerScriptService/SpareRoomServer
 local Players = game:GetService("Players")
+-- Death stays final until a free restart or an owned revive pass is selected.
+Players.CharacterAutoLoads = false
+local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
@@ -22,6 +25,7 @@ local destinations = {
  Station = Vector3.new(24,4,-79), Workshop = Vector3.new(64,4,-79), Costumes = Vector3.new(104,4,-79),
  Bookshop = Vector3.new(-76,4,-11), Cafe = Vector3.new(76,4,-11),
 }
+local Revive = require(ReplicatedStorage:WaitForChild("SpareRoomRevive"))
 local states = {}
 local prompts = {}
 local function value(part, name)
@@ -91,6 +95,11 @@ local function finish(player, id)
  s.ended = id
  s.journal[id] = true
  s.sprint = false
+ s.active=nil s.flying=false
+ if id=="consumed" then
+  local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+  if humanoid then humanoid.Health=0 end
+ end
  remote:FireClient(player, "AnomalyEnd")
  remote:FireClient(player, "Ending", {id = id, title = ending.title, text = ending.text})
  snapshot(player)
@@ -118,12 +127,38 @@ local function reset(player, mode)
  }
  remote:FireClient(player, "AnomalyEnd")
  if not player.Character or not player.Character:FindFirstChildOfClass("Humanoid") or player.Character:FindFirstChildOfClass("Humanoid").Health <= 0 then
-  player:LoadCharacter()
+  pcall(function() player:LoadCharacterAsync() end)
  end
  local root = position(player)
  if root then player.Character:PivotTo(CFrame.new(0, 4, -11)) end
  snapshot(player)
 end
+local function canRevive(player)
+ local s=states[player]
+ return s~=nil and s.ended=="consumed" and not s.reviveBusy
+end
+local function revivePlayer(player)
+ local s=states[player]
+ if not canRevive(player) then return end
+ s.reviveBusy=true
+ local ok=pcall(function() player:LoadCharacterAsync() end)
+ if states[player]~=s then return end
+ s.reviveBusy=nil
+ if not ok then remote:FireClient(player,"ReviveStatus","Character loading failed. Your pass remains owned; try Revive again.") return end
+ if s.ended~="consumed" then return end
+ s.ended=nil s.sanity=Config.ReviveSanity s.stamina=100
+ s.reading=nil s.confirm=nil s.menu=false s.sprint=false s.flying=false
+ s.active=nil s.nextAnomaly=s.time+Config.Modes[s.mode].delay
+ local root=position(player)
+ if root then player.Character:PivotTo(CFrame.new(0,4,-11)) end
+ remote:FireClient(player,"Revived","You wake at home. Your discoveries remain. Sanity restored to "..Config.ReviveSanity.."%.")
+ snapshot(player)
+end
+local reviveGate=Revive.new({market=MarketplaceService,passId=Config.ReviveGamePassId,
+ canRevive=canRevive,revive=revivePlayer,status=function(player,message) remote:FireClient(player,"ReviveStatus",message) end})
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,id,purchased)
+ reviveGate:purchaseFinished(player,id,purchased)
+end)
 local function valid(player, part)
  local s = states[player]
  local root = position(player)
@@ -327,9 +362,22 @@ local function joined(player)
   local humanoid = character:WaitForChild("Humanoid")
   humanoid.UseJumpPower = true
   humanoid.JumpPower = 45
+  humanoid.Died:Connect(function()
+   local state=states[player]
+   -- Other accidental deaths keep Roblox-style respawning. Sanity deaths stay locked.
+   if not state or state.ended then return end
+   task.delay(3,function()
+    if states[player]==state and not state.ended and player.Parent and player.Character==character then
+     pcall(function() player:LoadCharacterAsync() end)
+    end
+   end)
+  end)
+  local state=states[player]
+  if state and state.ended=="consumed" and not state.reviveBusy then humanoid.Health=0 return end
   task.wait(0.1)
   if character.Parent then character:PivotTo(CFrame.new(0, 4, -11)) end
  end)
+ if not player.Character then task.defer(function() pcall(function() player:LoadCharacterAsync() end) end) end
 end
 Players.PlayerAdded:Connect(joined)
 for _, player in ipairs(Players:GetPlayers()) do joined(player) end
@@ -337,6 +385,7 @@ Players.PlayerRemoving:Connect(function(player)
  local s = states[player]
  if s then saveJournal(player, s) end
  states[player] = nil
+ reviveGate:forget(player)
 end)
 game:BindToClose(function()
  if not Config.SaveEndingJournal then return end
@@ -356,6 +405,12 @@ remote.OnServerEvent:Connect(function(player, action, data)
  local s = states[player]
  if not s or typeof(action) ~= "string" then return end
  local now = os.clock()
+ if action == "Revive" then
+  if now-(s.lastReviveRequest or -10)<2 then return end
+  s.lastReviveRequest=now
+  reviveGate:request(player)
+  return
+ end
  if action == "Admin" then
   if not isAdmin(player) or not s.started or s.ended or typeof(data) ~= "table" then return end
   if now - (s.lastAdmin or 0) < 0.3 then return end
@@ -401,6 +456,7 @@ remote.OnServerEvent:Connect(function(player, action, data)
  if action == "Ready" then snapshot(player) return end
  if action == "Sprint" then s.sprint = data == true return end
  if action == "Start" then
+  if s.reviveBusy then return end
   if now - (s.lastStart or -10) < 2 then return end
   s.lastStart = now
  end
@@ -488,7 +544,7 @@ RunService.Heartbeat:Connect(function(dt)
    s.time += dt
    local mode = Config.Modes[s.mode]
    s.sanity = math.max(0, s.sanity - mode.drain * dt)
-   if s.sanity <= 0 then finish(player, "consumed") end
+   if s.sanity <= 0 then finish(player, "consumed") continue end
    if root then
     local row = math.floor((root.Position.Z + 18) / 18)
     if root.Position.Y < -6 and row >= 0 and row < 5 and math.abs(root.Position.X) > 4 and math.abs(root.Position.X) < 28 then
