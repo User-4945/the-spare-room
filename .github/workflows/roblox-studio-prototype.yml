@@ -1,0 +1,49 @@
+name: Validate Roblox Studio prototype
+on:
+  push:
+    branches: [roblox-studio-prototype]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Rebuild deterministic Studio place
+        run: |
+          node roblox-studio/build-place.cjs
+          git diff --exit-code -- roblox-studio/The-Spare-Room.rbxlx
+      - name: Validate embedded scripts and map reachability
+        run: python3 roblox-studio/validate-place.py
+      - name: Install pinned official Luau compiler
+        run: |
+          curl --fail --location --retry 3 https://github.com/luau-lang/luau/releases/download/0.745/luau-ubuntu.zip -o /tmp/luau.zip
+          echo '186e5ddaa2b048ebc7390c11ed1b00c04e7d3beaffed429250329e3575d2ece2  /tmp/luau.zip' | sha256sum --check -
+          mkdir /tmp/luau
+          unzip -q /tmp/luau.zip -d /tmp/luau
+          chmod +x /tmp/luau/luau-compile
+      - name: Compile all Luau source
+        run: |
+          for source in roblox-studio/*.lua; do
+            /tmp/luau/luau-compile "$source" >/dev/null
+          done
+      - name: Package Studio starter project
+        run: |
+          python3 - <<'PY'
+          import pathlib,zipfile
+          root=pathlib.Path('roblox-studio')
+          with zipfile.ZipFile('The-Spare-Room-Roblox-Starter.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in root.iterdir():
+                  if p.is_file():z.write(p,p.name)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: The-Spare-Room-Roblox-Starter
+          path: |
+            The-Spare-Room-Roblox-Starter.zip
+            roblox-studio/The-Spare-Room.rbxlx
+          retention-days: 90

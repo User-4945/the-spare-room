@@ -1,0 +1,47 @@
+-- The Spare Room: Roblox Studio starter. All positions use Roblox studs.
+return {
+ Version = "Roblox prototype 0.1",
+ SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
+ Modes = {
+  Easy = {drain = 0.025, damage = 0.75, sandwich = 15, delay = 45},
+  Intermediate = {drain = 0.045, damage = 1, sandwich = 12, delay = 34},
+  Hard = {drain = 0.07, damage = 1.25, sandwich = 10, delay = 25},
+ },
+ Diary = {
+  "Mum put four plates out. I counted them because I was learning fours. She said I was getting good at numbers.",
+  "Dad fixed the kitchen chair. He told us not to stand on it while the glue was drying. We all promised separately.",
+  "We measured our heights beside the little beds. My line was crooked. Someone drew a sun over it.",
+  "The spare room is for visitors. I asked why our coats were in its cupboard. Mum said cupboards do not belong to rooms.",
+  "We played a game where nobody could say their own name. Dad forgot the rules halfway through and looked frightened.",
+  "There was knocking after tea. It copied the number of people at the table. I did not tell anyone I counted five.",
+  "Mum and Dad argued about which photograph to keep. Both photographs looked ordinary until they were beside each other.",
+  "My school report has the wrong first name. The teacher says it is the name she has always used.",
+  "Someone moved my bed. The marks in the carpet say it has never been anywhere else.",
+  "Dad wrote a list of everything in the house. He left spaces between the names. Mum folded the spaces out.",
+  "The boiler answers if I tap three times. It waits until the house is quiet before adding a fourth.",
+  "My sibling says we never had a red bicycle. There is a photograph of us carrying it together.",
+  "Mum remembered an extra lunchbox this morning. By the time she found the lid, she could not remember why.",
+  "There is a room number on the maintenance sheet that does not appear on the plan. Its inspection is signed.",
+  "Dad's coat was warm when I found it. Mum says the man in the photograph is a visitor. She cannot say when he visited.",
+  "I can remember two people teaching me the same song. The words disagree. Both voices sound like home.",
+  "The little bed has my handwriting underneath. I have grown too tall to reach it without lying on the floor.",
+  "I asked how many children lived here. Mum said that was a cruel question. Later she asked me the same thing.",
+  "I am keeping both copies. If one of them disappears, please do not decide that the other one was always right.",
+  "I left the last page unfinished. There should be somewhere for tomorrow to go. You do not have to give us faces.",
+ },
+ Anomalies = {
+  {id = "coat", title = "Small Shoulders", text = "A child's coat rises as though someone is inside it. Then it hangs empty."},
+  {id = "steps", title = "One Step More", text = "Footprints continue after the person making them should have stopped."},
+  {id = "clock", title = "The Uncounted Minute", text = "The clock moves backwards. The house keeps its own time."},
+  {id = "chair", title = "One More Place", text = "There is an extra chair. Its legs are free of dust."},
+ },
+ Endings = {
+  morning = {title = "An Ordinary Morning", text = "You keep one ordinary memory without deciding whose it was. Mum puts the kettle on.", diary = 2, anchor = true},
+  names = {title = "Names Without Faces", text = "You preserve both records. Neither is declared a mistake. There is room for an answer later.", diary = 6, records = 2},
+  seal = {title = "Maintained in Absence", text = "You renew the inspection seal. The earlier signatures remain beneath yours.", diary = 10, valve = true},
+  tomorrow = {title = "Somewhere for Tomorrow", text = "You leave the final page unfinished. The house remembers a larger family, but offers no explanation.", diary = 20, records = 3, mum = true},
+  glass = {title = "The Far Side of the Glass", text = "You cover the observation pane. The reflection continues arranging places on the other side.", anomalies = 3, sanityMax = 45},
+  consumed = {title = "YOUR SANITY GOT CONSUMED", text = "The house keeps the memory you could no longer hold."},
+ },
+ Rooms = {"Storage Room", "Boiler Room", "Maintenance Tunnel", "Archive Room", "Forgotten Family Room", "Hidden Study", "Sealed Corridor", "Observation Room", "Former Children's Area", "Locked Chamber"},
+}

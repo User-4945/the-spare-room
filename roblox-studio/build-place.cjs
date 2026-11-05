@@ -1,0 +1,159 @@
+const fs=require("node:fs"),path=require("node:path");
+const buildPlace=function buildRobloxPlace(sources) {
+ let ref=0, count=0, interactables=0;
+ const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+ const id=()=>`RBX${++ref}`;
+ const str=(n,v)=>`<string name="${n}">${esc(v)}</string>`;
+ const num=(n,v)=>`<float name="${n}">${v}</float>`;
+ const bool=(n,v)=>`<bool name="${n}">${v?"true":"false"}</bool>`;
+ function item(cls,name,properties="",children=""){return `<Item class="${cls}" referent="${id()}"><Properties>${str("Name",name)}${properties}</Properties>${children}</Item>`;}
+ function val(name,v){return item("StringValue",name,str("Value",v));}
+ function part(name,x,y,z,w,h,d,color=[100,105,94],material="WoodPlanks",meta={},solid=true,transparency=0){
+  count++;
+  let children=val("MaterialName",material);
+  for(const [n,v]of Object.entries(meta))children+=val(n,v);
+  if(meta.Role)interactables++;
+  const cframe=`<CoordinateFrame name="CFrame"><X>${x}</X><Y>${y}</Y><Z>${z}</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`;
+  const size=`<Vector3 name="size"><X>${w}</X><Y>${h}</Y><Z>${d}</Z></Vector3>`;
+  return item("Part",name,cframe+size+bool("Anchored",true)+bool("CanCollide",solid)+bool("CanTouch",false)+bool("CanQuery",true)+num("Transparency",transparency)+`<Color3uint8 name="Color3uint8">${color[0]*65536+color[1]*256+color[2]}</Color3uint8>`+`<token name="TopSurface">0</token><token name="BottomSurface">0</token>`,children);
+ }
+ const world=[], interactions=[];
+ const add=(...a)=>world.push(part(...a));
+ const prop=(name,role,title,action,x,y,z,w,h,d,extra={},color=[205,190,150])=>{
+  interactions.push(part(name,x,y,z,w,h,d,color,role==="key"?"Metal":"Wood",{Role:role,Title:title,Action:action,...extra},false));
+ };
+ function wall(name,x,y,z,w,h,d){add(name,x,y+h/2,z,w,h,d,[106,113,103],"Concrete");}
+ function desk(x,y,z,w=4,d=2){
+  add("DeskTop",x,y+3.2,z,w,.25,d,[104,79,54]);
+  for(const dx of [-w/2+.22,w/2-.22])for(const dz of [-d/2+.2,d/2-.2])add("DeskLeg",x+dx,y+1.6,z+dz,.22,3.1,.22,[69,55,42]);
+ }
+ function chair(x,y,z){
+  add("ChairSeat",x,y+1.6,z,1.8,.2,1.8,[108,91,65]);
+  add("ChairBack",x,y+2.6,z+.8,1.8,2,.18,[108,91,65]);
+  for(const dx of [-.7,.7])for(const dz of [-.7,.7])add("ChairLeg",x+dx,y+.8,z+dz,.18,1.6,.18,[80,69,48]);
+ }
+ add("GardenGround",0,-.45,15,100,.5,150,[53,68,49],"Grass");
+ add("HouseFloor",0,-.25,4,48,.5,40,[116,94,64]);
+ add("HouseRoof",0,12.25,4,49,.5,41,[62,66,61],"Slate");
+ wall("WestExterior",-24,0,4,.5,12,40);wall("EastExterior",24,0,4,.5,12,40);
+ wall("BackExterior",0,0,24,48,12,.5);
+ wall("FrontLeft",-13.5,0,-16,21,12,.5);wall("FrontRight",13.5,0,-16,21,12,.5);
+ wall("FrontHeader",0,9,-16,6,3,.5);
+ for(const side of [-1,1]){
+  for(const [a,b]of [[-16,-9],[-3,11],[17,24]])wall("HallPartition",side*4,0,(a+b)/2,.4,12,b-a);
+  for(const z of [-6,14]){
+   wall("RoomDoorHeader",side*4,9,z,.4,3,6);
+   for(const dz of [-3.2,3.2])add("RoomDoorFrame",side*4,4.5,z+dz,.65,9,.3,[173,156,123]);
+  }
+  wall("RoomDivider",side*14,0,4,20,12,.4);
+  for(const z of [-8,15]){
+   add("WindowFrame",side*23.55,5.5,z,.25,5,6,[171,165,144]);
+   add("WindowGlass",side*23.35,5.5,z,.1,4.5,5.4,[82,112,118],"Glass",{},false,.35);
+   add("WindowMullion",side*23.2,5.5,z,.15,4.5,.12,[190,179,150]);
+  }
+ }
+ for(const z of [-9,5,20])add("Lamp",0,11.5,z,1,.2,1,[226,202,145],"Metal",{},false);
+ add("HallRunner",0,.04,5,3.5,.08,33,[82,53,48],"Fabric",{},false);
+ for(const side of [-1,1])for(const z of [-6,14])add("RoomPlaque",side*3.7,10,z,.16,1.1,5,[36,55,46],"Wood",{Sign:side<0?(z<0?"KITCHEN":"SPARE ROOM"):(z<0?"BEDROOM":"SITTING ROOM"),Side:side<0?"Right":"Left"},false);
+ desk(-14,0,-6,7,4);chair(-14,0,-3);chair(-17,0,-6);chair(-11,0,-6);
+ for(const x of [-21,-18,-15]){add("KitchenCabinet",x,1.6,-13.8,2.8,3.2,3,[91,105,90]);add("Countertop",x,3.35,-13.8,2.9,.2,3.2,[159,161,145],"Marble");}
+ prop("Sandwich","sandwich","Kitchen sandwich","Eat sandwich",-18,3.65,-13.8,1.2,.25,.8);
+ add("MumBody",-14,2.3,-2.1,1.5,2.5,1,[88,105,94],"Fabric");
+ add("MumHead",-14,4.1,-2.1,1,1.1,1,[187,171,139],"SmoothPlastic");
+ prop("MumConversation","mum","Mum","Speak with Mum",-14,4.2,-1.5,.7,.7,.2,{});
+ prop("OrdinaryMemory","anchor","The repaired chair","Hold an ordinary memory",-17,2.5,-5,1,.2,.7);
+ prop("MorningChoice","ending","The kitchen window","Choose an ordinary morning",-21,4.6,-8,1.4,.8,.2,{Ending:"morning"});
+ add("BedFrame",13,1,0,5,2,7,[96,75,55]);
+ add("Mattress",13,2.15,0,4.8,.5,6.8,[160,153,125],"Fabric");
+ add("Pillow",13,2.55,-2.4,3,.3,1.5,[185,178,152],"Fabric");
+ add("Wardrobe",21,4,-10,4,8,3,[86,70,56]);
+ prop("Mirror","mirror","The covered mirror","Uncover and inspect the mirror",20.5,5,1,2.6,4.5,.2,{});
+ desk(-16,0,16,6,3);add("SpareBed",-17,1.2,8,5,2.4,5,[112,111,91],"Fabric");
+ desk(15,0,17,5,3);chair(15,0,14);
+ add("Sofa",19,1.5,10,7,3,3,[81,101,90],"Fabric");
+ prop("HallInvitation","record","A household list","Read the household list",3.6,4,8,.12,1.4,1.6,{Index:"hall",Text:"The household list begins with four entries. Its certified copy has two. Neither is marked amended."});
+ prop("MaintenanceHatch","hatch","The maintenance hatch","Descend beneath the house",0,.16,20,3,.3,3,{});
+ add("BasementFloor",0,-18.25,27,56,.5,90,[78,81,73],"Concrete");
+ add("BasementCeiling",0,-5.25,27,56,.5,90,[51,61,56],"Concrete");
+ wall("BasementWest",-28,-18,27,.5,12.5,90);wall("BasementEast",28,-18,27,.5,12.5,90);
+ wall("BasementNorth",0,-18,-18,56,12.5,.5);wall("BasementSouth",0,-18,72,56,12.5,.5);
+ const rooms=["Storage Room","Boiler Room","Maintenance Tunnel","Archive Room","Forgotten Family Room","Hidden Study","Sealed Corridor","Observation Room","Former Children's Area","Locked Chamber"];
+ for(let row=0;row<5;row++){
+  const z=-9+row*18;
+  add("Lamp",0,-6,z,1,.2,1,[202,187,140],"Metal",{},false);
+  for(const side of [-1,1]){
+   const index=row*2+(side>0?1:0),x=side*16;
+   for(const dz of [-6,6])wall("BasementHallWall",side*4,-18,z+dz,.5,12.5,6);
+   wall("BasementDoorHeader",side*4,-8,z,.5,2.5,6);
+   for(const dz of [-3.15,3.15])add("BasementDoorTrim",side*4,-13,z+dz,.7,10,.25,[151,137,111]);
+   if(row>0)wall("BasementRoomBoundary",x,-18,z-9,24,12.5,.5);
+   add("RoomSign",side*3.7,-7.2,z,.16,1.1,5.5,[30,49,39],"Metal",{Sign:rooms[index].toUpperCase(),Side:side<0?"Right":"Left"},false);
+   add("Lamp",x,-6,z,1.3,.2,.7,[192,177,131],"Metal",{},false);
+   for(const offset of [-.8,.8]){
+    add("CeilingPipe",x+offset,-6.5,z,.12,.12,15,[111,98,73],"Metal");
+    for(const dz of [-5,0,5])add("PipeBracket",x+offset,-6.65,z+dz,.3,.4,.14,[55,68,59],"Metal");
+   }
+   for(let i=0;i<2;i++){
+    const px=x+(i===0?-4:4),pz=z+3;
+    desk(px,-18,pz,3,1.8);
+    prop("Diary"+(index*2+i+1),"diary","Sibling diary · "+(index*2+i+1),"Read diary page",px,-14.5,pz,1.2,.12,.85,{Index:String(index*2+i+1)});
+   }
+   add("StorageShelf",side*26,-14,z,2,.2,10,[100,90,67]);
+   add("StorageShelf",side*26,-11,z,2,.2,10,[100,90,67]);
+   for(let i=0;i<4;i++)add("StorageBox",side*26,-13.2,z-3+i*2,1.5,1.4,1.6,[118-i*9,108-i*6,78]);
+   if(index===1){
+    add("BoilerTank",x,-13.5,z,4,9,3,[70,86,82],"Metal");
+    for(const dx of [-1.3,0,1.3])add("BoilerPipe",x+dx,-8,z,.2,3,.2,[145,118,77],"Metal");
+    add("BoilerGauge",x,-11,z-1.58,1.1,1.1,.1,[189,182,145],"SmoothPlastic");
+    for(let i=0;i<4;i++)add("BoilerVent",x,-15.5+i*.5,z-1.6,2,.12,.05,[30,42,36],"Metal");
+    prop("BoilerValve","valve","The isolated pipe","Isolate the knocking pipe",x+2.4,-14,z,1.2,1.2,.3,{},[150,119,69]);
+   }
+   if(index===3||index===5){
+    for(let i=0;i<3;i++){
+     add("ArchiveCabinet",x-3+i*3,-14.5,z-6,2.5,7,2,[75,88,76],"Metal");
+     for(let j=0;j<5;j++)add("ArchiveDrawerHandle",x-3+i*3,-17+j*1.3,z-7.1,.7,.12,.15,[160,145,106],"Metal");
+    }
+   }
+   if(index===4||index===9){desk(x,-18,z,4,2.5);chair(x-3,-18,z);chair(x+3,-18,z);chair(x,-18,z-3);}
+   if(index===7){
+    add("ObservationFrame",x,-12,z-6,8,6,.4,[106,96,73],"Metal");
+    add("ObservationGlass",x,-12,z-6.3,7.4,5.4,.08,[71,97,98],"Glass",{},false,.3);
+   }
+   if(index===8){
+    for(const dz of [-5,5]){add("ChildBed",x,-17,z+dz,6,2,3,[116,116,92],"Fabric");add("ChildPillow",x-2,-15.8,z+dz,1.4,.3,2,[179,166,133],"Fabric");}
+    for(let i=0;i<4;i++)add("HeightMark",x+i*.25,-14+i*.6,z+8.65,.8,.05,.05,[170,147,105],"Wood",{},false);
+    prop("ChamberKey","key","The unnumbered key","Take the unnumbered key",x,-14.4,z+3,.9,.15,.4,{},[192,158,79]);
+   }
+  }
+ }
+ // Evidence is private per player. It remains visible as a physical prop after being read.
+ for(const [x,z,index,content]of [[16,9,"archive","Two household records disagree about how many children attended school. Both carry the same signature."],[-16,27,"family","A family photograph has four places at the table. A crease passes through two faces."],[16,27,"study","An unfinished letter begins Dear children. A second draft begins Dear child. Both are signed D."]]){
+  desk(x,-18,z+6,3,1.8);
+  prop("Record"+index,"record","Family record · "+index,"Read family record",x,-14.5,z+6,1.3,.12,.9,{Index:index,Text:content});
+ }
+ prop("BasementStairs","stairs","The stairs home","Return upstairs",0,-16,-15,2,1.5,1,{});
+ add("ChamberDoor",4,-13,63,.5,10,6,[79,71,53],"Wood");
+ prop("ChamberLock","gate","The unnumbered chamber","Unlock the chamber",3.45,-13,63,.2,1.2,1,{});
+ prop("ChamberExit","exitChamber","Chamber return","Return to the passage",6,-13,63,.3,1.2,1,{});
+ for(const [name,id,x,z]of [["ArchiveDecision","names",23,12],["SealDecision","seal",-23,48],["GlassDecision","glass",23,48],["TomorrowDecision","tomorrow",23,66]]){
+  desk(x,-18,z,3,1.8);
+  prop(name,"ending","A decision · "+id,"Consider this ending",x,-14.5,z,1.4,.15,1,{Ending:id});
+ }
+ // Physical bounds stop accidental falls beyond the prototype's garden.
+ for(const x of [-45,45])add("GardenBoundary",x,8,20,1,20,140,[40,50,40],"Concrete",{},true,1);
+ for(const z of [-50,90])add("GardenBoundary",0,8,z,90,20,1,[40,50,40],"Concrete",{},true,1);
+ for(const x of [-32,32])for(const z of [-27,32]){
+  add("TreeTrunk",x,5,z,1.3,10,1.3,[78,65,47]);
+  add("TreeCanopy",x,12,z,8,7,8,[34,56,42],"Grass");
+ }
+ const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>0</X><Y>0.1</Y><Z>-11</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
+ const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
+ const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
+ const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting")}</roblox>`;
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:4}};
+};
+const dir=__dirname;
+const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8")});
+fs.writeFileSync(path.join(dir,"The-Spare-Room.rbxlx"),result.xml);
+fs.writeFileSync(path.join(dir,"build-stats.json"),JSON.stringify(result.stats,null,2)+"\n");
+console.log(result.stats);
