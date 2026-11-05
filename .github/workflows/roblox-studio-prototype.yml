@@ -25,12 +25,14 @@ jobs:
           echo '186e5ddaa2b048ebc7390c11ed1b00c04e7d3beaffed429250329e3575d2ece2  /tmp/luau.zip' | sha256sum --check -
           mkdir /tmp/luau
           unzip -q /tmp/luau.zip -d /tmp/luau
-          chmod +x /tmp/luau/luau-compile
+          chmod +x /tmp/luau/luau-compile /tmp/luau/luau
       - name: Compile all Luau source
         run: |
           for source in roblox-studio/*.lua; do
             /tmp/luau/luau-compile "$source" >/dev/null
           done
+      - name: Test anomaly scheduling and effect coverage
+        run: python3 roblox-studio/test-anomaly-scheduler.py /tmp/luau/luau
       - name: Package Studio starter project
         run: |
           python3 - <<'PY'

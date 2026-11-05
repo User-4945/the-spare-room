@@ -205,7 +205,7 @@ const buildPlace=function buildRobloxPlace(sources) {
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
  const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:4,venues:8}};
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:10,venues:8}};
 };
 const dir=__dirname;
 const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8")});

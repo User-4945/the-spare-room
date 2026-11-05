@@ -1,6 +1,6 @@
 -- The Spare Room: Roblox Studio starter. All positions use Roblox studs.
 return {
- Version = "Roblox prototype 0.1",
+ Version = "Roblox prototype 0.3",
  SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
  Modes = {
   Easy = {drain = 0.025, damage = 0.75, sandwich = 15, delay = 45},
@@ -30,6 +30,12 @@ return {
   "I left the last page unfinished. There should be somewhere for tomorrow to go. You do not have to give us faces.",
  },
  Anomalies = {
+  {id = "pages", title = "The Unfinished Sentence", text = "Loose pages circle an empty space. Every line ends before the same name."},
+  {id = "door", title = "A Room Short", text = "A door stands without a wall. Someone has polished the handle from the other side."},
+  {id = "family", title = "The Family Arrangement", text = "Four silhouettes wait together. The smallest space keeps changing sides."},
+  {id = "blocks", title = "Spelling Practice", text = "Children's blocks arrange themselves. There are too few letters for the name you remember."},
+  {id = "plates", title = "Places Reserved", text = "Four plates rise where no table stands. A fifth place is almost visible."},
+  {id = "lamp", title = "The Answering Light", text = "A lamp answers in groups of three. The last answer always has an extra pulse."},
   {id = "coat", title = "Small Shoulders", text = "A child's coat rises as though someone is inside it. Then it hangs empty."},
   {id = "steps", title = "One Step More", text = "Footprints continue after the person making them should have stopped."},
   {id = "clock", title = "The Uncounted Minute", text = "The clock moves backwards. The house keeps its own time."},

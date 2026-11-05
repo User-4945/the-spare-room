@@ -29,6 +29,8 @@ end
 local current = {started = false, sanity = 100, stamina = 100, journal = {}, mode = "Easy"}
 local modalReason, readingId, confirmationNonce = nil, nil, nil
 local thirdPerson = false
+local cursorFree = false
+local flashlightOn = true
 local lastCameraMode = ""
 local active = nil
 local captionRemaining = 0
@@ -131,6 +133,7 @@ local function closeModal()
  if reason == "read" then remote:FireServer("ReadClosed", readingId)
  elseif reason == "confirm" then remote:FireServer("CancelEnding")
  elseif reason == "admin" then remote:FireServer("Pause", false)
+ elseif reason == "map" then remote:FireServer("Pause", false)
  elseif reason == "journal" then remote:FireServer("Pause", false)
  elseif reason == "ending" then remote:FireServer("Start", current.mode) end
 end
@@ -143,7 +146,10 @@ local journalButton = button(canvas, "JOURNAL", UDim2.fromOffset(1136,26), UDim2
  if blocked() then return end
  modalReason = "journal"
  heading.Text = "Ending journal"
- body.Text = #current.journal > 0 and table.concat(current.journal, "\n") or "No endings recorded in this server yet. Check the README for optional published-game persistence."
+ local endings = #current.journal > 0 and table.concat(current.journal, "\n") or "No endings recorded yet."
+ local observed = current.observed or {}
+ body.Text = "ENDING JOURNAL\n" .. endings .. "\n\nANOMALY FIELD NOTES (" .. #observed .. "/" .. #Config.Anomalies .. ")\n"
+  .. (#observed > 0 and table.concat(observed,"\n\n") or "No anomalies witnessed this run.")
  closeButton.Text = "Close"
  chooseButton.Visible = false
  modal.Visible = true
@@ -152,6 +158,32 @@ end)
 local cameraButton = button(canvas, "CAMERA · V", UDim2.fromOffset(1136,68), UDim2.fromOffset(116, 36), function()
  if not blocked() then thirdPerson = not thirdPerson end
 end)
+local mouseButton
+local function toggleMouse()
+ if blocked() then return end
+ cursorFree = not cursorFree
+end
+mouseButton = button(canvas,"MOUSE / M",UDim2.fromOffset(1136,152),UDim2.fromOffset(116,36),toggleMouse)
+local lampButton
+local function toggleTorch()
+ if blocked() then return end
+ flashlightOn=not flashlightOn
+ lampButton.Text=flashlightOn and "LIGHT ON / F" or "LIGHT OFF / F"
+end
+lampButton=button(canvas,"LIGHT ON / F",UDim2.fromOffset(1136,194),UDim2.fromOffset(116,36),toggleTorch)
+local function openMap()
+ if blocked() then return end
+ modalReason="map"
+ heading.Text="ASHFIELD / DISTRICT GUIDE"
+ local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+ local location=root and root.Position.Y < -6 and "Beneath the house" or "House and district"
+ body.Text="YOU ARE: "..location.."\n\nLeave through the house's front entrance. Follow the path to the road.\n\nACROSS THE ROAD — west to east\nThe Palladium cinema · Municipal Archive · St. Agnes Clinic · Ashfield Station · Ward & Sons · Velvet & Ash\n\nON THE HOUSE SIDE\nThe Second Copy bookshop to the west. The Empty Chair cafe to the east.\n\nAT HOME\nThe garden is behind the house. The maintenance hatch at the end of the hallway leads below. Use the return stairs to come home.\n\nPlaces change what you notice. Read the correspondence in every venue."
+ closeButton.Text="Fold the map"
+ chooseButton.Visible=false
+ modal.Visible=true
+ remote:FireServer("Pause",true)
+end
+local mapButton=button(canvas,"MAP / G",UDim2.fromOffset(1136,236),UDim2.fromOffset(116,36),openMap)
 local touchSprint = false
 local sprintButton = button(canvas, "SPRINT", UDim2.fromScale(0.02, 0.72), UDim2.fromOffset(110, 36), function()
  if blocked() then return end
@@ -159,7 +191,7 @@ local sprintButton = button(canvas, "SPRINT", UDim2.fromScale(0.02, 0.72), UDim2
  remote:FireServer("Sprint", touchSprint)
 end)
 sprintButton.Visible = UserInputService.TouchEnabled
-local controlHints = text(canvas, "WASD  MOVE     SHIFT  SPRINT     SPACE  JUMP     HOLD E  INTERACT     V  CAMERA", UDim2.fromOffset(250,674), UDim2.fromOffset(780,26),12)
+local controlHints = text(canvas, "WASD  MOVE     SHIFT  SPRINT     SPACE  JUMP     HOLD E  INTERACT     M  MOUSE     F  LIGHT     G  MAP", UDim2.fromOffset(250,674), UDim2.fromOffset(780,26),12)
 -- Admin UI is only shown after server-confirmed authorization.
 local adminPanel = frame(canvas, "AdminPanel", UDim2.fromOffset(300,92), UDim2.fromOffset(680,540))
 adminPanel.Visible = false
@@ -301,12 +333,47 @@ local function startAnomaly(data)
   parts[2] = anomalyPart(model, Vector3.new(1.5, 1.7, 0.15), Color3.fromRGB(129, 103, 74))
   for i = 3, 6 do parts[i] = anomalyPart(model, Vector3.new(0.15, 1.4, 0.15), Color3.fromRGB(91, 76, 57)) end
  end
- active = {model = model, parts = parts, base = base, id = data.id, time = 0}
- showCaption(data.title .. " — " .. data.text, 12)
+ if data.id == "pages" then
+  for i=1,8 do parts[i]=anomalyPart(model,Vector3.new(0.7,0.025,1),Color3.fromRGB(205,194,160)) end
+ elseif data.id == "door" then
+  parts[1]=anomalyPart(model,Vector3.new(2.4,4.8,0.16),Color3.fromRGB(83,68,50))
+  parts[2]=anomalyPart(model,Vector3.new(0.12,0.12,0.25),Color3.fromRGB(185,157,93))
+  for i=3,4 do parts[i]=anomalyPart(model,Vector3.new(0.16,5.1,0.3),Color3.fromRGB(138,119,86)) end
+  parts[5]=anomalyPart(model,Vector3.new(2.8,0.2,0.3),Color3.fromRGB(138,119,86))
+ elseif data.id == "family" then
+  for i=1,8 do
+   parts[i]=anomalyPart(model,i%2==0 and Vector3.new(0.55,0.6,0.55) or Vector3.new(0.7,1.6,0.35),Color3.fromRGB(31,39,35))
+   if i%2==0 then parts[i].Shape=Enum.PartType.Ball end
+  end
+ elseif data.id == "blocks" then
+  for i=1,5 do
+   parts[i]=anomalyPart(model,Vector3.new(0.65,0.65,0.65),Color3.fromRGB(126+i*9,113+i*3,82))
+   local face=Instance.new("SurfaceGui") face.Face=Enum.NormalId.Front face.Parent=parts[i]
+   local letter=text(face,string.sub("HOME?",i,i),UDim2.new(),UDim2.fromScale(1,1),32)
+   letter.TextScaled=true letter.TextColor3=Color3.fromRGB(46,49,41)
+  end
+ elseif data.id == "plates" then
+  for i=1,5 do
+   parts[i]=anomalyPart(model,Vector3.new(0.09,1.05,1.05),Color3.fromRGB(194,189,164))
+   parts[i].Shape=Enum.PartType.Cylinder
+  end
+ elseif data.id == "lamp" then
+  parts[1]=anomalyPart(model,Vector3.new(0.2,2.6,0.2),Color3.fromRGB(80,81,63))
+  parts[2]=anomalyPart(model,Vector3.new(1.5,0.6,1.5),Color3.fromRGB(183,166,121))
+  parts[3]=anomalyPart(model,Vector3.new(1.1,0.1,1.1),Color3.fromRGB(79,79,60))
+  local light=Instance.new("PointLight") light.Range=10 light.Color=Color3.fromRGB(237,207,143) light.Parent=parts[2]
+ end
+ for _,part in ipairs(parts) do part.CFrame=base end
+ active = {model = model, parts = parts, base = base, id = data.id, time = 0, duration = data.duration or 12}
+ showCaption(data.title .. " — " .. data.text, data.duration or 12)
 end
 UserInputService.InputBegan:Connect(function(input, processed)
  if processed then return end
  if input.KeyCode == Enum.KeyCode.F8 then toggleAdmin() return end
+ if input.KeyCode == Enum.KeyCode.M then toggleMouse() return end
+ if input.KeyCode == Enum.KeyCode.F then toggleTorch() return end
+ if input.KeyCode == Enum.KeyCode.G then openMap() return end
+ if input.UserInputType == Enum.UserInputType.MouseButton1 and cursorFree and not blocked() then cursorFree=false end
  if input.KeyCode == Enum.KeyCode.LeftShift and not blocked() then remote:FireServer("Sprint", true) end
  if input.KeyCode == Enum.KeyCode.V and not blocked() then thirdPerson = not thirdPerson end
 end)
@@ -371,6 +438,11 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
  controlHints.Visible=not isBlocked
  journalButton.Visible=current.started and not current.ended
  cameraButton.Visible=current.started and not current.ended
+ mouseButton.Visible=current.started and not current.ended
+ lampButton.Visible=current.started and not current.ended
+ mapButton.Visible=current.started and not current.ended
+ mouseButton.Modal=cursorFree and not isBlocked
+ mouseButton.Text=cursorFree and "CAPTURE / M" or "MOUSE / M"
  if current.admin and current.flying and not current.ended and current.started then
   local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
   if root and root ~= flyRoot then
@@ -414,11 +486,13 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
    player.CameraMinZoomDistance = 6
   end
  end
- if isBlocked then UserInputService.MouseBehavior = Enum.MouseBehavior.Default end
- UserInputService.MouseIconEnabled = isBlocked
+ if isBlocked or cursorFree then
+  UserInputService.MouseBehavior=Enum.MouseBehavior.Default
+ elseif not thirdPerson then UserInputService.MouseBehavior=Enum.MouseBehavior.LockCenter end
+ UserInputService.MouseIconEnabled = isBlocked or cursorFree
  ProximityPromptService.Enabled = not isBlocked
  cross.Visible = not isBlocked
- torch.Enabled = current.started and not current.ended
+ torch.Enabled = flashlightOn and current.started and not current.ended
  if workspace.CurrentCamera then torchPart.CFrame = workspace.CurrentCamera.CFrame end
  local nearest, nearestPrompt, distance = nil, nil, math.huge
  local character = player.Character
@@ -436,7 +510,49 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
  if active and not isBlocked then
   active.time += dt
   local t, parts, base = active.time, active.parts, active.base
-  if active.id == "coat" then
+  if active.id == "pages" then
+   for i,part in ipairs(parts) do
+    local angle=t*0.45+i*math.pi/4
+    part.CFrame=base*CFrame.new(math.cos(angle)*1.1,1.8+math.sin(t+i)*0.25,math.sin(angle)*1.1)*CFrame.Angles(0,angle,math.sin(t+i)*0.2)
+   end
+  elseif active.id == "door" then
+   local swing=math.sin(math.clamp((t-3)/5,0,1)*math.pi)*0.22
+   parts[1].CFrame=base*CFrame.new(0,2.4,0)*CFrame.Angles(0,swing,0)
+   parts[2].CFrame=parts[1].CFrame*CFrame.new(0.85,0,-0.2)
+   parts[3].CFrame=base*CFrame.new(-1.35,2.55,0)
+   parts[4].CFrame=base*CFrame.new(1.35,2.55,0)
+   parts[5].CFrame=base*CFrame.new(0,5.05,0)
+  elseif active.id == "family" then
+   for i=1,4 do
+    local x=(i-2.5)*0.9
+    local small=i==4 and 0.65 or 1
+    local sway=math.sin(t*0.35+i)*0.06
+    parts[i*2-1].CFrame=base*CFrame.new(x+sway,small*1.5,0)
+    parts[i*2].CFrame=base*CFrame.new(x+sway,small*2.55,0)
+    parts[i*2-1].Transparency=0.35+math.sin(t*0.5+i)*0.1
+    parts[i*2].Transparency=parts[i*2-1].Transparency
+   end
+  elseif active.id == "blocks" then
+   for i,part in ipairs(parts) do
+    local settle=math.clamp((t-i*0.6)/2,0,1)
+    part.CFrame=base*CFrame.new((i-3)*0.75,0.35+(1-settle)*1.8,math.sin(i)*(1-settle))*CFrame.Angles(0,(1-settle)*i,0)
+   end
+  elseif active.id == "plates" then
+   for i,part in ipairs(parts) do
+    local angle=(i-1)*math.pi/2
+    part.CFrame=base*CFrame.new(i==5 and 0 or math.cos(angle)*1.1,1.8+math.sin(t*0.8+i)*0.06,i==5 and 0 or math.sin(angle)*1.1)*CFrame.Angles(0,0,math.pi/2)
+    part.Transparency=i==5 and 0.78+math.sin(t*0.5)*0.15 or math.max(0,1-t/2)
+   end
+  elseif active.id == "lamp" then
+   parts[1].CFrame=base*CFrame.new(0,1.3,0)
+   parts[2].CFrame=base*CFrame.new(0,2.8,0)
+   parts[3].CFrame=base*CFrame.new(0,0.1,0)
+   -- Gentle pulses rather than rapid flashes: three, then one late answer.
+   local phase=t%6
+   local pulse=0
+   for _,beat in ipairs({0.6,1.8,3,4.8}) do pulse=math.max(pulse,math.max(0,1-math.abs(phase-beat)/0.4)) end
+   parts[2]:FindFirstChildOfClass("PointLight").Brightness=0.2+pulse*1.2
+  elseif active.id == "coat" then
    local lift = math.sin(math.min(t, 10) / 10 * math.pi) * 0.6
    parts[1].CFrame = base * CFrame.new(0, 1.6 + lift, 0)
    parts[2].CFrame = base * CFrame.new(0, 2.85 + lift, 0)
@@ -460,6 +576,8 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
    end
    for _, part in ipairs(parts) do part.Transparency = math.clamp(1 - (t - 0.8) / 1.4, 0, 1) end
   end
+  local fade=math.clamp((t-(active.duration-2))/2,0,1)
+  if fade>0 then for _,part in ipairs(parts) do part.Transparency=math.max(part.Transparency,fade) end end
  end
 end)
 remote:FireServer("Ready")

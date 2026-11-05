@@ -1,4 +1,4 @@
-# The Spare Room — Roblox Studio prototype 0.2
+# The Spare Room — Roblox Studio prototype 0.3
 
 An importable Roblox Studio place, rebuilt in Luau from the core ideas of The Spare Room.
 This is a starter adaptation, not a complete port of the browser/desktop releases.
@@ -22,7 +22,7 @@ Opening the place does not publish it to Roblox. You decide when to publish from
 - Easy, Intermediate and Hard modes.
 - Server-maintained sanity, deferred reading costs, a 2.2-second loss flash, and a zero-sanity restart screen.
 - Sandwiches restore 15/12/10 percent by mode and refill after 120 seconds of active play.
-- Four locally animated anomalies with captions; menus and reading pause their timers.
+- Ten locally animated anomalies with captions; menus and reading pause their timers.
 - Six ending paths and a per-player journal for the current server.
 - 1,277 anchored map parts. All art is primitive geometry that you can edit in Studio.
 
@@ -99,7 +99,7 @@ prompt visuals, physics, touch layouts and performance before public publication
 - Try E, click/touch and controller hold prompts.
 - Eat a sandwich twice: the second interaction should show its cooldown.
 - Unlock the chamber using the actual evidence and key.
-- Observe all four anomalies while standing still, then pause with a page and resume.
+- Observe all ten anomalies while standing still, then pause with a page and resume.
 - Trigger the five chosen endings and the sanity-loss ending; restart each time.
 - Test with two local clients: reading, sandwiches and sanity must remain independent.
 - Inspect View → Output for errors. Report the exact message and what you were doing.
@@ -118,7 +118,7 @@ The HUD now uses a centered 1280×720 design canvas scaled to the viewport: sani
 
 Press **F8** or **ADMIN** after starting a run. Access is checked by the server on every command. Studio playtest users are authorized; in a published user-owned experience, its creator is authorized. For other users or group-owned experiences, edit `ADMIN_USER_IDS` near the top of `SpareRoomServer.server.lua` to add numeric Roblox UserIds, e.g. `{[123456789] = true}`. Do not enter the web version's password or username: Roblox identity replaces password authentication here.
 
-Tools: teleport to house/garden/basement/all eight venues; spawn any of the four animated anomalies; clear anomalies; add/remove sanity; toggle flight; skip a day (advances active event timers). Anomalies use the normal floor and clearance checks; move to open floor space if a spawn is postponed. Close the admin panel to resume the paused game and see the anomaly.
+Tools: teleport to house/garden/basement/all eight venues; spawn any of the ten animated anomalies; clear anomalies; add/remove sanity; toggle flight; skip a day (advances active event timers). Anomalies use the normal floor and clearance checks; move to open floor space if a spawn is postponed. Close the admin panel to resume the paused game and see the anomaly.
 
 Flight: WASD direction, Space up, Left Ctrl down; toggling flight off returns normal movement. Keyboard flight is intended for desktop Studio testing. Day skipping changes the run's day counter and timers; this prototype does not yet implement a complete day/night schedule or calendar-gated events.
 
@@ -131,3 +131,15 @@ Automated checks validate XML, exact embedded source, map reachability, sealed-c
 
 ### Default interaction prompt fix
 Custom prompt rendering and manual input forwarding have been removed. Roblox renders the prompt and hold circle. The server validates completed triggers with distance, line-of-sight, game-state checks and a short anti-spam cooldown, without relying on a separately replicated hold-start clock. The visibility ray starts at the avatar's head so desk edges do not reject visible tabletop pages. Hold time remains 0.8 seconds. Studio keyboard, mouse/touch and controller testing is still required.
+
+
+## Mouse, exploration and anomalies refresh
+
+- **M** or **MOUSE** releases/captures the pointer. While released, click empty game space to capture it again; UI clicks remain available. The game keeps running while the pointer is released. Reading, maps and other menus still pause gameplay.
+- **F** or **LIGHT** toggles the flashlight. There is no battery drain.
+- **G** or **MAP** opens the district guide. It pauses the run and gives directions to each venue.
+- **JOURNAL** now includes this run's discovered anomaly descriptions as well as recorded endings.
+- Ten anomaly types: the original coat, footprints, backwards clock and extra chair, plus orbiting diary pages, a freestanding door, a family of silhouettes, rearranging letter blocks, floating plates and an answering lamp.
+- Natural anomalies can appear in the house, basement or district when a nearby floor area has sufficient clearance. A shuffled bag ensures every type is seen before that cycle repeats, without immediate repetition between cycles. Admin spawns do not consume this bag.
+- Animation, captions and cleanup share a 14-second active-play lifetime, including a final two-second fade. Menus pause all three. Lamp pulses are gentle and local rather than rapid full-screen flashes.
+- These are local visual anomalies without collision. Studio playtesting is still needed to verify actual rendering, mouse recapture and every input method.

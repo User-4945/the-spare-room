@@ -44,6 +44,10 @@ end
 local function snapshot(player)
  local s = states[player]
  if not s then return end
+ local observed = {}
+ for _, a in ipairs(Config.Anomalies) do
+  if s.anomalies[a.id] then table.insert(observed, a.title .. " — " .. a.text) end
+ end
  local journal = {}
  for id in pairs(s.journal) do
   local e = Config.Endings[id]
@@ -51,7 +55,7 @@ local function snapshot(player)
  end
  table.sort(journal)
  remote:FireClient(player, "State", {
-  admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
+  observed = observed, admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
   diary = count(s.diary), records = count(s.records), rooms = count(s.rooms),
   anomalies = count(s.anomalies), hasKey = s.key, journal = journal,
   sandwich = math.max(0, math.ceil(s.sandwichAt - s.time)),
@@ -405,6 +409,23 @@ remote.OnServerEvent:Connect(function(player, action, data)
   end
  elseif action == "CancelEnding" then s.confirm = nil s.menu = false end
 end)
+-- Each natural anomaly appears once before the next shuffled set begins.
+local function nextNaturalAnomaly(s)
+ if not s.anomalyBag or #s.anomalyBag == 0 then
+  s.anomalyBag = {}
+  for _, a in ipairs(Config.Anomalies) do table.insert(s.anomalyBag, a) end
+  for i = #s.anomalyBag, 2, -1 do
+   local j = math.random(i)
+   s.anomalyBag[i], s.anomalyBag[j] = s.anomalyBag[j], s.anomalyBag[i]
+  end
+  if #s.anomalyBag > 1 and s.anomalyBag[#s.anomalyBag].id == s.lastNatural then
+   s.anomalyBag[1], s.anomalyBag[#s.anomalyBag] = s.anomalyBag[#s.anomalyBag], s.anomalyBag[1]
+  end
+ end
+ local a = table.remove(s.anomalyBag)
+ s.lastNatural = a.id
+ return a
+end
 local function eventPoint(player)
  local root = position(player)
  if not root then return nil end
@@ -420,7 +441,7 @@ local function eventPoint(player)
     overlap.FilterType = Enum.RaycastFilterType.Exclude
     overlap.FilterDescendantsInstances = {player.Character}
     local clear = true
-    for _, part in ipairs(workspace:GetPartBoundsInBox(CFrame.new(point + Vector3.new(0, 2, 0)), Vector3.new(4, 4, 5), overlap)) do
+    for _, part in ipairs(workspace:GetPartBoundsInBox(CFrame.new(point + Vector3.new(0, 2.8, 0)), Vector3.new(4.5, 5.5, 5), overlap)) do
      if part.CanCollide then clear = false break end
     end
     if clear then return point end
@@ -452,30 +473,30 @@ RunService.Heartbeat:Connect(function(dt)
    local mode = Config.Modes[s.mode]
    s.sanity = math.max(0, s.sanity - mode.drain * dt)
    if s.sanity <= 0 then finish(player, "consumed") end
-   if root and (root.Position.Y < -6 or s.adminAnomaly) then
+   if root then
     local row = math.floor((root.Position.Z + 18) / 18)
-    if row >= 0 and row < 5 and math.abs(root.Position.X) > 4 and math.abs(root.Position.X) < 28 then
+    if root.Position.Y < -6 and row >= 0 and row < 5 and math.abs(root.Position.X) > 4 and math.abs(root.Position.X) < 28 then
      s.rooms[row * 2 + (root.Position.X > 0 and 2 or 1)] = true
     end
     if not s.active and s.time >= s.nextAnomaly then
      local point = eventPoint(player)
      if point then
       s.sequence += 1
-      local a = Config.Anomalies[(s.sequence % #Config.Anomalies) + 1]
+      local a = nil
       if s.adminAnomaly then
        for _, candidate in ipairs(Config.Anomalies) do if candidate.id == s.adminAnomaly then a = candidate break end end
        s.adminAnomaly = nil
-      end
-      s.active = {elapsed = 0, floor = root.Position.Y < -6 and "below" or "above"}
+      else a = nextNaturalAnomaly(s) end
+      s.active = {elapsed = 0, duration = 14, floor = root.Position.Y < -6 and "below" or "above"}
       s.anomalies[a.id] = true
-      remote:FireClient(player, "Anomaly", {id = a.id, title = a.title, text = a.text, position = point})
+      remote:FireClient(player, "Anomaly", {id = a.id, title = a.title, text = a.text, position = point, duration = s.active.duration})
       damage(player, 2.5)
      else s.nextAnomaly = s.time + 8 if s.adminAnomaly then tell(player, "Move to an open floor area so the anomaly can appear safely.") end end
     end
    end
    if s.active then
     s.active.elapsed += dt
-    if not root or (root.Position.Y < -6 and "below" or "above") ~= s.active.floor or s.active.elapsed >= 12 then
+    if not root or (root.Position.Y < -6 and "below" or "above") ~= s.active.floor or s.active.elapsed >= s.active.duration then
      s.active = nil
      s.nextAnomaly = s.time + mode.delay
      remote:FireClient(player, "AnomalyEnd")
