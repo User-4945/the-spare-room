@@ -369,6 +369,7 @@ local function poseAvatar(model,t,moving,look,natural)
   elseif name=="Neck" then joint.Transform=CFrame.Angles(natural and 0 or math.sin(t*0.6)*0.035,look or (natural and 0 or math.sin(t*0.4)*0.07),0) end
  end
 end
+local watcherGaze=setmetatable({},{__mode="k"})
 local residentTime=0
 RunService.PreSimulation:Connect(function(dt)
  residentTime+=dt
@@ -380,7 +381,16 @@ RunService.PreSimulation:Connect(function(dt)
     local moving=root.AssemblyLinearVelocity.Magnitude>1 and not root.Anchored
     if model:GetAttribute("NaturalResident") then
      if not model:GetAttribute("UsingAnimator") then poseAvatar(model,residentTime+(model:GetAttribute("Phase") or 0),moving,0,true) end
-    else poseAvatar(model,residentTime+(model:GetAttribute("Phase") or 0),moving,model:GetAttribute("Role")=="Watcher" and math.sin(residentTime*0.1)*0.3 or nil) end
+    elseif model:GetAttribute("Role")=="Watcher" then
+     local target=player.Character and player.Character:FindFirstChild("Head")
+     local yaw=0
+     if target and (target.Position-root.Position).Magnitude<55 then
+      local localPoint=root.CFrame:PointToObjectSpace(target.Position)
+      yaw=math.clamp(math.atan2(-localPoint.X,-localPoint.Z),-0.6,0.6)
+     end
+     watcherGaze[model]=(watcherGaze[model] or 0)+(yaw-(watcherGaze[model] or 0))*math.min(dt*0.7,1)
+     poseAvatar(model,0,false,watcherGaze[model],true)
+    else poseAvatar(model,residentTime,false,nil) end
    end
   end
  end

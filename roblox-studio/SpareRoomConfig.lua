@@ -34,7 +34,7 @@ return {
   "I left the last page unfinished. There should be somewhere for tomorrow to go. You do not have to give us faces.",
  },
  Anomalies = {
-  {id = "watcher", title = "The Watcher", text = "A familiar height. An unfamiliar face. It turns only when you stop watching."},
+  {id = "watcher", title = "The Watcher", text = "Too tall for the family photograph. Its pale eyes find you slowly. It turns only when you stop watching."},
   {id = "doll", title = "Borrowed Childhood", text = "The doll turns towards a voice you cannot hear. Its empty hands remember holding something."},
   {id = "pages", title = "The Unfinished Sentence", text = "Loose pages circle an empty space. Every line ends before the same name."},
   {id = "door", title = "A Room Short", text = "A door stands without a wall. Someone has polished the handle from the other side."},

@@ -35,7 +35,7 @@ local dark=Color3.fromRGB(44,49,49)
 local mumRandom=Random.new()
 local styles={
  Factory.randomStyle("Mum","Female",mumRandom),
- {name="Watcher",shirt=Color3.fromRGB(29,34,33),pants=dark,skin=Color3.fromRGB(111,115,101),faceless=true,scale=1.12},
+ {name="Watcher",shirt=Color3.fromRGB(15,19,19),pants=Color3.fromRGB(12,16,17),skin=Color3.fromRGB(33,39,37),faceless=true,watcher=true,width=0.7,scale=1.75},
  {name="Doll",shirt=Color3.fromRGB(125,88,86),pants=Color3.fromRGB(162,150,122),skin=Color3.fromRGB(203,192,165),scale=0.48},
 }
 local function naturalAnimation(model,h)

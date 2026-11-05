@@ -513,7 +513,7 @@ local function eventPoint(player)
     overlap.FilterType = Enum.RaycastFilterType.Exclude
     overlap.FilterDescendantsInstances = {player.Character}
     local clear = true
-    for _, part in ipairs(workspace:GetPartBoundsInBox(CFrame.new(point + Vector3.new(0, 2.8, 0)), Vector3.new(4.5, 5.5, 5), overlap)) do
+    for _, part in ipairs(workspace:GetPartBoundsInBox(CFrame.new(point + Vector3.new(0, 5.5, 0)), Vector3.new(4.5, 10.8, 5), overlap)) do
      if part.CanCollide then clear = false break end
     end
     if clear then return point end

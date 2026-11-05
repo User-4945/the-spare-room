@@ -75,12 +75,35 @@ function Factory.create(style)
   for _,p in ipairs(model:GetDescendants()) do if p:IsA("Decal") then p:Destroy() end end
  end
  local head=model:FindFirstChild("Head")
- if head and not model:FindFirstChildWhichIsA("Accessory") then
+ if head and not style.watcher and not model:FindFirstChildWhichIsA("Accessory") then
   local hair=Instance.new("Part") hair.Name="Hair" hair.Size=Vector3.new(head.Size.X*1.04,head.Size.Y*0.4,head.Size.Z*1.04)
   hair.Color=style.hair or Color3.fromRGB(43,39,33) hair.CanCollide=false hair.Massless=true
   hair.CFrame=head.CFrame*CFrame.new(0,head.Size.Y*0.4,0) hair.Parent=model
   local round=Instance.new("SpecialMesh") round.MeshType=Enum.MeshType.Sphere round.Parent=hair
   local weld=Instance.new("WeldConstraint") weld.Part0=head weld.Part1=hair weld.Parent=hair
+ end
+ if style.watcher and head then
+  local function detail(name,size,cf,color,attach,glow)
+   local p=Instance.new("Part") p.Name=name p.Size=size p.CFrame=cf p.Color=color
+   p.CanCollide=false p.Massless=true p.Material=glow and Enum.Material.Neon or Enum.Material.Fabric
+   if glow then p.Transparency=0.35 end
+   p.Parent=model
+   local w=Instance.new("WeldConstraint") w.Part0=attach w.Part1=p w.Parent=p
+  end
+  local cloth=Color3.fromRGB(12,17,17)
+  detail("WatcherHoodTop",Vector3.new(head.Size.X*1.16,0.18,head.Size.Z*1.16),head.CFrame*CFrame.new(0,head.Size.Y*0.56,0),cloth,head)
+  for _,side in ipairs({-1,1}) do
+   detail("WatcherHoodSide",Vector3.new(0.12,head.Size.Y*1.1,head.Size.Z*1.12),head.CFrame*CFrame.new(side*head.Size.X*0.56,0,0),cloth,head)
+   detail("WatcherEye",Vector3.new(0.07,0.035,0.035),head.CFrame*CFrame.new(side*head.Size.X*0.19,0.08,-head.Size.Z*0.51),Color3.fromRGB(158,169,146),head,true)
+  end
+  for _,name in ipairs({"LeftHand","RightHand","Left Arm","Right Arm"}) do
+   local hand=model:FindFirstChild(name)
+   if hand then
+    for finger=-1,1 do
+     detail("WatcherFinger",Vector3.new(0.06,0.65,0.09),hand.CFrame*CFrame.new(finger*0.17,-hand.Size.Y/2-0.22,-0.12),Color3.fromRGB(50,57,52),hand)
+    end
+   end
+  end
  end
  for _,p in ipairs(model:GetDescendants()) do
   if p:IsA("BasePart") then p.CanCollide=false p.CanTouch=false p.CanQuery=false p.Massless=true end

@@ -191,3 +191,7 @@ Run `python roblox-studio/test-revive.py /path/to/luau` to exercise the actual e
 
 
 Revive pass connected: `2073110257` (Revive). The owner-provided Creator Hub screenshot shows a 30 Robux price. Publish this updated place to the experience that owns that pass, then verify the native purchase flow and owned-pass revive in Roblox. The automated tests do not make purchases.
+
+
+### Taller Watcher refresh
+The Watcher now uses 1.75× rig scale (ordinary adults remain near 1×), narrower proportions, an almost-black hood, tiny dim eyes and elongated fingers. The garden figure stays motionless while its head slowly follows nearby players. The anomaly version retains its turn-away behaviour. Spawn clearance now reserves 10.8 studs vertically so the larger model is not placed under low lintels. Family silhouettes still rescale their template to their original small sizes. Visual proportions and clearance need Studio verification.

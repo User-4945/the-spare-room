@@ -34,7 +34,7 @@ return {
   &quot;I left the last page unfinished. There should be somewhere for tomorrow to go. You do not have to give us faces.&quot;,
  },
  Anomalies = {
-  {id = &quot;watcher&quot;, title = &quot;The Watcher&quot;, text = &quot;A familiar height. An unfamiliar face. It turns only when you stop watching.&quot;},
+  {id = &quot;watcher&quot;, title = &quot;The Watcher&quot;, text = &quot;Too tall for the family photograph. Its pale eyes find you slowly. It turns only when you stop watching.&quot;},
   {id = &quot;doll&quot;, title = &quot;Borrowed Childhood&quot;, text = &quot;The doll turns towards a voice you cannot hear. Its empty hands remember holding something.&quot;},
   {id = &quot;pages&quot;, title = &quot;The Unfinished Sentence&quot;, text = &quot;Loose pages circle an empty space. Every line ends before the same name.&quot;},
   {id = &quot;door&quot;, title = &quot;A Room Short&quot;, text = &quot;A door stands without a wall. Someone has polished the handle from the other side.&quot;},
@@ -135,12 +135,35 @@ function Factory.create(style)
   for _,p in ipairs(model:GetDescendants()) do if p:IsA(&quot;Decal&quot;) then p:Destroy() end end
  end
  local head=model:FindFirstChild(&quot;Head&quot;)
- if head and not model:FindFirstChildWhichIsA(&quot;Accessory&quot;) then
+ if head and not style.watcher and not model:FindFirstChildWhichIsA(&quot;Accessory&quot;) then
   local hair=Instance.new(&quot;Part&quot;) hair.Name=&quot;Hair&quot; hair.Size=Vector3.new(head.Size.X*1.04,head.Size.Y*0.4,head.Size.Z*1.04)
   hair.Color=style.hair or Color3.fromRGB(43,39,33) hair.CanCollide=false hair.Massless=true
   hair.CFrame=head.CFrame*CFrame.new(0,head.Size.Y*0.4,0) hair.Parent=model
   local round=Instance.new(&quot;SpecialMesh&quot;) round.MeshType=Enum.MeshType.Sphere round.Parent=hair
   local weld=Instance.new(&quot;WeldConstraint&quot;) weld.Part0=head weld.Part1=hair weld.Parent=hair
+ end
+ if style.watcher and head then
+  local function detail(name,size,cf,color,attach,glow)
+   local p=Instance.new(&quot;Part&quot;) p.Name=name p.Size=size p.CFrame=cf p.Color=color
+   p.CanCollide=false p.Massless=true p.Material=glow and Enum.Material.Neon or Enum.Material.Fabric
+   if glow then p.Transparency=0.35 end
+   p.Parent=model
+   local w=Instance.new(&quot;WeldConstraint&quot;) w.Part0=attach w.Part1=p w.Parent=p
+  end
+  local cloth=Color3.fromRGB(12,17,17)
+  detail(&quot;WatcherHoodTop&quot;,Vector3.new(head.Size.X*1.16,0.18,head.Size.Z*1.16),head.CFrame*CFrame.new(0,head.Size.Y*0.56,0),cloth,head)
+  for _,side in ipairs({-1,1}) do
+   detail(&quot;WatcherHoodSide&quot;,Vector3.new(0.12,head.Size.Y*1.1,head.Size.Z*1.12),head.CFrame*CFrame.new(side*head.Size.X*0.56,0,0),cloth,head)
+   detail(&quot;WatcherEye&quot;,Vector3.new(0.07,0.035,0.035),head.CFrame*CFrame.new(side*head.Size.X*0.19,0.08,-head.Size.Z*0.51),Color3.fromRGB(158,169,146),head,true)
+  end
+  for _,name in ipairs({&quot;LeftHand&quot;,&quot;RightHand&quot;,&quot;Left Arm&quot;,&quot;Right Arm&quot;}) do
+   local hand=model:FindFirstChild(name)
+   if hand then
+    for finger=-1,1 do
+     detail(&quot;WatcherFinger&quot;,Vector3.new(0.06,0.65,0.09),hand.CFrame*CFrame.new(finger*0.17,-hand.Size.Y/2-0.22,-0.12),Color3.fromRGB(50,57,52),hand)
+    end
+   end
+  end
  end
  for _,p in ipairs(model:GetDescendants()) do
   if p:IsA(&quot;BasePart&quot;) then p.CanCollide=false p.CanTouch=false p.CanQuery=false p.Massless=true end
@@ -716,7 +739,7 @@ local function eventPoint(player)
     overlap.FilterType = Enum.RaycastFilterType.Exclude
     overlap.FilterDescendantsInstances = {player.Character}
     local clear = true
-    for _, part in ipairs(workspace:GetPartBoundsInBox(CFrame.new(point + Vector3.new(0, 2.8, 0)), Vector3.new(4.5, 5.5, 5), overlap)) do
+    for _, part in ipairs(workspace:GetPartBoundsInBox(CFrame.new(point + Vector3.new(0, 5.5, 0)), Vector3.new(4.5, 10.8, 5), overlap)) do
      if part.CanCollide then clear = false break end
     end
     if clear then return point end
@@ -824,7 +847,7 @@ local dark=Color3.fromRGB(44,49,49)
 local mumRandom=Random.new()
 local styles={
  Factory.randomStyle(&quot;Mum&quot;,&quot;Female&quot;,mumRandom),
- {name=&quot;Watcher&quot;,shirt=Color3.fromRGB(29,34,33),pants=dark,skin=Color3.fromRGB(111,115,101),faceless=true,scale=1.12},
+ {name=&quot;Watcher&quot;,shirt=Color3.fromRGB(15,19,19),pants=Color3.fromRGB(12,16,17),skin=Color3.fromRGB(33,39,37),faceless=true,watcher=true,width=0.7,scale=1.75},
  {name=&quot;Doll&quot;,shirt=Color3.fromRGB(125,88,86),pants=Color3.fromRGB(162,150,122),skin=Color3.fromRGB(203,192,165),scale=0.48},
 }
 local function naturalAnimation(model,h)
@@ -1318,6 +1341,7 @@ local function poseAvatar(model,t,moving,look,natural)
   elseif name==&quot;Neck&quot; then joint.Transform=CFrame.Angles(natural and 0 or math.sin(t*0.6)*0.035,look or (natural and 0 or math.sin(t*0.4)*0.07),0) end
  end
 end
+local watcherGaze=setmetatable({},{__mode=&quot;k&quot;})
 local residentTime=0
 RunService.PreSimulation:Connect(function(dt)
  residentTime+=dt
@@ -1329,7 +1353,16 @@ RunService.PreSimulation:Connect(function(dt)
     local moving=root.AssemblyLinearVelocity.Magnitude&gt;1 and not root.Anchored
     if model:GetAttribute(&quot;NaturalResident&quot;) then
      if not model:GetAttribute(&quot;UsingAnimator&quot;) then poseAvatar(model,residentTime+(model:GetAttribute(&quot;Phase&quot;) or 0),moving,0,true) end
-    else poseAvatar(model,residentTime+(model:GetAttribute(&quot;Phase&quot;) or 0),moving,model:GetAttribute(&quot;Role&quot;)==&quot;Watcher&quot; and math.sin(residentTime*0.1)*0.3 or nil) end
+    elseif model:GetAttribute(&quot;Role&quot;)==&quot;Watcher&quot; then
+     local target=player.Character and player.Character:FindFirstChild(&quot;Head&quot;)
+     local yaw=0
+     if target and (target.Position-root.Position).Magnitude&lt;55 then
+      local localPoint=root.CFrame:PointToObjectSpace(target.Position)
+      yaw=math.clamp(math.atan2(-localPoint.X,-localPoint.Z),-0.6,0.6)
+     end
+     watcherGaze[model]=(watcherGaze[model] or 0)+(yaw-(watcherGaze[model] or 0))*math.min(dt*0.7,1)
+     poseAvatar(model,0,false,watcherGaze[model],true)
+    else poseAvatar(model,residentTime,false,nil) end
    end
   end
  end
