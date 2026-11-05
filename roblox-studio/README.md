@@ -17,7 +17,7 @@ Opening the place does not publish it to Roblox. You decide when to publish from
 - A furnished ground-floor house: hallway, kitchen/Mum, bedroom, sitting room and spare room.
 - A small garden and a permanent basement with ten named rooms.
 - 20 collectible sibling diary pages, twelve household and district records, an unnumbered key and a gated chamber.
-- Custom E / touch / controller hold cards backed by Roblox ProximityPrompts, a progress ring, crosshair and visible-object highlighting.
+- Default Roblox E / touch / controller hold prompts, a progress ring, crosshair and visible-object highlighting.
 - First person, third person (V), jump, sprint and stamina.
 - Easy, Intermediate and Hard modes.
 - Server-maintained sanity, deferred reading costs, a 2.2-second loss flash, and a zero-sanity restart screen.
@@ -112,7 +112,7 @@ Roblox API references: [proximity prompts](https://create.roblox.com/docs/ui/pro
 
 This refreshed starter adds eight enterable, furnished venues: The Palladium cinema, Municipal Archive, St. Agnes Clinic, Ashfield Station, Ward & Sons workshop, Velvet & Ash costume shop, The Second Copy bookshop and The Empty Chair cafe. Each contains a family correspondence collectible. These are compact prototype interiors, not full ports of the original city quests.
 
-The HUD now uses a centered 1280×720 design canvas scaled to the viewport: sanity at upper left, controls at upper right, objectives at lower right, and one hold-to-interact card with a segmented progress ring at bottom center. Reading panels scroll. Dark paper panels, muted brass typography, natural Roblox materials, shadowed lamps, color grading, bloom, framed window openings and detailed fuse switches bring it closer to the original's atmosphere. No external art assets are required.
+The HUD now uses a centered 1280×720 design canvas scaled to the viewport: sanity at upper left, controls at upper right, objectives at lower right, and Roblox’s default proximity prompts with its built-in hold progress ring. Reading panels scroll. Dark paper panels, muted brass typography, natural Roblox materials, shadowed lamps, color grading, bloom, framed window openings and detailed fuse switches bring it closer to the original's atmosphere. No external art assets are required.
 
 ## Admin access
 
@@ -128,3 +128,6 @@ This is still a Roblox starter, not a graphics-identical or complete port. It do
 
 Automated checks validate XML, exact embedded source, map reachability, sealed-chamber isolation, admin authorization hooks and Luau compilation. They do not replace testing camera, UI, interaction input, lighting, flight or multiplayer in Roblox Studio. Recommended tests: all three difficulty buttons, resize Studio viewport, hold E and hold click on the same prop, close a diary and inspect sanity, visit every venue, test F8 flight and all anomalies, reset a run, and verify a non-admin cannot use tools in a published test experience.
 
+
+### Default interaction prompt fix
+Custom prompt rendering and manual input forwarding have been removed. Roblox renders the prompt and hold circle. The server validates completed triggers with distance, line-of-sight, game-state checks and a short anti-spam cooldown, without relying on a separately replicated hold-start clock. The visibility ray starts at the avatar's head so desk edges do not reject visible tabletop pages. Hold time remains 0.8 seconds. Studio keyboard, mouse/touch and controller testing is still required.

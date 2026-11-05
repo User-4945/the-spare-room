@@ -88,5 +88,9 @@ print("PASS: XML, unique references, exact embedded sources, 1277 parts, 47 stan
 assert len([p for p in parts if p["name"] == "VenueSign"]) == 8
 assert 'if not isAdmin(player)' in server and 'game.CreatorId == player.UserId' in server
 client = (root / "SpareRoomClient.client.lua").read_text()
-assert 'UIScale' in client and 'PromptButtonHoldBegan' in client and 'InputHoldEnd' in client
-print("PASS: eight venue signs, server admin gate, responsive UI and hold prompt hooks")
+assert 'UIScale' in client
+assert 'Enum.ProximityPromptStyle.Default' in server
+assert 'prompt.Triggered:Connect' in server and 'valid(player, part)' in server
+assert 'InputHoldBegin' not in client and 'InputHoldEnd' not in client
+assert 'local origin = head and head.Position or root.Position' in server
+print("PASS: eight venue signs, server admin gate, responsive UI and default prompt handling")

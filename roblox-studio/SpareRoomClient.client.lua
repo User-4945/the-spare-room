@@ -1,4 +1,4 @@
--- StarterPlayerScripts/SpareRoomClient. Roblox handles E/touch/controller hold rings natively.
+-- StarterPlayerScripts/SpareRoomClient. Roblox renders and handles its default E/touch/controller hold prompts.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -256,45 +256,6 @@ ProximityPromptService.PromptShown:Connect(function(prompt)
  if prompt:IsDescendantOf(workspace:WaitForChild("SpareRoomWorld"):WaitForChild("Interactables")) then shown[prompt] = true end
 end)
 ProximityPromptService.PromptHidden:Connect(function(prompt) shown[prompt] = nil end)
-local interaction = frame(canvas,"Interaction",UDim2.fromOffset(420,574),UDim2.fromOffset(440,74))
-interaction.Visible=false
-local keyButton = button(interaction,"E",UDim2.fromOffset(15,10),UDim2.fromOffset(54,54),function() end)
-keyButton.BackgroundTransparency=1
-local actionText=text(interaction,"",UDim2.fromOffset(88,8),UDim2.fromOffset(338,28),17)
-actionText.TextXAlignment=Enum.TextXAlignment.Left
-local objectText=text(interaction,"",UDim2.fromOffset(88,37),UDim2.fromOffset(338,24),12)
-objectText.TextXAlignment=Enum.TextXAlignment.Left
-objectText.TextColor3=Color3.fromRGB(169,162,142)
-local segments={}
-for i=1,40 do
- local angle=(i/40)*math.pi*2-math.pi/2
- local segment=Instance.new("Frame")
- segment.AnchorPoint=Vector2.new(0.5,0.5)
- segment.Position=UDim2.fromOffset(42+math.cos(angle)*26,37+math.sin(angle)*26)
- segment.Size=UDim2.fromOffset(3,4)
- segment.Rotation=math.deg(angle)
- segment.BackgroundColor3=gold
- segment.BorderSizePixel=0
- segment.Parent=interaction
- segments[i]=segment
-end
-local selectedPrompt, heldPrompt, holdStarted=nil,nil,0
-ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
- if prompt==selectedPrompt then heldPrompt=prompt holdStarted=os.clock() end
-end)
-ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt)
- if heldPrompt==prompt then heldPrompt=nil end
-end)
-keyButton.InputBegan:Connect(function(input)
- if selectedPrompt and (input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch) then
-  selectedPrompt:InputHoldBegin()
- end
-end)
-UserInputService.InputEnded:Connect(function(input)
- if selectedPrompt and (input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch) then
-  selectedPrompt:InputHoldEnd()
- end
-end)
 local function showCaption(message, duration)
  captionText.Text = message
  captionRemaining = duration or 7
@@ -470,19 +431,6 @@ RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value
    end
   end
  end
- if selectedPrompt~=nearestPrompt then
-  if selectedPrompt and heldPrompt==selectedPrompt then selectedPrompt:InputHoldEnd() end
-  heldPrompt=nil
-  selectedPrompt=nearestPrompt
- end
- interaction.Visible=selectedPrompt~=nil and not isBlocked
- if selectedPrompt then
-  actionText.Text=selectedPrompt.ActionText
-  objectText.Text=selectedPrompt.ObjectText
-  keyButton.Text=UserInputService.GamepadEnabled and "X" or "E"
- end
- local progress=heldPrompt and selectedPrompt and math.clamp((os.clock()-holdStarted)/selectedPrompt.HoldDuration,0,1) or 0
- for i,segment in ipairs(segments) do segment.BackgroundTransparency=i/40<=progress and 0 or 0.82 end
  highlight.Adornee = nearest
  highlight.Enabled = nearest ~= nil
  if active and not isBlocked then

@@ -24,7 +24,6 @@ local destinations = {
 }
 local states = {}
 local prompts = {}
-local holds = {}
 local function value(part, name)
  local v = part:FindFirstChild(name)
  return v and v.Value or ""
@@ -108,7 +107,6 @@ local function reset(player, mode)
   active = nil, menu = false, reading = nil, ended = nil, sprint = false, exhausted = false,
   day = 1, flying = false, sequence = old and old.sequence or 0, lastRequest = 0, lastStart = os.clock(),
  }
- holds[player] = {}
  remote:FireClient(player, "AnomalyEnd")
  if not player.Character or not player.Character:FindFirstChildOfClass("Humanoid") or player.Character:FindFirstChildOfClass("Humanoid").Health <= 0 then
   player:LoadCharacter()
@@ -125,7 +123,9 @@ local function valid(player, part)
  local params = RaycastParams.new()
  params.FilterType = Enum.RaycastFilterType.Exclude
  params.FilterDescendantsInstances = {player.Character}
- local hit = workspace:Raycast(root.Position, part.Position - root.Position, params)
+ local head = player.Character and player.Character:FindFirstChild("Head")
+ local origin = head and head.Position or root.Position
+ local hit = workspace:Raycast(origin, part.Position - origin, params)
  return hit == nil or hit.Instance == part
 end
 local function read(player, part, text, cost)
@@ -271,7 +271,7 @@ end
 for _, part in ipairs(items:GetChildren()) do
  if part:IsA("BasePart") then
   local prompt = Instance.new("ProximityPrompt")
-  prompt.Style = Enum.ProximityPromptStyle.Custom
+  prompt.Style = Enum.ProximityPromptStyle.Default
   prompt.ActionText = value(part, "Action")
   prompt.ObjectText = value(part, "Title")
   prompt.KeyboardKeyCode = Enum.KeyCode.E
@@ -283,17 +283,15 @@ for _, part in ipairs(items:GetChildren()) do
   prompt.Exclusivity = Enum.ProximityPromptExclusivity.OnePerButton
   prompt.Parent = part
   prompts[part] = prompt
-  prompt.PromptButtonHoldBegan:Connect(function(player)
-   if valid(player, part) then
-    holds[player] = holds[player] or {}
-    holds[player][part] = os.clock()
-   end
-  end)
+  -- Roblox owns hold progress. Validate the completed trigger independently.
+  -- A second replicated hold-start clock can reject otherwise completed holds.
   prompt.Triggered:Connect(function(player)
-   local start = holds[player] and holds[player][part]
-   if not start or os.clock() - start < 0.65 or os.clock() - start > 8 then return end
-   holds[player][part] = nil
-   if prompt.Enabled and valid(player, part) then interact(player, part) end
+   if not prompt.Enabled or not valid(player, part) then return end
+   local state = states[player]
+   local now = os.clock()
+   if now - (state.lastInteraction or -10) < 0.35 then return end
+   state.lastInteraction = now
+   interact(player, part)
   end)
  end
 end
@@ -302,7 +300,6 @@ local function joined(player)
   started = false, mode = "Easy", sanity = 100, stamina = 100, diary = {}, records = {}, rooms = {},
   anomalies = {}, journal = {}, flags = {}, time = 0, sandwichAt = 0, sequence = 0, nextAnomaly = 45, lastRequest = 0,
  }
- holds[player] = {}
  if Config.SaveEndingJournal then
   task.spawn(function()
    local ok, saved = pcall(function() return DataStoreService:GetDataStore("SpareRoomRobloxEndings_v1"):GetAsync("u" .. player.UserId) end)
@@ -327,7 +324,6 @@ Players.PlayerRemoving:Connect(function(player)
  local s = states[player]
  if s then saveJournal(player, s) end
  states[player] = nil
- holds[player] = nil
 end)
 game:BindToClose(function()
  if not Config.SaveEndingJournal then return end
