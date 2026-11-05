@@ -188,3 +188,6 @@ The **Revive / Gamepass** button checks pass ownership on the server. Owners rev
 The code cannot create the pass or set its price. Until the ID is configured, the button says **Setup pending** and does not open checkout. No password, payment details or Roblox credentials are needed in these scripts.
 
 Run `python roblox-studio/test-revive.py /path/to/luau` to exercise the actual entitlement gate with mocked Marketplace responses. These checks cover owners, non-owners, cancellation, false purchase completion, wrong passes, repeated events, temporary service failures and two-player isolation. They do not certify Roblox checkout, animation permissions, networking or physics.
+
+
+Revive pass connected: `2073110257` (Revive). The owner-provided Creator Hub screenshot shows a 30 Robux price. Publish this updated place to the experience that owns that pass, then verify the native purchase flow and owned-pass revive in Roblox. The automated tests do not make purchases.
