@@ -1,0 +1,85 @@
+name: Finish Alpha Mac verification and publish channels
+on:
+  push:
+    branches: [release-v3-alpha-mac]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  mac:
+    runs-on: macos-15
+    timeout-minutes: 35
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 67f639ff7cc75918ae0647c38414d662870aa677
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Use the exact verified Alpha source and revision
+        run: node -e "process.env.GITHUB_RUN_ID='42411319552';process.env.GITHUB_RUN_ATTEMPT='1';process.env.GITHUB_SHA='67f639ff7cc75918ae0647c38414d662870aa677';process.argv=['node','prepare','mac'];require('./scripts/prepare-alpha.cjs')"
+      - run: npm test
+      - run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --mac --publish never
+      - name: Verify universal package and native rendering
+        shell: bash
+        run: |
+          APP='platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room'
+          codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
+          lipo -info "$APP"
+          passed=false
+          for backend in default metal gl; do
+            export SPARE_ROOM_TEST_ANGLE="$backend"
+            export SPARE_ROOM_SMOKE_PROFILE="$RUNNER_TEMP/alpha-native-$backend"
+            export SPARE_ROOM_SMOKE_REPORT="$RUNNER_TEMP/alpha-smoke-$backend.json"
+            if "$APP" --smoke-test && "$APP" --smoke-test --smoke-verify-save; then
+              node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.alpha||!r.saveVerified)process.exit(1)"
+              passed=true
+              break
+            fi
+          done
+          if [ "$passed" != true ]; then exit 1; fi
+      - run: |
+          mkdir -p alpha-output
+          cp platform-build/*.dmg alpha-output/
+          cp installer-build.json alpha-output/mac-BUILD.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alpha-v3-mac-native
+          path: alpha-output/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alpha-mac-native-diagnostics
+          path: ${{ runner.temp }}/alpha-smoke-*.json
+          if-no-files-found: ignore
+  publish:
+    needs: mac
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 67f639ff7cc75918ae0647c38414d662870aa677
+      - name: Verify the earlier Windows and Linux jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$GH_REPO/actions/runs/42411319552/jobs?per_page=100" > /tmp/alpha-jobs.json
+          node -e "const j=require('/tmp/alpha-jobs.json').jobs.filter(j=>/^build \((win|linux),/.test(j.name));if(j.length!==2||j.some(j=>j.conclusion!=='success'))throw Error('Earlier native verification missing')"
+          gh run download 42411319552 --pattern alpha-v3-win --pattern alpha-v3-linux --dir alpha-results
+      - uses: actions/download-artifact@v4
+        with:
+          name: alpha-v3-mac-native
+          path: alpha-results/alpha-v3-mac
+      - name: Publish original verified Alpha source and promote stable
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node -e "process.env.GITHUB_REF_NAME='release-v3-alpha';process.env.GITHUB_SHA='67f639ff7cc75918ae0647c38414d662870aa677';require('./scripts/publish-alpha.cjs')"
