@@ -41,11 +41,11 @@ for node in all_items:
     parts.append(info)
     if "Role" in extra:
         roles.append(info)
-assert len(parts) == 1276
-assert len(roles) == 48
+assert len(parts) == 1562
+assert len(roles) == 63
 assert {int(p["extra"]["Index"]) for p in roles if p["extra"]["Role"] == "diary"} == set(range(1, 21))
 assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 12
-assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} == {"morning", "names", "seal", "tomorrow", "glass"}
+assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} == {"morning", "names", "seal", "tomorrow", "glass", "blueprint", "lullaby", "letters"}
 assert len([p for p in parts if p["name"] == "RoomSign"]) == 10
 assert len([i for i in all_items if i.attrib["class"] == "SpawnLocation"]) == 1
 
@@ -74,18 +74,19 @@ def reachable(floor, start, bounds):
                 seen.add(q)
                 queue.append(q)
     return seen
-surface = reachable(0, (0,-11), (-129,129,-129,129))
+surface = reachable(0, (2.5,-11), (-129,129,-129,129)) | reachable(0, (0,-20), (-129,129,-129,129))
 basement = reachable(-18, (0,-12), (-27,27,-17,71))
 chamber = reachable(-18, (9,63), (5,27,55,71))
+upper = reachable(12, (0,8), (-23,23,-15,23))
 for p in roles:
-    points = surface if p["y"] > -5 else chamber if p["x"] > 4 and p["z"] > 54 else basement
+    points = upper if p["y"] > 12 else surface if p["y"] > -5 else chamber if p["x"] > 4 and p["z"] > 54 else basement
     assert any((x/2-p["x"])**2 + (z/2-p["z"])**2 < 3.5**2 for x,z in points), "No standing interaction position: " + p["name"]
 assert (18,126) not in basement, "Chamber gate can be bypassed by walking"
 server = (root / "SpareRoomServer.server.lua").read_text()
 assert "prompt.HoldDuration = 0.8" in server and "prompt.RequiresLineOfSight = true" in server
 assert 'damage(player, cost)' in server and 'action == "ReadClosed"' in server
 assert 's.sandwichAt = s.time + 120' in server
-print("PASS: XML, unique references, exact embedded sources, 1276 parts, 48 standing-accessible interactions, 20 diary pages, 10 rooms, chamber gate and six ending paths")
+print("PASS: XML, unique references, exact embedded sources, 1562 parts, 63 standing-accessible interactions, 20 diary pages, 14 rooms, chamber gate and eight choice endings and two death outcomes")
 
 
 assert len([p for p in parts if p["name"] == "VenueSign"]) == 8
@@ -101,3 +102,15 @@ print("PASS: eight venue signs, server admin gate, responsive UI and default pro
 assert not any(p['name'] in {'MumBody','MumHead'} for p in parts)
 assert len([p for p in roles if p['extra']['Role']=='doll']) == 1
 print('PASS: native-avatar module and NPC server embedded; block Mum removed; doll interaction reachable')
+
+steps=sorted([p for p in parts if p["name"]=="StairTread"],key=lambda p:p["z"])
+assert len(steps)==24
+for n,p in enumerate(steps):
+    assert abs(p["y"]+p["h"]/2-(n+1)*.5)<.001
+    assert p["w"]>=3.2
+    if n: assert abs(p["z"]-steps[n-1]["z"]-.75)<.001
+    # Clearance over the centre of each tread must accommodate a standing avatar.
+    top=p["y"]+p["h"]/2
+    assert not any(q["solid"] and q["name"]!="StairTread" and abs(q["x"])<q["w"]/2 and abs(q["z"]-p["z"])<q["d"]/2 and q["y"]-q["h"]/2>top+.1 and q["y"]-q["h"]/2<top+5.5 for q in parts), "Stair headroom blocked"
+print("PASS: 24 half-stud stairs, four upstairs rooms reachable, stairwell headroom and separate stamina fill")
+assert 'local staminaFill=' in client and 'staminaFill.Size=' in client

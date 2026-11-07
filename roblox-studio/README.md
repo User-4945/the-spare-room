@@ -170,28 +170,29 @@ Mum always uses the female NPC style pool; citizens alternate female/male charac
 
 Ordinary NPCs now use Roblox idle/walk animation tracks with per-resident timing, different walking speeds, random destinations and rest breaks. The old procedural head/torso sway is disabled for ordinary NPCs. A simple neutral gait remains as a fallback if animation assets cannot load. Mum independently walks between kitchen spots, and her interaction prompt follows her head. Residents stop walking briefly when someone begins speaking to them. The Watcher and doll intentionally retain their unsettling movement.
 
-### Zero sanity, death and reviving
+### One purchase per revive (prototype 0.6)
 
-At zero sanity, the server kills the player's Humanoid and keeps that run on the death screen. Automatic character spawning is managed explicitly so sanity death cannot silently revive the character. The **Restart / Free** button begins a fresh run without buying anything.
+Sanity loss or an accidental death opens the death screen. **Restart / Free** starts over. **Buy one revive** buys one consumable credit and respawns at home with 50% sanity, full stamina and the current run’s evidence preserved. Another death needs another credit. A late receipt after restarting banks the purchased credit; a failed character load preserves it for retry.
 
-The **Revive / Gamepass** button checks pass ownership on the server. Owners revive at home with 50% sanity and keep their clues, keys, flags, explored rooms, day/timers and journal. Non-owners see Roblox's native purchase window. Cancelled, failed or unverified purchases never revive the player. An owned pass works on future sanity deaths without a second charge. This is a permanent gamepass, not a consumable product charging 30 Robux per death.
+The old permanent gamepass `2073110257` is no longer used for checkout. It cannot be converted to a repeatable purchase. If it has existing buyers, retire its sale and communicate the changed offering before publishing.
 
-### Connect the 30 Robux pass
+1. In your experience’s Creator Hub, open **Monetization → Developer Products**.
+2. Create **One Revive**, set its price to **30 Robux**, and explain that each purchase revives once. Roblox checkout shows the actual price.
+3. Copy the new **Developer Product ID** into `ReplicatedStorage → SpareRoomConfig → ReviveProductId` (currently `0`). Do not paste the old gamepass ID.
+4. Publish to the same experience that owns the product. Confirm cancellation, successful receipt delivery, repeat purchase after another death, and reconnect recovery in Roblox.
+5. Purchases are disabled if the product ID is missing, the filtered receipt handler cannot register, or the persistent ledger cannot be accessed. Studio testing may need API-services access; use a separate test experience to avoid writing production data.
 
-1. Publish your experience under your Roblox account/group.
-2. In Creator Hub, select that experience and open its **Monetization → Passes** area (some Creator Hub layouts group monetization items under Shop).
-3. Create a pass named **Revive**, with a description explaining that it permanently unlocks reviving after sanity death. Set it on sale with a **base price of 30 Robux**. Roblox's checkout determines the actual displayed price, including regional pricing if enabled.
-4. Copy the **pass ID**, not a developer-product ID or clothing asset ID.
-5. In Studio open **ReplicatedStorage → SpareRoomConfig** and set `ReviveGamePassId = YOUR_PASS_ID` in place of `0`. Publish the updated place.
-6. Verify ownership, cancellation and a purchase in a controlled test. Studio purchase simulations and avatar loading need checking separately; automated tests make no real purchases.
+The server grants only from verified receipts, persists purchase IDs before acknowledgement, deduplicates receipts, reserves credits atomically and recovers stale reservations. `BindReceiptHandler` filters to this product without replacing HD Admin’s `ProcessReceipt`. A different script must not also register the same product. No receipt is granted from the purchase-window-close event. The code does not create products or set their price.
 
-The code cannot create the pass or set its price. Until the ID is configured, the button says **Setup pending** and does not open checkout. No password, payment details or Roblox credentials are needed in these scripts.
-
-Run `python roblox-studio/test-revive.py /path/to/luau` to exercise the actual entitlement gate with mocked Marketplace responses. These checks cover owners, non-owners, cancellation, false purchase completion, wrong passes, repeated events, temporary service failures and two-player isolation. They do not certify Roblox checkout, animation permissions, networking or physics.
-
-
-Revive pass connected: `2073110257` (Revive). The owner-provided Creator Hub screenshot shows a 30 Robux price. Publish this updated place to the experience that owns that pass, then verify the native purchase flow and owned-pass revive in Roblox. The automated tests do not make purchases.
-
+`python roblox-studio/test-revive.py /path/to/luau` checks the actual module with mocked Roblox services. It makes no purchases and does not certify live checkout or character loading.
 
 ### Taller Watcher refresh
 The Watcher now uses 1.75× rig scale (ordinary adults remain near 1×), narrower proportions, an almost-black hood, tiny dim eyes and elongated fingers. The garden figure stays motionless while its head slowly follows nearby players. The anomaly version retains its turn-away behaviour. Spawn clearance now reserves 10.8 studs vertically so the larger model is not placed under low lintels. Family silhouettes still rescale their template to their original small sizes. Visual proportions and clearance need Studio verification.
+
+### Upstairs and HUD expansion (prototype 0.6)
+
+Four furnished upper rooms are accessible by 24 physical half-stud stairs. The study blueprint, nursery clock and loft letters introduce three source-inspired ending paths; the family bedroom adds a photograph, school report and coat clue. Three garden letters extend the family mystery. Lamps, shelving, cot rails, height marks and a keyed typewriter add detail. The district guide and owner teleport list include upstairs. Default Roblox hold-to-interact prompts remain in place.
+
+Sanity and stamina have separate panels and independent progress bars. Sprint drains stamina; standing/walking restores it. Low stamina changes its bar colour.
+
+This remains an adaptation rather than a complete copy of the web game: 10 basement rooms, 4 upstairs rooms, 20 diary pages, 12 anomalies, 8 city venues, 63 interactions, 8 choice endings plus 2 death outcomes. Current runs are not fully persisted; optional ending-journal saving and paid-revive credits are separate. No Halloween content or full set of 61 web ending paths is implied. Verify the stairs, R15 clearance, lighting, prompts, NPCs and purchases in Studio before publishing. These changes have not been run inside Roblox Studio here.

@@ -87,12 +87,16 @@ end
 local function blocked()
  return not current.started or current.ended ~= nil or modalReason ~= nil
 end
-local hud = frame(canvas, "Sanity", UDim2.fromOffset(28,26), UDim2.fromOffset(260,86))
+local hud = frame(canvas, "Sanity", UDim2.fromOffset(28,26), UDim2.fromOffset(260,68))
 local sanityText = text(hud, "SANITY 100%", UDim2.fromScale(0.04, 0.03), UDim2.fromScale(0.92, 0.3), 16)
 local sanityTrack = frame(hud, "SanityTrack", UDim2.fromScale(0.06, 0.4), UDim2.fromScale(0.88, 0.08))
 local sanityFill = frame(sanityTrack, "Fill", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1))
 sanityFill.BackgroundColor3 = gold
-local staminaText = text(hud, "STAMINA 100%", UDim2.fromScale(0.04, 0.56), UDim2.fromScale(0.92, 0.3), 13)
+local staminaHud=frame(canvas,"Stamina",UDim2.fromOffset(28,104),UDim2.fromOffset(260,60))
+local staminaText=text(staminaHud,"STAMINA 100%",UDim2.fromScale(0.04,0.04),UDim2.fromScale(0.92,0.4),13)
+local staminaTrack=frame(staminaHud,"StaminaTrack",UDim2.fromScale(0.06,0.62),UDim2.fromScale(0.88,0.12))
+local staminaFill=frame(staminaTrack,"Fill",UDim2.fromScale(0,0),UDim2.fromScale(1,1))
+staminaFill.BackgroundColor3=Color3.fromRGB(135,171,161)
 local tasks = frame(canvas, "Tasks", UDim2.fromOffset(936,438), UDim2.fromOffset(316,216))
 local tasksText = text(tasks, "", UDim2.fromScale(0.05, 0.03), UDim2.fromScale(0.9, 0.94), 14)
 tasksText.TextYAlignment = Enum.TextYAlignment.Top
@@ -167,8 +171,8 @@ chooseButton = button(modal, "Choose this ending", UDim2.fromScale(0.52, 0.85), 
  if modalReason == "confirm" then remote:FireServer("Finish", confirmationNonce) end
 end)
 chooseButton.Visible = false
-local reviveButton=button(modal,"Revive / Gamepass",UDim2.fromScale(0.52,0.85),UDim2.fromScale(0.43,0.1),function()
- if modalReason=="ending" and current.ended=="consumed" then remote:FireServer("Revive") end
+local reviveButton=button(modal,"Buy one revive",UDim2.fromScale(0.52,0.85),UDim2.fromScale(0.43,0.1),function()
+ if modalReason=="ending" and (current.ended=="consumed" or current.ended=="fallen") then remote:FireServer("Revive") end
 end)
 reviveButton.Visible=false
 local reviveNotice=text(modal,"",UDim2.fromScale(0.06,0.74),UDim2.fromScale(0.88,0.09),12)
@@ -207,8 +211,8 @@ local function openMap()
  modalReason="map"
  heading.Text="ASHFIELD / DISTRICT GUIDE"
  local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
- local location=root and root.Position.Y < -6 and "Beneath the house" or "House and district"
- body.Text="YOU ARE: "..location.."\n\nLeave through the house's front entrance. Follow the path to the road.\n\nACROSS THE ROAD — west to east\nThe Palladium cinema · Municipal Archive · St. Agnes Clinic · Ashfield Station · Ward & Sons · Velvet & Ash\n\nON THE HOUSE SIDE\nThe Second Copy bookshop to the west. The Empty Chair cafe to the east.\n\nAT HOME\nThe garden is behind the house. The maintenance hatch at the end of the hallway leads below. Use the return stairs to come home.\n\nPlaces change what you notice. Read the correspondence in every venue."
+ local location=root and root.Position.Y < -6 and "Beneath the house" or root and root.Position.Y>12 and "Upstairs" or "House and district"
+ body.Text="YOU ARE: "..location.."\n\nLeave through the house's front entrance. Follow the path to the road.\n\nACROSS THE ROAD — west to east\nThe Palladium cinema · Municipal Archive · St. Agnes Clinic · Ashfield Station · Ward & Sons · Velvet & Ash\n\nON THE HOUSE SIDE\nThe Second Copy bookshop to the west. The Empty Chair cafe to the east.\n\nAT HOME\nClimb the hall staircase to the study, nursery, loft and family bedroom. Look for hidden notes and unfinished tasks. The garden is behind the house. The maintenance hatch at the end of the hallway leads below. Use the return stairs to come home.\n\nPlaces change what you notice. Read the correspondence in every venue."
  closeButton.Text="Fold the map"
  chooseButton.Visible=false
  modal.Visible=true
@@ -502,6 +506,8 @@ remote.OnClientEvent:Connect(function(action, data)
   sanityText.Text = "SANITY " .. math.ceil(data.sanity) .. "%"
   sanityFill.Size = UDim2.fromScale(data.sanity / 100, 1)
   staminaText.Text = "STAMINA " .. math.floor(data.stamina) .. "%"
+  staminaFill.Size=UDim2.fromScale(math.clamp(data.stamina/100,0,1),1)
+  staminaFill.BackgroundColor3=data.stamina<25 and Color3.fromRGB(186,113,81) or Color3.fromRGB(135,171,161)
   local mark = function(yes) return yes and "✓ " or "□ " end
   tasksText.Text = "BENEATH THE HOUSE\n\n"
    .. mark(data.diary >= 20) .. "Collect diary pages (" .. data.diary .. "/20)\n"
@@ -535,11 +541,11 @@ remote.OnClientEvent:Connect(function(action, data)
   heading.Text = data.id == "consumed" and "YOU LOST: YOUR SANITY GOT CONSUMED" or data.title
   body.Text = data.text
   closeButton.Text = "Restart / Free"
-  reviveButton.Visible=data.id=="consumed"
-  reviveNotice.Visible=data.id=="consumed"
+  reviveButton.Visible=data.id=="consumed" or data.id=="fallen"
+  reviveNotice.Visible=data.id=="consumed" or data.id=="fallen"
   paper.Size=UDim2.fromScale(0.88,0.48)
-  reviveButton.Text=Config.ReviveGamePassId>0 and "Revive / Gamepass" or "Revive / Setup pending"
-  reviveNotice.Text=Config.ReviveGamePassId>0 and "One-time pass unlocks future revives. Roblox shows the purchase price. Owners revive at no extra charge." or "The creator must connect the 30 Robux revive pass. Restarting is free."
+  reviveButton.Text=Config.ReviveProductId>0 and "Buy one revive" or "Revive / Setup pending"
+  reviveNotice.Text=Config.ReviveProductId>0 and "One purchase gives one revive. Each new death needs another revive credit. Roblox shows the current price." or "The creator must connect a 30 Robux developer product. Restarting is free."
   chooseButton.Visible = false
   modal.Visible = true
  elseif action == "ReviveStatus" then

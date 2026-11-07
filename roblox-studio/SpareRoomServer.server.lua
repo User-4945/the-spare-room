@@ -1,6 +1,6 @@
 -- ServerScriptService/SpareRoomServer
 local Players = game:GetService("Players")
--- Death stays final until a free restart or an owned revive pass is selected.
+-- Death stays final until a free restart or a verified single-use revive is selected.
 Players.CharacterAutoLoads = false
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -20,7 +20,7 @@ local function isAdmin(player)
   or (game.CreatorType == Enum.CreatorType.User and game.CreatorId == player.UserId)
 end
 local destinations = {
- House = Vector3.new(0,4,-11), Garden = Vector3.new(0,4,35), Basement = Vector3.new(0,-14,-12),
+ Upstairs = Vector3.new(0,16,8), House = Vector3.new(0,4,-15), Garden = Vector3.new(0,4,35), Basement = Vector3.new(0,-14,-12),
  Cinema = Vector3.new(-96,4,-79), Archive = Vector3.new(-56,4,-79), Clinic = Vector3.new(-16,4,-79),
  Station = Vector3.new(24,4,-79), Workshop = Vector3.new(64,4,-79), Costumes = Vector3.new(104,4,-79),
  Bookshop = Vector3.new(-76,4,-11), Cafe = Vector3.new(76,4,-11),
@@ -130,34 +130,53 @@ local function reset(player, mode)
   pcall(function() player:LoadCharacterAsync() end)
  end
  local root = position(player)
- if root then player.Character:PivotTo(CFrame.new(0, 4, -11)) end
+ if root then player.Character:PivotTo(CFrame.new(0, 4, -15)) end
  snapshot(player)
 end
 local function canRevive(player)
  local s=states[player]
- return s~=nil and s.ended=="consumed" and not s.reviveBusy
+ return s~=nil and (s.ended=="consumed" or s.ended=="fallen") and not s.reviveBusy
 end
 local function revivePlayer(player)
  local s=states[player]
- if not canRevive(player) then return end
+ if not canRevive(player) then return false end
  s.reviveBusy=true
  local ok=pcall(function() player:LoadCharacterAsync() end)
- if states[player]~=s then return end
+ if states[player]~=s then return false end
  s.reviveBusy=nil
- if not ok then remote:FireClient(player,"ReviveStatus","Character loading failed. Your pass remains owned; try Revive again.") return end
- if s.ended~="consumed" then return end
+ if not ok then return false end
+ if s.ended~="consumed" and s.ended~="fallen" then return false end
  s.ended=nil s.sanity=Config.ReviveSanity s.stamina=100
  s.reading=nil s.confirm=nil s.menu=false s.sprint=false s.flying=false
  s.active=nil s.nextAnomaly=s.time+Config.Modes[s.mode].delay
  local root=position(player)
- if root then player.Character:PivotTo(CFrame.new(0,4,-11)) end
+ if root then player.Character:PivotTo(CFrame.new(0,4,-15)) end
  remote:FireClient(player,"Revived","You wake at home. Your discoveries remain. Sanity restored to "..Config.ReviveSanity.."%.")
  snapshot(player)
+ return true
 end
-local reviveGate=Revive.new({market=MarketplaceService,passId=Config.ReviveGamePassId,
- canRevive=canRevive,revive=revivePlayer,status=function(player,message) remote:FireClient(player,"ReviveStatus",message) end})
-MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,id,purchased)
- reviveGate:purchaseFinished(player,id,purchased)
+local receiptReady=false
+local HttpService=game:GetService("HttpService")
+local reviveStore=DataStoreService:GetDataStore("SpareRoomReviveCredits_v1")
+local reviveGate=Revive.new({market=MarketplaceService,productId=Config.ReviveProductId,store=reviveStore,
+ ready=function() return receiptReady end, now=os.time, token=function() return HttpService:GenerateGUID(false) end,
+ player=function(id) return Players:GetPlayerByUserId(id) end, defer=task.defer,
+ canRevive=canRevive,revive=revivePlayer,status=function(player,message)
+  if player.Parent==Players then remote:FireClient(player,"ReviveStatus",message) end
+ end})
+if Config.ReviveProductId>0 then
+ local ok,err=pcall(function()
+  MarketplaceService:BindReceiptHandler(Enum.ReceiptType.DeveloperProduct,function(receipt)
+   return reviveGate:receipt(receipt) and Enum.ReceiptDecision.Processed or Enum.ReceiptDecision.NotProcessedYet
+  end,{Config.ReviveProductId})
+ end)
+ receiptReady=ok
+ if not ok then warn("Revive receipt handler could not register; purchases disabled: "..tostring(err)) end
+end
+-- Filtered handler leaves HD Admin and other products' ProcessReceipt handlers intact.
+MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId,id)
+ local player=Players:GetPlayerByUserId(userId)
+ if player then reviveGate:purchaseFinished(player,id) end
 end)
 local function valid(player, part)
  local s = states[player]
@@ -193,6 +212,11 @@ local function interact(player, part)
   local first = not s.records[id]
   s.records[id] = true
   read(player, part, value(part, "Text"), first and 3 or 0)
+ elseif role == "story" then
+  local flag=value(part,"Flag")
+  local first=not s.flags[flag]
+  s.flags[flag]=true
+  read(player,part,value(part,"Text"),first and (tonumber(value(part,"Cost")) or 0) or 0)
  elseif role == "mum" then
   s.flags.mum = true
   read(player, part, "“I remember making up the beds,” Mum says. “Please do not give me an answer just because I cannot find one.”", 0)
@@ -241,12 +265,14 @@ local function interact(player, part)
    and count(s.anomalies) >= (e.anomalies or 0) and (not e.anchor or s.flags.anchor)
    and (not e.valve or s.flags.valve) and (not e.mum or s.flags.mum)
    and (not e.sanityMax or s.sanity <= e.sanityMax)
+  for _,flag in ipairs(e.flags or {}) do if not s.flags[flag] then ready=false end end
   if ready then
    s.sequence += 1
    s.confirm = {id = id, nonce = s.sequence, part = part}
    remote:FireClient(player, "Confirm", {id = id, nonce = s.sequence, title = e.title, text = e.text})
    s.menu = true
   else
+   if e.flags then tell(player,"Read the room’s hidden note and complete its unfinished task first.") return end
    tell(player, "Requires diary pages: " .. (e.diary or 0) .. ", records: " .. (e.records or 0) .. ", anomalies: " .. (e.anomalies or 0)
     .. (e.anchor and "; hold the ordinary memory" or "") .. (e.valve and "; isolate the boiler pipe" or "")
     .. (e.mum and "; speak with Mum" or "") .. (e.sanityMax and "; sanity at or below " .. e.sanityMax .. "%" or ""))
@@ -364,18 +390,13 @@ local function joined(player)
   humanoid.JumpPower = 45
   humanoid.Died:Connect(function()
    local state=states[player]
-   -- Other accidental deaths keep Roblox-style respawning. Sanity deaths stay locked.
-   if not state or state.ended then return end
-   task.delay(3,function()
-    if states[player]==state and not state.ended and player.Parent and player.Character==character then
-     pcall(function() player:LoadCharacterAsync() end)
-    end
-   end)
+   if not state or state.ended or not state.started then return end
+   finish(player,"fallen")
   end)
   local state=states[player]
-  if state and state.ended=="consumed" and not state.reviveBusy then humanoid.Health=0 return end
+  if state and (state.ended=="consumed" or state.ended=="fallen") and not state.reviveBusy then humanoid.Health=0 return end
   task.wait(0.1)
-  if character.Parent then character:PivotTo(CFrame.new(0, 4, -11)) end
+  if character.Parent then character:PivotTo(CFrame.new(0, 4, -15)) end
  end)
  if not player.Character then task.defer(function() pcall(function() player:LoadCharacterAsync() end) end) end
 end

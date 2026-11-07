@@ -35,7 +35,7 @@ const buildPlace=function buildRobloxPlace(sources) {
  }
  add("GardenGround",0,-.45,15,100,.5,150,[53,68,49],"Grass");
  add("HouseFloor",0,-.25,4,48,.5,40,[116,94,64]);
- add("HouseRoof",0,12.25,4,49,.5,41,[62,66,61],"Slate");
+ add("HouseRoof",0,24.25,4,49,.5,41,[62,66,61],"Slate");
  for(const side of [-1,1]){
   for(const [a,b]of [[-16,-11],[-5,12],[18,24]])wall("ExteriorPier",side*24,0,(a+b)/2,.5,12,b-a);
   for(const z of [-8,15]){wall("WindowLowerWall",side*24,0,z,.5,3,6);wall("WindowUpperWall",side*24,8,z,.5,4,6);}
@@ -77,6 +77,72 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("Sofa",19,1.5,10,7,3,3,[81,101,90],"Fabric");
  prop("HallInvitation","record","A household list","Read the household list",3.6,4,8,.12,1.4,1.6,{Index:"hall",Text:"The household list begins with four entries. Its certified copy has two. Neither is marked amended."});
  prop("MaintenanceHatch","hatch","The maintenance hatch","Descend beneath the house",0,.16,20,3,.3,3,{});
+ // Permanent upper floor, with a real walkable staircase and an open stairwell.
+ for(const side of [-1,1])add("UpperFloor",side*13,11.75,4,22,.5,40,[116,94,64]);
+ add("UpperLanding",0,11.75,14,4,.5,20,[116,94,64]);
+ add("UpperFrontFloor",0,11.75,-15,4,.5,2,[116,94,64]);
+ for(let n=0;n<24;n++){
+  const top=(n+1)*.5,z=-13.625+n*.75;
+  add("StairTread",0,top/2,z,3.3,top,.75,[105,82,57]);
+  add("StairNosing",0,top+.02,z+.3,3.35,.04,.1,[155,134,99],"Wood",{},false);
+ }
+ // Railings are confined to the upper floor; ground-floor side lanes stay clear.
+ for(const side of [-1,1]){
+  add("LandingRail",side*1.6,14.8,-5,.16,.16,18,[101,83,58]);
+  for(let z=-13;z<=3;z+=2)add("LandingBaluster",side*1.6,13.4,z,.12,2.8,.12,[101,83,58]);
+  wall("UpperExterior",side*24,12,4,.5,12,40);
+  for(const [a,b]of [[-16,-9],[-3,11],[17,24]])wall("UpperHallPartition",side*4,12,(a+b)/2,.4,12,b-a);
+  wall("UpperRoomDivider",side*14,12,4,20,12,.4);
+  for(const z of [-6,14]){
+   wall("UpperDoorHeader",side*4,21,z,.4,3,6);
+   for(const dz of [-3.2,3.2])add("UpperDoorFrame",side*4,16.5,z+dz,.65,9,.3,[173,156,123]);
+   add("UpperRoomPlaque",side*3.7,22,z,.16,1.1,5,[36,55,46],"Wood",{Sign:side<0?(z<0?"STUDY":"LOFT"):(z<0?"NURSERY":"FAMILY ROOM"),Side:side<0?"Right":"Left"},false);
+  }
+ }
+ wall("UpperFront",0,12,-16,48,12,.5);wall("UpperBack",0,12,24,48,12,.5);
+ for(const z of [-9,8,20])add("Lamp",0,23.5,z,1,.2,1,[226,202,145],"Metal",{},false);
+ for(const x of [-14,14])for(const z of [-7,15])add("Lamp",x,23.5,z,1.3,.2,1.3,[226,202,145],"Metal",{},false);
+ desk(-15,12,-7,7,4);chair(-15,12,-3);
+ for(let level=1;level<=4;level++){
+  add("StudyBookShelf",-22,12+level*1.8,-7,2.5,.15,12,[88,69,51]);
+  for(let z=-12;z<=-3;z++)add("StudyBook",-22,12+level*1.8+.65,z,1.5,1.2,.6,[79+(z+12)*5,78,63]);
+ }
+ add("BlueprintSheet",-15,15.38,-7,4,.03,2.5,[169,183,172],"Fabric",{},false);
+ for(const x of [-16.4,-15,-13.6])add("BlueprintLine",x,15.41,-7,.04,.02,2,[69,89,83],"Metal",{},false);
+ const story=(name,title,action,x,y,z,flag,text,cost=2)=>prop(name,"story",title,action,x,y,z,1.1,.12,.85,{Flag:flag,Text:text,Cost:String(cost)});
+ story("StudyNote","THE HOUSE WAS DRAWN","Read study note",-17.5,15.4,-7,"note_study","The blueprint is under the study lamp. Erase the spare room, not the house. One line is holding us here.");
+ story("Blueprint","A line in red","Erase the red line",-15,15.46,-7,"blueprint","You follow the plan with your finger. The red line does not join any of the walls. You rub it away. A quiet settling sound travels through the house.",4);
+ prop("BlueprintEnding","ending","The revised plan","Keep the revised plan",-12.5,15.4,-7,1,.12,.8,{Ending:"blueprint"});
+ // Empty cot, two height scales and the stopped nursery clock.
+ for(const x of [11,15]){
+  add("CotBed",x,13.5,-6,2.8,.45,5,[164,151,122]);
+  for(const dx of [-1.4,1.4]){
+   add("CotRail",x+dx,15,-6,.12,.16,5,[164,151,122]);
+   for(let z=-8;z<=-4;z++)add("CotSpindle",x+dx,14.1,z,.1,1.8,.1,[164,151,122]);
+  }
+ }
+ desk(20,12,-10,4,2);add("NurseryClockCase",20,16.4,-10,1.4,1.8,.5,[92,75,52]);
+ story("NurseryNote","SING THE LAST LINE","Read nursery note",19,15.4,-10,"note_nursery","The nursery clock stopped before the lullaby ended. Wind it. Then let the song finish.");
+ story("NurseryClock","The stopped clock","Wind the nursery clock",21,15.4,-10,"clock","The spring resists, then catches. Tick. Tick. You remember a line of the lullaby that Mum has never sung.",3);
+ prop("LullabyEnding","ending","An unfinished lullaby","Sing the last line",13,15,-9.5,1,.2,.8,{Ending:"lullaby"});
+ for(let h=1;h<=6;h++)for(const x of [8,8.5])add("HeightMark",x,12+h,3.74,.3,.035,.04,[79,64,51],"Wood",{},false);
+ desk(-15,12,17,7,3);chair(-15,12,14);
+ for(const x of [-22,-19])for(const z of [8,11,20])add("LoftStorageBox",x,13.2,z,2.6,2.4,2.6,[120,102,70]);
+ add("TypewriterBody",-15,15.6,17,2.8,.6,1.7,[45,50,47],"Metal");
+ for(let row=0;row<3;row++)for(let key=0;key<9;key++)add("TypewriterKey",-16+key*.25,15.95,16.5+row*.25,.15,.07,.15,[177,173,145],"Metal",{},false);
+ story("LoftNote","LEAVE AN ADDRESS","Read loft note",-17.8,15.4,17,"note_loft","The records are letters nobody sent. Read them beside the old typewriter. Write a forwarding address.");
+ story("UnsentLetters","Letters nobody sent","Read the unsent letters",-12.5,15.4,17,"letters","The envelopes all carry the same handwriting. Each is addressed to a different child. Every return address is this house.",3);
+ prop("LettersEnding","ending","An empty address","Type HOME",-15,16,17,1,.1,.6,{Ending:"letters"});
+ add("FamilyBed",15,13,15,6,2,7,[96,75,55]);add("FamilyQuilt",15,14.2,15,5.8,.4,6.8,[102,113,103],"Fabric");
+ desk(20,12,7,4,2);chair(20,12,10);
+ story("FamilyPhotograph","The larger photograph","Inspect the family photograph",20,15.5,7,"family_photo","Mum stands beside someone whose face has been rubbed away. Two children lean into the frame. On the back: ALL OF US, BEFORE THE RENOVATION.",4);
+ story("SchoolReport","A report with two names","Read the school report",21,15.5,7,"school_report","The teacher has praised two different children for the same drawing. Both signatures are yours. The year is the same.");
+ story("DadCoat","A warm coat","Check the coat pockets",22,16,21,"dad_coat","A folded receipt for five train tickets. A pencil. A note in a hand you almost recognise: If they ask, leave the places set.",3);
+ // Details below echo evidence on the upper floor without resolving the family history.
+ for(const [i,x,z]of [[1,-21,32],[2,21,32],[3,-21,52]]){
+  add("GardenBench",x,1.8,z,6,.35,2,[91,79,55]);
+  story("GardenLetter"+i,"A weathered letter","Read the weathered letter",x,2.1,z,"garden_letter"+i,["The gardener was paid to keep a path clear. The path is not drawn on the plan.","Someone asked for the same flowers each year. The card says: From all the children.","Do not move the spare chair outside. He will think we are waiting for him."][i-1]);
+ }
  add("BasementFloor",0,-18.25,27,56,.5,90,[78,81,73],"Concrete");
  add("BasementCeiling",0,-5.25,27,56,.5,90,[51,61,56],"Concrete");
  wall("BasementWest",-28,-18,27,.5,12.5,90);wall("BasementEast",28,-18,27,.5,12.5,90);
@@ -197,14 +263,14 @@ const buildPlace=function buildRobloxPlace(sources) {
   add("Skirting",side*3.65,.3,z,.12,.6,14,[145,132,106],"Wood",{},false);
   add("WallCornice",side*3.65,11.6,z,.2,.5,14,[167,156,129]);
  }
- add("FuseBoxCase",3.6,5,2,.3,2.5,1.8,[68,75,71],"Metal");
- for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,2,.2,.25,.65,[161,158,135],"SmoothPlastic");
- add("FuseWarning",3.3,6,2,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
- const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>0</X><Y>0.1</Y><Z>-11</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
+ add("FuseBoxCase",3.6,5,8,.3,2.5,1.8,[68,75,71],"Metal");
+ for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,8,.2,.25,.65,[161,158,135],"SmoothPlastic");
+ add("FuseWarning",3.3,6,8,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
+ const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>0</X><Y>0.1</Y><Z>-15</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
  const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars)+script("ModuleScript","SpareRoomRevive",sources.revive))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,endings:6,anomalies:12,venues:8,npcs:11}};
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:10,anomalies:12,venues:8,npcs:11}};
 };
 const dir=__dirname;
 const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),revive:fs.readFileSync(path.join(dir,"SpareRoomRevive.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});

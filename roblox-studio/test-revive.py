@@ -1,74 +1,62 @@
-"""Exercise the real entitlement gate with fake Marketplace responses; never charges Robux."""
+"""Real consumable gate under mocked Roblox services; never spends Robux."""
 from pathlib import Path
 import subprocess,sys,tempfile
 root=Path(__file__).parent
 checks='''
 local Revive=require("./Revive")
-local p={UserId=4945}
-local q={UserId=9999}
-local ownership={}
+local p={UserId=4945} local q={UserId=9999}
 local dead={[p]=true,[q]=true}
-local grants,prompts,statuses=0,0,0
-local failCheck,failPrompt=false,false
+local rows={} local failed=false local loadingFails=false local count=0 local prompts=0 local clock=1000
+local store={}
+function store:UpdateAsync(key,fn)
+ if failed then error("storage offline") end
+ local value=fn(rows[key]) rows[key]=value return value
+end
 local market={}
-function market:UserOwnsGamePassAsync(id,pass)
- if failCheck then error("offline") end
- assert(pass==123)
- return ownership[id]==true
+function market:PromptProductPurchase(player,id) assert(id==123) prompts+=1 end
+local deferred={}
+local function flush() local tasks=deferred deferred={} for _,f in ipairs(tasks) do f() end end
+local function make(id)
+ return Revive.new({productId=id,market=market,store=store,ready=function() return true end,
+ now=function() return clock end,token=function() count+=1 return "token"..count end,
+ player=function(id) return id==4945 and p or id==9999 and q or nil end,
+ canRevive=function(player) return dead[player]==true end,
+ revive=function(player) if loadingFails then return false end dead[player]=false return true end,
+ defer=function(f) table.insert(deferred,f) end,status=function() end})
 end
-function market:PromptGamePassPurchase(player,id)
- if failPrompt then error("unavailable") end
- assert(id==123) prompts+=1
-end
-local function deps(id)
- return {market=market,passId=id,canRevive=function(player) return dead[player]==true end,
- revive=function(player) grants+=1 dead[player]=false end,status=function() statuses+=1 end}
-end
-local gate=Revive.new(deps(123))
-gate:request(p) gate:request(p)
-assert(prompts==1 and grants==0,"Duplicate prompt or unverified grant")
-gate:purchaseFinished(p,999,true)
-assert(grants==0 and gate.pending[p],"Wrong pass accepted")
-gate:purchaseFinished(p,123,false)
-assert(grants==0 and dead[p],"Cancelled purchase revived")
-gate:request(p) gate:purchaseFinished(p,123,true)
-assert(grants==0,"Unowned purchase completion granted")
-ownership[p.UserId]=true
-gate:request(p)
-assert(grants==1 and not dead[p],"Owned pass did not revive")
+local gate=make(123)
+gate:request(p) gate:request(p) assert(prompts==1)
+gate:purchaseFinished(p,123) assert(dead[p],"Prompt close granted a revive")
+assert(not gate:receipt({ProductId=999,PlayerId=4945,PurchaseId="bad"}))
+assert(not gate:receipt({ProductId=123,PlayerId=42,PurchaseId="absent"}))
+local r={ProductId=123,PlayerId=4945,PurchaseId="purchase-1"}
+assert(gate:receipt(r)) flush() assert(not dead[p] and dead[q])
 dead[p]=true
-local before=prompts
-gate:request(p)
-assert(grants==2 and prompts==before,"Permanent owner charged twice")
-gate:request(q)
-assert(grants==2 and gate.pending[q],"Another player got the benefit")
-ownership[q.UserId]=true
-gate:purchaseFinished(q,123,true)
-assert(grants==3 and not dead[q],"Verified purchase did not revive")
-gate:purchaseFinished(q,123,true)
-assert(grants==3,"Duplicate completion granted twice")
-gate:forget(p)
-dead[p]=true ownership[p.UserId]=false failCheck=true
-gate:request(p)
-assert(grants==3 and prompts==before+1,"Failed ownership check prompted or granted")
-failCheck=false failPrompt=true
-gate:request(p)
-assert(not gate.pending[p] and grants==3,"Failed prompt left a pending lock")
-failPrompt=false
-local zero=Revive.new(deps(0))
-zero:request(p)
-assert(grants==3 and not zero.pending[p],"Unconfigured pass allowed purchase")
-print("PASS: configured/owned/unowned, cancellation, false completion, wrong pass, duplicate completion, retries and per-player isolation")
+assert(gate:receipt(r)) flush() assert(dead[p],"Duplicate receipt gave a free second revive")
+gate:request(p) assert(prompts==2,"Second death did not request a new purchase")
+failed=true
+assert(not gate:receipt({ProductId=123,PlayerId=4945,PurchaseId="purchase-2"}))
+gate:purchaseFinished(p,123) gate:request(p) assert(prompts==2,"Prompted with storage offline")
+failed=false loadingFails=true
+assert(gate:receipt({ProductId=123,PlayerId=4945,PurchaseId="purchase-2"})) flush()
+assert(dead[p] and rows['user:4945'].credits==1,"Failed respawn lost paid benefit")
+loadingFails=false gate:request(p) assert(not dead[p] and prompts==2)
+-- A late receipt after a free restart banks the benefit for a later death.
+assert(gate:receipt({ProductId=123,PlayerId=4945,PurchaseId="purchase-3"})) flush()
+assert(rows['user:4945'].credits==1)
+dead[p]=true gate:request(p) assert(not dead[p] and rows['user:4945'].credits==0)
+-- A stale claim recovers after a crash, but a live claim blocks checkout.
+dead[q]=true rows['user:9999']={purchases={},credits=0,claim={token='old',at=clock}}
+gate:request(q) assert(prompts==2 and dead[q])
+clock+=181 gate:request(q) assert(not dead[q])
+local zero=make(0) dead[q]=true zero:request(q) assert(prompts==2 and dead[q])
+print("PASS: repeat purchases, cancelled/unverified checkout, duplicate/wrong/offline receipts, failed respawn recovery, late credits, claim recovery and player isolation")
 '''
 server=(root/'SpareRoomServer.server.lua').read_text()
+assert 'BindReceiptHandler' in server and 'PromptProductPurchaseFinished' in server
+assert 'ProcessReceipt =' not in server and 'PromptGamePassPurchase' not in server
 assert 'Players.CharacterAutoLoads = false' in server
-assert 'if humanoid then humanoid.Health=0 end' in server
-assert 'MarketplaceService.PromptGamePassPurchaseFinished:Connect' in server
 assert 's.ended=nil s.sanity=Config.ReviveSanity' in server
-assert 's.diary = {}' not in server[server.index('local function revivePlayer'):server.index('local reviveGate=')]
 with tempfile.TemporaryDirectory() as d:
- p=Path(d)
- (p/'Revive.lua').write_text((root/'SpareRoomRevive.lua').read_text())
- (p/'test.lua').write_text(checks)
+ p=Path(d);(p/'Revive.lua').write_text((root/'SpareRoomRevive.lua').read_text());(p/'test.lua').write_text(checks)
  subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'luau',str(p/'test.lua')],check=True)
-print('PASS: sanity death kills the character; revive uses verified server ownership and preserves evidence')

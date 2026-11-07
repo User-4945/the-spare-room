@@ -1,9 +1,9 @@
 -- The Spare Room: Roblox Studio starter. All positions use Roblox studs.
 return {
- Version = "Roblox prototype 0.5",
- -- Create a Revive gamepass in your experience and set its base price to 30 Robux.
- -- Paste the PASS ID here (not a developer-product or catalogue asset ID).
- ReviveGamePassId = 2073110257,
+ Version = "Roblox prototype 0.6",
+ -- Create a repeatable Developer Product priced at 30 Robux in this experience.
+ -- The old gamepass 2073110257 cannot be used as a consumable product.
+ ReviveProductId = 0, -- Replace with the NEW developer product ID before publishing.
  ReviveSanity = 50,
  SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
  Modes = {
@@ -53,6 +53,10 @@ return {
   seal = {title = "Maintained in Absence", text = "You renew the inspection seal. The earlier signatures remain beneath yours.", diary = 10, valve = true},
   tomorrow = {title = "Somewhere for Tomorrow", text = "You leave the final page unfinished. The house remembers a larger family, but offers no explanation.", diary = 20, records = 3, mum = true},
   glass = {title = "The Far Side of the Glass", text = "You cover the observation pane. The reflection continues arranging places on the other side.", anomalies = 3, sanityMax = 45},
+  blueprint = {title="A House Without an Afterthought", text="You erase the red line. Downstairs, a door quietly becomes a wall. The floorboards settle. Mum asks whether you would like to help redecorate your old room.", flags={"note_study","blueprint"}},
+  lullaby = {title="The Last Line", text="You finish the song. The clock starts counting forwards. From the empty cot, a child says goodnight. Mum sleeps until morning without calling anyone’s name.", flags={"note_nursery","clock"}},
+  letters = {title="A Forwarding Address", text="You type HOME on the last envelope. The letters lift like startled birds and slip beneath the door. Mum is waiting by the front gate. This time, both of you know where you are going.", flags={"note_loft","letters"}},
+  fallen = {title="YOU DIED", text="The house grows quiet. Restart for free, or use one paid revive to keep this run’s discoveries."},
   consumed = {title = "YOUR SANITY GOT CONSUMED", text = "The house keeps the memory you could no longer hold."},
  },
  Rooms = {"Storage Room", "Boiler Room", "Maintenance Tunnel", "Archive Room", "Forgotten Family Room", "Hidden Study", "Sealed Corridor", "Observation Room", "Former Children's Area", "Locked Chamber"},
