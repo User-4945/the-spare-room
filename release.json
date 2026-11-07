@@ -1,10 +1,12 @@
 {
-  "name": "THE SPARE ROOM v2.7.6 \u2014 Secrets in the Walls",
-  "version": "2.7.6",
-  "tag": "v2.7.6",
+  "name": "THE SPARE ROOM v.3.0.0 — Beneath the House · Alpha",
+  "version": "3.0.0",
+  "tag": "v.3.0.0",
   "prerelease": true,
+  "alpha": true,
+  "developer": false,
+  "channel": "alpha",
   "generation_version": 2,
-  "week2_unlock_at": "2026-10-30T17:00:00Z",
-  "week3_unlock_at": "2026-11-03T15:00:00Z",
-  "halloween_ui": true
+  "halloween_ui": false,
+  "build_revision": 0
 }

@@ -1,46 +1,47 @@
-# THE SPARE ROOM v3.0.0 — BENEATH THE HOUSE
+# THE SPARE ROOM v.3.0.0 — Beneath the House · Alpha
+
+**Alpha prerelease — unfinished content and visuals.**
 
 “There was always something underneath.”
 
-DRAFT RELEASE NOTES — NOT PUBLISHED TO GITHUB
+Halloween has departed. The house remembers a larger family.
 
-This is the planned release wording for the unlisted development preview. Publish it only after production verification is complete.
+## Beneath the house
 
-## A permanent new chapter
+- Explore ten permanent basement areas, from the Storage Room and Boiler Room to the Forgotten Family Room, Hidden Study, Observation Room and Locked Chamber.
+- Collect twenty sibling-diary entries and 59 pieces of household evidence across eight collectible types, including four progression keys.
+- Compare photographs, Dad's notes, drawings and records that disagree. The family mystery deliberately remains unresolved.
+- Discover thirty new permanent ending paths, bringing this build to **61 permanent endings**. Forty new achievement paths cover endings and exploration.
+- The thirteen Halloween-event endings are retired from this version. Earlier releases retain their own event content and saves.
 
-- Added a ten-area basement: Storage Room, Boiler Room, Maintenance Tunnel, Archive Room, Forgotten Family Room, Hidden Study, Sealed Corridor, Observation Room, Former Children’s Area and Locked Chamber.
-- Added evidence suggesting Dad, siblings and a larger household. Contradictory records leave their history unresolved.
-- Added twenty collectible sibling-diary entries and a readable family notebook.
-- Added 59 collectible objects across eight evidence types, including four progression keys.
-- Added twenty-five environmental anomalies with quiet, room-aware pacing.
-- Added thirty permanent endings across Family, Basement, Memory, Anomaly, Sanity, Collector, Secret and True Mystery categories.
-- Added forty achievements: thirty for new endings and ten for exploration.
+## More unsettling anomalies
 
-## The end of the Halloween era
+- Twenty-five room-specific basement anomalies join the existing surface encounters.
+- The Watcher is taller, darker and hooded, with dim eyes and elongated fingers. It lingers longer when observed.
+- The floating doll's head turns independently while its body remains facing away.
+- Wet footprints emerge sequentially, rather than appearing all at once.
+- The impossible door reveals a narrow dark gap after several seconds.
+- Certain family documents and wall messages reveal additional writing after the player looks away.
+- Basement shadows stretch, and empty sleeves carry unnaturally long shapes.
+- Effects reuse pooled geometry. Menus pause encounter clocks, and once-only sanity costs are retained. No rapid full-screen strobing is added.
 
-The thirteen Halloween event ending paths are retired from v3.0.0. Earlier builds retain their event content and journals. The established 31 permanent endings remain, joined by 30 new paths: **61 permanent endings**, exceeding the prior 44-path Halloween-era total.
+## Stability carried forward
 
-## Visibility and stability
+Room/floor culling, evidence occlusion, collision checks, validated saves and backup recovery remain in place. Admin-triggered encounters use the same elapsed-time and caption handling as natural encounters. Reading-related sanity costs apply after the reading panel closes.
 
-- Fixed sticky notes and wall-attached evidence appearing through floors or from upstairs viewing angles.
-- Added room-based visibility checks and floor-based rendering culling.
-- Improved occlusion and object visibility management.
-- Improved basement collision and aligned doorway geometry.
-- Bounded anomaly allocation with reusable visuals and local lighting.
-- Improved save validation, backup recovery and preview-save isolation.
-- Reduced repeated visibility and texture work. Loading and frame-time improvements require final hardware benchmarking before quantified claims are published.
-- General bug fixes and stability improvements.
+## Downloads and updates
 
-## Playing the preview
+- Windows x64 offline installer.
+- macOS universal DMG for Intel and Apple Silicon, ad-hoc signed and not notarized.
+- Linux x64 AppImage and DEB.
+- Browser ZIP, installable-web ZIP, matching desktop source and SHA-256 checksums.
 
-The unlisted web preview is at /secret/. It uses a separate save slot. It is not a password-protected private build. The normal website remains on its existing version.
+This release is **not Latest**. **v2.7.6 — Secrets in the Walls** is the latest stable release. Enable **Include prerelease updates** in desktop Settings to receive Alpha offers. Stable-only checks will not offer this Alpha, and newer installed versions are not downgraded.
 
-WASD walk · Shift sprint · Space jump · V first/third person. Move close to a visible object and hold E or hold click. Read collected evidence again in FAMILY NOTEBOOK. Kitchen sandwiches restore sanity according to the selected difficulty.
+The v3 story uses its separate `spare-room-beneath-v3` save slot, including existing developer-preview progress. Earlier saves and ending journals are retained separately. The desktop app keeps its established application identity and update preferences. Same-version refresh checks remain enabled.
 
-New disturbing discoveries apply sanity loss after the reading panel closes. Menus pause gameplay timers. No calendar gate locks the basement.
+## Alpha limitations
 
-## Development status
+This is an early playable chapter, not a finished major release. Art, animation, audio and pacing may change. Native smoke checks cover startup, renderer initialization, anomaly timing/captions and save persistence; they do not replace manual playtesting or guarantee performance on every graphics device. Windows is unsigned; macOS is not notarized. Browser and desktop saves do not transfer automatically.
 
-This preview is not a GitHub release. No v3.0.0 installers have been published. Final art/audio polish, cross-platform installer QA and performance benchmarking remain required before release. Please report your browser, mode, location, generation code and what happened. Mark family evidence and endings as spoilers.
-
-The house has kept a place for someone.
+Report your platform, version, difficulty, location and generation code, with steps to reproduce the problem. Mark family clues and endings as spoilers.

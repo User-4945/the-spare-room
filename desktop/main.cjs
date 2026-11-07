@@ -29,7 +29,7 @@ if(smoke){
 }
 function localGameURL(url){try{let u=new URL(url);if(u.protocol!=='file:')return false;let relative=path.relative(gameRoot,fileURLToPath(u));return relative!==''&&!relative.startsWith('..'+path.sep)&&relative!=='..'&&!path.isAbsolute(relative)}catch{return false}}
 function report(result,code){if(process.env.SPARE_ROOM_SMOKE_REPORT)fs.writeFileSync(process.env.SPARE_ROOM_SMOKE_REPORT,JSON.stringify(result,null,2));console.log(JSON.stringify(result));app.exit(code)}
-async function checkDesktop(){try{smokeStage='checking installed renderer, signs and encounters';let result=await win.webContents.executeJavaScript(`(async()=>{
+async function checkDesktop(){if(require('./release-info.json').alpha){try{return report(await require('./alpha-smoke.cjs')({win,updates,version,verifySave}),0)}catch(error){return report({ok:false,error:String(error)},1)}}try{smokeStage='checking installed renderer, signs and encounters';let result=await win.webContents.executeJavaScript(`(async()=>{
 if(typeof THREE==='undefined'||!advancedEngine||advancedEngine.failed)throw Error('3D engine did not start');
 if(cityWorld().length!==20||advancedEngine.actors.length!==6)throw Error('World content missing');
 if(!Array.from(document.scripts).filter(s=>s.src).every(s=>s.src.startsWith('file:')))throw Error('Remote script dependency');

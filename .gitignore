@@ -12,3 +12,7 @@ platform-artifacts/
 squashfs-root/
 halloween-build/
 halloween-checks/
+
+installer-build.json
+alpha-output/
+alpha-results/

@@ -1,8 +1,8 @@
 /* Camera preference is separate from story saves. V works in every event week. */
 const playerCamera={third:false,distance:3.2,actualDistance:0};
-try{playerCamera.third=localStorage.getItem('spare-camera')==='third';}catch{}
+try{playerCamera.third=localStorage.getItem('spare-beneath-camera')==='third';}catch{}
 const cameraButton=document.createElement('button');toolbar.append(cameraButton);
-function setThirdPerson(value){playerCamera.third=!!value;playerCamera.actualDistance=0;try{localStorage.setItem('spare-camera',value?'third':'first');}catch{}cameraButton.textContent=value?'CAMERA · THIRD PERSON (V)':'CAMERA · FIRST PERSON (V)';house.dirty=true;}
+function setThirdPerson(value){playerCamera.third=!!value;playerCamera.actualDistance=0;try{localStorage.setItem('spare-beneath-camera',value?'third':'first');}catch{}cameraButton.textContent=value?'CAMERA · THIRD PERSON (V)':'CAMERA · FIRST PERSON (V)';house.dirty=true;}
 cameraButton.onclick=()=>setThirdPerson(!playerCamera.third);setThirdPerson(playerCamera.third);
 document.addEventListener('keydown',event=>{if(event.code==='KeyV'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'')&&!event.repeat){event.preventDefault();setThirdPerson(!playerCamera.third);}});
 function createPlayerAvatar(e){const T=THREE,rig=createCitizenRig({name:'player-avatar',coat:'#53625b',trousers:'#353d43',hair:'#352f2d'});e.scene.add(rig.root);const leather=plainMaterial('#6b5140'),trim=plainMaterial('#44372e'),brass=plainMaterial('#b19460',.55),bag=new T.Group();bag.name='player-satchel';bag.position.set(.215,.84,-.14);rig.torso.add(bag);

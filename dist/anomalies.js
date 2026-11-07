@@ -47,7 +47,7 @@ function startAnomaly(id){
  if(id==='footprints'){event.points=anomalyFootprints();if(event.points.length<3)return false;event.p=event.points[Math.floor(event.points.length/2)];event.yaw=-house.a;}
  if(id==='mirror'){if(!flags().mirror)return false;event.p=[4.2,0,mirrorPlane+.035];event.yaw=Math.PI;}
  if(id==='stare'){event.residents=residents().filter(p=>Math.hypot(p.x-house.x,p.z-house.z)<11&&visibleTo({p:[p.x,1.5,p.z]})).map(p=>({id:p.id,x:p.x,z:p.z}));if(!event.residents.length)return false;}
- anomalyRuntime.active=event;state.last=id;state.sequence++;state.nextAt=state.elapsed+def.duration+anomalyInterval()+cityStream(s.worldSeed,'anomaly-gap-'+state.sequence)()*18;save();return true;
+ anomalyRuntime.active=event;state.last=id;state.sequence++;state.nextAt=state.elapsed+def.duration+anomalyInterval()+cityStream(s.worldSeed,'anomaly-gap-'+state.sequence)()*18;if(typeof deepUpdateCaption==='function')deepUpdateCaption();save();return true;
 }
 function witnessAnomaly(event){
  if(event.witnessed)return;event.witnessed=true;
@@ -57,13 +57,13 @@ function witnessAnomaly(event){
 }
 function advanceAnomalies(dt){
  if(!s.started||paused()||s.ending||s.sanityLost)return;
- let state=anomalyState();state.elapsed+=Math.min(.1,Math.max(0,dt));let event=anomalyRuntime.active;
+ let state=anomalyState();state.elapsed+=Math.max(0,dt);let event=anomalyRuntime.active;
  if(!event){if(state.elapsed<state.nextAt)return;let list=eligibleAnomalies().filter(id=>id!==state.last),unseen=list.filter(id=>!state.seen.some(item=>item.id===id));if(unseen.length)list=unseen;let rand=cityStream(s.worldSeed,'anomaly-'+state.sequence),offset=Math.floor(rand()*list.length);for(let i=0;i<list.length;i++)if(startAnomaly(list[(offset+i)%list.length]))return;state.nextAt=state.elapsed+5;return;}
- event.elapsed+=Math.min(.1,Math.max(0,dt));let def=anomalyDefinitions[event.id],p=event.p;
+ event.elapsed+=Math.max(0,dt);let def=anomalyDefinitions[event.id],p=event.p;
  if(event.id==='knocks'){let beats=[.6,1.25,1.9,4.5,5.15,5.8];if(event.knocks<beats.length&&event.elapsed>=beats[event.knocks]){tone(event.knocks<3?72:52,.18);event.knocks++;}if(event.elapsed>1.9)witnessAnomaly(event);}
  else if(event.id==='brownout'){if(event.elapsed>2)witnessAnomaly(event);}
  else if(event.id==='stare'){if(event.residents.some(p=>anomalyInView([p.x,1.5,p.z])))witnessAnomaly(event);}
- else{let target=[p[0],p[1]+(event.id==='footprints'?0:event.id==='mirror'?1.55:1.3),p[2]],seen=anomalyInView(target);if(seen)witnessAnomaly(event);if(event.id==='watcher'){event.gaze=seen?event.gaze+dt:0;if(event.witnessed&&(event.gaze>1.15||Math.hypot(p[0]-house.x,p[2]-house.z)<1.4))event.elapsed=def.duration;}}
+ else{let target=[p[0],p[1]+(event.id==='footprints'?0:event.id==='mirror'?1.55:1.3),p[2]],seen=anomalyInView(target);if(seen)witnessAnomaly(event);if(event.id==='watcher'){event.gaze=seen?event.gaze+dt:0;if(event.witnessed&&(event.gaze>4.8||Math.hypot(p[0]-house.x,p[2]-house.z)<1.4))event.elapsed=def.duration;}}
  if(event.elapsed>=def.duration)anomalyRuntime.active=null;
 }
 function createAnomalyVisuals(e){

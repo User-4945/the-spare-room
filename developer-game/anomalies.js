@@ -63,7 +63,7 @@ function advanceAnomalies(dt){
  if(event.id==='knocks'){let beats=[.6,1.25,1.9,4.5,5.15,5.8];if(event.knocks<beats.length&&event.elapsed>=beats[event.knocks]){tone(event.knocks<3?72:52,.18);event.knocks++;}if(event.elapsed>1.9)witnessAnomaly(event);}
  else if(event.id==='brownout'){if(event.elapsed>2)witnessAnomaly(event);}
  else if(event.id==='stare'){if(event.residents.some(p=>anomalyInView([p.x,1.5,p.z])))witnessAnomaly(event);}
- else{let target=[p[0],p[1]+(event.id==='footprints'?0:event.id==='mirror'?1.55:1.3),p[2]],seen=anomalyInView(target);if(seen)witnessAnomaly(event);if(event.id==='watcher'){event.gaze=seen?event.gaze+dt:0;if(event.witnessed&&(event.gaze>1.15||Math.hypot(p[0]-house.x,p[2]-house.z)<1.4))event.elapsed=def.duration;}}
+ else{let target=[p[0],p[1]+(event.id==='footprints'?0:event.id==='mirror'?1.55:1.3),p[2]],seen=anomalyInView(target);if(seen)witnessAnomaly(event);if(event.id==='watcher'){event.gaze=seen?event.gaze+dt:0;if(event.witnessed&&(event.gaze>4.8||Math.hypot(p[0]-house.x,p[2]-house.z)<1.4))event.elapsed=def.duration;}}
  if(event.elapsed>=def.duration)anomalyRuntime.active=null;
 }
 function createAnomalyVisuals(e){

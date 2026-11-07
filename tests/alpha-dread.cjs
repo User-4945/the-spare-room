@@ -1,0 +1,31 @@
+const fs=require('node:fs'),vm=require('node:vm');
+const prefix=fs.readFileSync('tests/beneath.cjs','utf8').split('vm.runInContext(`{')[0];
+const sandbox={require,process,__dirname,module:{exports:{}},console};
+vm.runInNewContext(prefix+';module.exports={c,vm};',sandbox);
+const c=sandbox.module.exports.c;
+vm.runInContext(fs.readFileSync('developer-game/dread.js','utf8'),c);
+vm.runInContext(`{
+ const check=(v,m)=>{if(!v)throw Error(m)};
+ reset();s.started=true;close();deepMove('storage');close();
+ check(deepAdminSpawn('coat'),'Coat failed');deepRuntime.elapsed=4;renderAdvanced();
+ check(advancedEngine.deepEffects.dreadReady,'Deep effects not decorated');
+ const count=advancedEngine.deepEffects.root.children.length;
+ for(let i=0;i<30;i++){deepRuntime.elapsed=3+i*.1;renderAdvanced()}
+ check(advancedEngine.deepEffects.root.children.length===count,'Per-frame allocation');
+ deepClearEvents();check(startAnomaly('watcher'),'Watcher failed');
+ anomalyRuntime.active.elapsed=3;renderAdvanced();
+ check(advancedEngine.anomalies.dreadReady,'Existing surface pool not decorated');
+ check(advancedEngine.anomalies.groups.watcher.scale.y===1.28,'Watcher height missing');
+ const childCount=advancedEngine.anomalies.groups.watcher.children.length;
+ for(let i=0;i<30;i++)renderAdvanced();
+ check(advancedEngine.anomalies.groups.watcher.children.length===childCount,'Watcher allocation leak');
+ const event=anomalyRuntime.active,elapsed=event.elapsed,savedPause=paused;paused=()=>true;
+ advanceAnomalies(4);check(event.elapsed===elapsed,'Polish bypassed pause');paused=savedPause;
+ deepClearEvents();check(startAnomaly('toy'),'Toy failed');anomalyRuntime.active.elapsed=6;renderAdvanced();
+ check(advancedEngine.anomalies.toyHead.rotation.y>0,'Doll head did not turn');
+ check(Math.abs(advancedEngine.anomalies.groups.toy.rotation.y-anomalyRuntime.active.yaw)<.00001,'Doll body should hold its heading');
+ deepClearEvents();check(startAnomaly('door'),'Door failed');anomalyRuntime.active.elapsed=4;renderAdvanced();
+ check(advancedEngine.anomalies.dreadDoorGap.visible,'Door gap missing');
+ check(!advancedEngine.failed,'Renderer failed');
+ console.log('PASS: pooled horror visuals, taller Watcher, independent doll head, door timing and paused clocks');
+}`,c);

@@ -1,3 +1,7 @@
+# The Spare Room v.3.0.0 — Beneath the House · Alpha
+
+Alpha prerelease. Latest stable: v2.7.6. See RELEASE_NOTES_ALPHA.md for included content and testing limits.
+
 # The Spare Room v.2.7.5 — Halloween Departs: The Last Knock
 
 See RELEASE_NOTES.md for the Week 3 farewell quest, three new endings, the third-person camera and native download details.

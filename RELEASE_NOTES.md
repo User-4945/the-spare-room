@@ -1,56 +1,47 @@
-# THE SPARE ROOM v2.7.6 — Secrets in the Walls
+# THE SPARE ROOM v.3.0.0 — Beneath the House · Alpha
 
-**Prerelease · Maintenance and secrets update**
+**Alpha prerelease — unfinished content and visuals.**
 
-A few things needed fixing around the house.
+“There was always something underneath.”
 
-Some papers turned up during the work.
+Halloween has departed. The house remembers a larger family.
 
-## Fixes and stability
+## Beneath the house
 
-- Fixed sticky-note text and wall-attached collectible overlays showing through opaque upstairs floors and ceilings.
-- Added exact segment/box visibility checks, architectural floor-slab occlusion and a geometry-versioned spatial index.
-- Improved multi-storey object occlusion and third-person overlay visibility. Genuine openings and exterior stairs remain visible.
-- Improved anomaly placement with bounded retries at several distances, floor-height checks and clearance validation.
-- Improved collision handling for short movement steps around thin obstacles and door frames.
-- Added validation and backup recovery for story saves, while retaining legacy progress and unknown gameplay fields.
-- Avoided redundant writes for unchanged story snapshots; added a visible warning if saving fails.
-- Reduced procedural texture-generation work on startup and reused the visibility index until geometry changes.
-- Improved interaction reliability by applying the same precise occlusion checks to nearby-object selection.
-- Updated the admin service endpoint and exact desktop allowlist for the current hosted address, avoiding blocked cross-domain redirects. Existing credentials and server authorization remain unchanged.
-- General stability improvements, with regression checks for existing stories, event access, ending paths and updater behaviour.
+- Explore ten permanent basement areas, from the Storage Room and Boiler Room to the Forgotten Family Room, Hidden Study, Observation Room and Locked Chamber.
+- Collect twenty sibling-diary entries and 59 pieces of household evidence across eight collectible types, including four progression keys.
+- Compare photographs, Dad's notes, drawings and records that disagree. The family mystery deliberately remains unresolved.
+- Discover thirty new permanent ending paths, bringing this build to **61 permanent endings**. Forty new achievement paths cover endings and exploration.
+- The thirteen Halloween-event endings are retired from this version. Earlier releases retain their own event content and saves.
 
-## Small discoveries
+## More unsettling anomalies
 
-- Added 16 optional Easter eggs throughout the house, upstairs rooms, garden and existing city locations.
-- Find household records, hidden objects, a maker’s mark, references to earlier discoveries and a rare answering-wall interaction.
-- Added **Unfiled Evidence**, a readable journal unlocked by your first new discovery.
-- Added five secret achievements with saved discovery progress.
-- New evidence causes no sanity loss and changes no existing ending requirements.
-- Admin-assisted stories cannot earn the new achievements. Start a new story to return to normal achievement tracking.
+- Twenty-five room-specific basement anomalies join the existing surface encounters.
+- The Watcher is taller, darker and hooded, with dim eyes and elongated fingers. It lingers longer when observed.
+- The floating doll's head turns independently while its body remains facing away.
+- Wet footprints emerge sequentially, rather than appearing all at once.
+- The impossible door reveals a narrow dark gap after several seconds.
+- Certain family documents and wall messages reveal additional writing after the player looks away.
+- Basement shadows stretch, and empty sleeves carry unnaturally long shapes.
+- Effects reuse pooled geometry. Menus pause encounter clocks, and once-only sanity costs are retained. No rapid full-screen strobing is added.
 
-Some documents disagree with the building.
+## Stability carried forward
 
-Please retain them for your records.
-
-## Existing content
-
-Weeks 1, 2 and 3 retain their existing access rules and stories. This update adds optional secrets rather than another chapter or new ending paths. Existing ending counts are unchanged. Household evidence remains available after Halloween departs; the tailor’s record requires legitimate access to Velvet & Ash.
+Room/floor culling, evidence occlusion, collision checks, validated saves and backup recovery remain in place. Admin-triggered encounters use the same elapsed-time and caption handling as natural encounters. Reading-related sanity costs apply after the reading panel closes.
 
 ## Downloads and updates
 
-Windows installer, universal macOS disk image, Linux AppImage/DEB, browser build, installable web build and matching desktop source are attached with SHA-256 checksums.
+- Windows x64 offline installer.
+- macOS universal DMG for Intel and Apple Silicon, ad-hoc signed and not notarized.
+- Linux x64 AppImage and DEB.
+- Browser ZIP, installable-web ZIP, matching desktop source and SHA-256 checksums.
 
-This is a **prerelease**, not the stable latest release. Enable prerelease updates in desktop Settings to receive it through the updater, or download a build below. Updates never downgrade an installed newer version. Same-version refresh support is retained.
+This release is **not Latest**. **v2.7.6 — Secrets in the Walls** is the latest stable release. Enable **Include prerelease updates** in desktop Settings to receive Alpha offers. Stable-only checks will not offer this Alpha, and newer installed versions are not downgraded.
 
-For an installed web version, use **INSTALL → Save and apply update**. Your existing story, ending journal and preferences are retained.
+The v3 story uses its separate `spare-room-beneath-v3` save slot, including existing developer-preview progress. Earlier saves and ending journals are retained separately. The desktop app keeps its established application identity and update preferences. Same-version refresh checks remain enabled.
 
-macOS builds are ad-hoc signed and not notarized. Android, iPhone and iPad use the web build; this release does not include native mobile installers.
+## Alpha limitations
 
-## Reporting problems
+This is an early playable chapter, not a finished major release. Art, animation, audio and pacing may change. Native smoke checks cover startup, renderer initialization, anomaly timing/captions and save persistence; they do not replace manual playtesting or guarantee performance on every graphics device. Windows is unsigned; macOS is not notarized. Browser and desktop saves do not transfer automatically.
 
-Include your platform, build revision, world generation code, location and what happened. Mention first-person or third-person view. Screenshots or a short recording help. Please mark hidden discoveries as spoilers.
-
----
-
-The maintenance record lists one more room than you remember.
+Report your platform, version, difficulty, location and generation code, with steps to reproduce the problem. Mark family clues and endings as spoilers.
