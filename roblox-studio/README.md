@@ -178,7 +178,7 @@ The old permanent gamepass `2073110257` is no longer used for checkout. It canno
 
 1. In your experience’s Creator Hub, open **Monetization → Developer Products**.
 2. Create **One Revive**, set its price to **30 Robux**, and explain that each purchase revives once. Roblox checkout shows the actual price.
-3. Copy the new **Developer Product ID** into `ReplicatedStorage → SpareRoomConfig → ReviveProductId` (currently `0`). Do not paste the old gamepass ID.
+3. Copy the new **Developer Product ID** into `ReplicatedStorage → SpareRoomConfig → ReviveProductId` (configured as `3729479338`). Do not paste the old gamepass ID.
 4. Publish to the same experience that owns the product. Confirm cancellation, successful receipt delivery, repeat purchase after another death, and reconnect recovery in Roblox.
 5. Purchases are disabled if the product ID is missing, the filtered receipt handler cannot register, or the persistent ledger cannot be accessed. Studio testing may need API-services access; use a separate test experience to avoid writing production data.
 
@@ -196,3 +196,5 @@ Four furnished upper rooms are accessible by 24 physical half-stud stairs. The s
 Sanity and stamina have separate panels and independent progress bars. Sprint drains stamina; standing/walking restores it. Low stamina changes its bar colour.
 
 This remains an adaptation rather than a complete copy of the web game: 10 basement rooms, 4 upstairs rooms, 20 diary pages, 12 anomalies, 8 city venues, 63 interactions, 8 choice endings plus 2 death outcomes. Current runs are not fully persisted; optional ending-journal saving and paid-revive credits are separate. No Halloween content or full set of 61 web ending paths is implied. Verify the stairs, R15 clearance, lighting, prompts, NPCs and purchases in Studio before publishing. These changes have not been run inside Roblox Studio here.
+
+Revive product connected: `3729479338` (REVIVE). The owner-provided Creator Hub screenshot shows a 30 Robux price. Publish this place to the experience that owns that product. Live checkout and receipt delivery still need Roblox testing.

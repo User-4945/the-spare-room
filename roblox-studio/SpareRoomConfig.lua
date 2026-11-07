@@ -3,7 +3,7 @@ return {
  Version = "Roblox prototype 0.6",
  -- Create a repeatable Developer Product priced at 30 Robux in this experience.
  -- The old gamepass 2073110257 cannot be used as a consumable product.
- ReviveProductId = 0, -- Replace with the NEW developer product ID before publishing.
+ ReviveProductId = 3729479338, -- REVIVE developer product; creator-configured price: 30 Robux.
  ReviveSanity = 50,
  SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
  Modes = {
