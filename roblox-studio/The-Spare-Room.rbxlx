@@ -420,7 +420,15 @@ local function revivePlayer(player)
 end
 local receiptReady=false
 local HttpService=game:GetService(&quot;HttpService&quot;)
-local reviveStore=DataStoreService:GetDataStore(&quot;SpareRoomReviveCredits_v1&quot;)
+-- A downloaded/unpublished place may reject DataStore access. Purchases must
+-- fail closed without preventing the game and its menu handlers from starting.
+local storeOK,reviveStore=pcall(function()
+ return DataStoreService:GetDataStore(&quot;SpareRoomReviveCredits_v1&quot;)
+end)
+if not storeOK then
+ warn(&quot;Revive storage unavailable; gameplay remains available: &quot;..tostring(reviveStore))
+ reviveStore={UpdateAsync=function() error(&quot;Publish this place and enable supported DataStore access before testing paid revives.&quot;) end}
+end
 local reviveGate=Revive.new({market=MarketplaceService,productId=Config.ReviveProductId,store=reviveStore,
  ready=function() return receiptReady end, now=os.time, token=function() return HttpService:GenerateGUID(false) end,
  player=function(id) return Players:GetPlayerByUserId(id) end, defer=task.defer,
@@ -1131,6 +1139,7 @@ local tasks = frame(canvas, &quot;Tasks&quot;, UDim2.fromOffset(936,438), UDim2.
 local tasksText = text(tasks, &quot;&quot;, UDim2.fromScale(0.05, 0.03), UDim2.fromScale(0.9, 0.94), 14)
 tasksText.TextYAlignment = Enum.TextYAlignment.Top
 tasksText.TextXAlignment = Enum.TextXAlignment.Left
+hud.Visible=false staminaHud.Visible=false tasks.Visible=false
 local caption = frame(canvas, &quot;Caption&quot;, UDim2.fromOffset(310,116), UDim2.fromOffset(660,74))
 caption.Visible = false
 local captionText = text(caption, &quot;&quot;, UDim2.fromScale(0.04, 0.05), UDim2.fromScale(0.92, 0.9), 16)
@@ -1531,6 +1540,7 @@ remote.OnClientEvent:Connect(function(action, data)
   adminButton.Visible = data.admin and data.started and not data.ended
   if not data.started or data.ended then adminPanel.Visible=false end
   title.Visible = not data.started
+  staminaHud.Visible = data.started
   hud.Visible = data.started
   tasks.Visible = data.started
   sanityText.Text = &quot;SANITY &quot; .. math.ceil(data.sanity) .. &quot;%&quot;

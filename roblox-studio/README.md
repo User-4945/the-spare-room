@@ -198,3 +198,6 @@ Sanity and stamina have separate panels and independent progress bars. Sprint dr
 This remains an adaptation rather than a complete copy of the web game: 10 basement rooms, 4 upstairs rooms, 20 diary pages, 12 anomalies, 8 city venues, 63 interactions, 8 choice endings plus 2 death outcomes. Current runs are not fully persisted; optional ending-journal saving and paid-revive credits are separate. No Halloween content or full set of 61 web ending paths is implied. Verify the stairs, R15 clearance, lighting, prompts, NPCs and purchases in Studio before publishing. These changes have not been run inside Roblox Studio here.
 
 Revive product connected: `3729479338` (REVIVE). The owner-provided Creator Hub screenshot shows a 30 Robux price. Publish this place to the experience that owns that product. Live checkout and receipt delivery still need Roblox testing.
+
+### Local Studio title-screen startup fix
+Revive DataStore acquisition is protected. An unpublished local file or disabled API access can disable paid revives without terminating server startup or leaving difficulty buttons unresponsive. Sanity, stamina and task panels stay hidden until a run starts. Test local-file startup and published purchase flow separately.

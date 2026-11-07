@@ -157,7 +157,15 @@ local function revivePlayer(player)
 end
 local receiptReady=false
 local HttpService=game:GetService("HttpService")
-local reviveStore=DataStoreService:GetDataStore("SpareRoomReviveCredits_v1")
+-- A downloaded/unpublished place may reject DataStore access. Purchases must
+-- fail closed without preventing the game and its menu handlers from starting.
+local storeOK,reviveStore=pcall(function()
+ return DataStoreService:GetDataStore("SpareRoomReviveCredits_v1")
+end)
+if not storeOK then
+ warn("Revive storage unavailable; gameplay remains available: "..tostring(reviveStore))
+ reviveStore={UpdateAsync=function() error("Publish this place and enable supported DataStore access before testing paid revives.") end}
+end
 local reviveGate=Revive.new({market=MarketplaceService,productId=Config.ReviveProductId,store=reviveStore,
  ready=function() return receiptReady end, now=os.time, token=function() return HttpService:GenerateGUID(false) end,
  player=function(id) return Players:GetPlayerByUserId(id) end, defer=task.defer,

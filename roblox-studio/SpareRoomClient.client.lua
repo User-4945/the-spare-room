@@ -101,6 +101,7 @@ local tasks = frame(canvas, "Tasks", UDim2.fromOffset(936,438), UDim2.fromOffset
 local tasksText = text(tasks, "", UDim2.fromScale(0.05, 0.03), UDim2.fromScale(0.9, 0.94), 14)
 tasksText.TextYAlignment = Enum.TextYAlignment.Top
 tasksText.TextXAlignment = Enum.TextXAlignment.Left
+hud.Visible=false staminaHud.Visible=false tasks.Visible=false
 local caption = frame(canvas, "Caption", UDim2.fromOffset(310,116), UDim2.fromOffset(660,74))
 caption.Visible = false
 local captionText = text(caption, "", UDim2.fromScale(0.04, 0.05), UDim2.fromScale(0.92, 0.9), 16)
@@ -501,6 +502,7 @@ remote.OnClientEvent:Connect(function(action, data)
   adminButton.Visible = data.admin and data.started and not data.ended
   if not data.started or data.ended then adminPanel.Visible=false end
   title.Visible = not data.started
+  staminaHud.Visible = data.started
   hud.Visible = data.started
   tasks.Visible = data.started
   sanityText.Text = "SANITY " .. math.ceil(data.sanity) .. "%"
