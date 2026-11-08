@@ -34,6 +34,8 @@ local cursorFree = false
 local lobbyWalking=false
 local wallet={balance=0,owned={Wanderer=true},selected="Wanderer",persistent=false}
 local queueMode=nil
+local shopPendingEnter=false
+local shop -- declared before title Play callback
 local flashlightOn = true
 local lastCameraMode = ""
 local active = nil
@@ -126,18 +128,12 @@ subtitle.TextXAlignment=Enum.TextXAlignment.Left
 local tagline=text(title,"Choose who you are before the house remembers you.",UDim2.fromOffset(64,340),UDim2.fromOffset(780,32),17)
 tagline.TextXAlignment=Enum.TextXAlignment.Left tagline.TextColor3=Color3.fromRGB(179,179,158)
 local titleHousehold=text(title,"EXPLORERS CONNECTED · 1",UDim2.fromOffset(880,60),UDim2.fromOffset(330,32),14)
-text(title,"CHOOSE HOW THE HOUSE REMEMBERS YOU",UDim2.fromOffset(64,426),UDim2.fromOffset(800,28),13).TextXAlignment=Enum.TextXAlignment.Left
-local descriptions={"A gentler descent. More recovery, quieter nights.","The house notices. Balanced sanity and disturbances.","Memories slip faster. Less comfort, more disturbances."}
-for i, mode in ipairs({"Easy", "Intermediate", "Hard"}) do
- local card=button(title,"",UDim2.fromOffset(64+(i-1)*390,472),UDim2.fromOffset(370,116),function() remote:FireServer("Queue",mode) end)
- local label=text(card,string.upper(mode),UDim2.fromOffset(20,15),UDim2.fromOffset(330,28),21)
- label.TextXAlignment=Enum.TextXAlignment.Left
- local detail=text(card,descriptions[i],UDim2.fromOffset(20,52),UDim2.fromOffset(330,50),14)
- detail.TextXAlignment=Enum.TextXAlignment.Left detail.TextColor3=Color3.fromRGB(187,183,162)
- detail.Size=UDim2.fromOffset(330,35)
- button(card,"DEPART SOLO",UDim2.fromOffset(180,84),UDim2.fromOffset(170,26),function() remote:FireServer("Start",mode) end)
- text(card,"JOIN BUS · 15s",UDim2.fromOffset(20,84),UDim2.fromOffset(155,26),12).TextXAlignment=Enum.TextXAlignment.Left
-end
+text(title,"YOUR JOURNEY BEGINS AT THE LAST BUS STOP",UDim2.fromOffset(64,426),UDim2.fromOffset(1000,28),15).TextXAlignment=Enum.TextXAlignment.Left
+button(title,"PLAY",UDim2.fromOffset(64,472),UDim2.fromOffset(470,100),function()
+ shopPendingEnter=true
+ remote:FireServer("EnterLobby")
+end)
+text(title,"Visit Ward & Thread for classes. Choose a difficulty at the bus pads or ticket kiosk.",UDim2.fromOffset(566,478),UDim2.fromOffset(630,90),20).TextXAlignment=Enum.TextXAlignment.Left
 text(title,"EXPLORE TOGETHER / Your clues, sanity and endings remain your own.",UDim2.fromOffset(64,616),UDim2.fromOffset(1150,28),14).TextXAlignment=Enum.TextXAlignment.Left
 text(title,"WASD move · Hold E interact · M release mouse · G district guide · F flashlight",UDim2.fromOffset(64,662),UDim2.fromOffset(1150,24),12).TextXAlignment=Enum.TextXAlignment.Left
 local balanceText=text(title,"MEMORY SHARDS · loading…",UDim2.fromOffset(880,106),UDim2.fromOffset(330,35),17)
@@ -150,9 +146,10 @@ local lobbyMenu=button(canvas,"LOBBY / L",UDim2.fromOffset(1100,26),UDim2.fromOf
  lobbyWalking=false title.Visible=true
 end)
 lobbyMenu.Visible=false
+local worldClock=text(canvas,"DAY 1 · 17:00",UDim2.fromOffset(880,674),UDim2.fromOffset(360,26),15)
 local floatingQueue=text(canvas,"",UDim2.fromOffset(28,184),UDim2.fromOffset(300,60),17)
 floatingQueue.Visible=false
-local shop=frame(title,"ClassesAndShards",UDim2.fromOffset(36,35),UDim2.fromOffset(1208,650))
+shop=frame(canvas,"ClassesAndShards",UDim2.fromOffset(36,35),UDim2.fromOffset(1208,650))
 shop.ZIndex=30 shop.Visible=false
 text(shop,"CLASSES / MEMORY SHARDS",UDim2.fromOffset(28,20),UDim2.fromOffset(900,45),30).TextXAlignment=Enum.TextXAlignment.Left
 local shopBalance=text(shop,"",UDim2.fromOffset(28,70),UDim2.fromOffset(1100,35),17)
@@ -185,12 +182,6 @@ local function updateWallet()
   b.Text=wallet.selected==id and "EQUIPPED" or wallet.owned[id] and "EQUIP" or "UNLOCK / "..Config.Classes[id].cost.." SHARDS"
  end
 end
-button(title,"CLASSES & SHARDS",UDim2.fromOffset(64,383),UDim2.fromOffset(260,36),function()
- shop.Visible=true modalReason="classes" updateWallet()
-end)
-button(title,"EXPLORE LOBBY",UDim2.fromOffset(344,383),UDim2.fromOffset(235,36),function()
- shop.Visible=false modalReason=nil lobbyWalking=true title.Visible=false
-end)
 updateWallet()
 local menuBlur=Instance.new("BlurEffect") menuBlur.Name="SpareRoomMenuBlur" menuBlur.Size=6 menuBlur.Parent=game:GetService("Lighting")
 local modal = frame(canvas, "Reading", UDim2.fromScale(0.12, 0.13), UDim2.fromScale(0.76, 0.72))
@@ -551,9 +542,15 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 UserInputService.WindowFocusReleased:Connect(function() remote:FireServer("Sprint", false) end)
 remote.OnClientEvent:Connect(function(action, data)
- if action=="Economy" then
+ if action=="OpenClassShop" then
+  shop.Visible=true modalReason="classes" updateWallet()
+ elseif action=="WorldClock" then
+  local h=math.floor(data.hour) local m=math.floor((data.hour-h)*60)
+  worldClock.Text=string.format("DAY %d · %02d:%02d",data.day,h,m)
+ elseif action=="Economy" then
   wallet=data updateWallet()
  elseif action=="EconomyStatus" then
+  if lobbyWalking then showCaption(data,7) end
   shopStatus.Text=data
   queueText.Text=data
  elseif action=="Queue" then
@@ -562,6 +559,9 @@ remote.OnClientEvent:Connect(function(action, data)
   queueText.Text=message floatingQueue.Text=message leaveQueue.Visible=data.mode~=nil
  elseif action == "State" then
   current = data
+  if shopPendingEnter and not data.started then
+   shopPendingEnter=false lobbyWalking=true modalReason=nil shop.Visible=false
+  end
   if data.started then
    lobbyWalking=false shop.Visible=false
    if modalReason=="classes" then modalReason=nil end

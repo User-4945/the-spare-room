@@ -246,7 +246,7 @@ local function valid(player, part)
  local root = position(player)
  if not s or not root or not part or not part:IsDescendantOf(items) then return false end
  local role=value(part,"Role")
- local lobbyItem=role=="lobbyQueue" or role=="lobbyNote"
+ local lobbyItem=role=="lobbyQueue" or role=="lobbyNote" or role=="lobbyShop" or role=="lobbySolo"
  if lobbyItem then
   if s.started or s.reading then return false end
  elseif paused(s) then return false end
@@ -271,6 +271,12 @@ local function interact(player, part)
  local role = value(part, "Role")
  if role=="lobbyQueue" then
   lobby:join(player,value(part,"Mode"))
+ elseif role=="lobbyShop" then
+  if lobby.membership[player] then economyStatus(player,"Leave the departure queue before shopping.")
+  else economy:publish(player) remote:FireClient(player,"OpenClassShop") end
+ elseif role=="lobbySolo" then
+  local mode=value(part,"Mode")
+  if Config.Modes[mode] then lobby:leave(player) reset(player,mode) end
  elseif role=="lobbyNote" then
   read(player,part,value(part,"Text"),0)
  elseif role == "diary" then
@@ -353,7 +359,9 @@ local function interact(player, part)
  end
  snapshot(player)
 end
-Lighting.ClockTime = 0
+Lighting.ClockTime = 17
+local worldSeconds=0
+local worldDay=1
 Lighting.GlobalShadows = true
 Lighting.EnvironmentDiffuseScale = 0.35
 Lighting.EnvironmentSpecularScale = 0.65
@@ -555,7 +563,7 @@ remote.OnServerEvent:Connect(function(player, action, data)
   snapshot(player)
   return
  end
- if action=="Lobby" then returnLobby(player) return end
+ if action=="Lobby" or action=="EnterLobby" then returnLobby(player) return end
  if action=="Queue" then
   if now-(s.lastLobbyRequest or -10)<0.4 then return end s.lastLobbyRequest=now
   if data=="Leave" then lobby:leave(player) elseif typeof(data)=="string" then lobby:join(player,data) end return
@@ -639,6 +647,15 @@ end
 local accumulator = 0
 local lobbyAccumulator=0
 RunService.Heartbeat:Connect(function(dt)
+ -- One shared 12-minute day: keeps advancing while reading or in the safe lobby.
+ worldSeconds+=dt
+ worldDay=math.floor((17+worldSeconds/30)/24)+1
+ local hour=(17+worldSeconds/30)%24
+ Lighting.ClockTime=hour
+ local daylight=math.clamp(math.sin((hour-6)/12*math.pi),0,1)
+ Lighting.Brightness=1.2+daylight*1.3
+ Lighting.OutdoorAmbient=Color3.fromRGB(48+daylight*65,55+daylight*65,63+daylight*62)
+ Lighting.ExposureCompensation=-0.1+daylight*0.15
  lobbyAccumulator+=dt
  if lobbyAccumulator>=0.5 then local elapsed=lobbyAccumulator lobbyAccumulator=0 lobby:step(elapsed) end
  accumulator += dt
@@ -696,7 +713,10 @@ RunService.Heartbeat:Connect(function(dt)
     end
    end
   end
-  if accumulator >= 0.5 then snapshot(player) end
+  if accumulator >= 0.5 then
+   remote:FireClient(player,"WorldClock",{hour=Lighting.ClockTime,day=worldDay})
+   snapshot(player)
+  end
  end
  if accumulator >= 0.5 then accumulator = 0 end
 end)

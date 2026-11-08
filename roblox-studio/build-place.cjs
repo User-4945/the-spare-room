@@ -267,10 +267,10 @@ const buildPlace=function buildRobloxPlace(sources) {
  for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,8,.2,.25,.65,[161,158,135],"SmoothPlastic");
  add("FuseWarning",3.3,6,8,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
  // The Last Bus Stop: a separate safe staging area east of Ashfield.
- add("LobbyGround",400,-.5,0,100,1,90,[45,52,47],"Concrete");
+ add("LobbyGround",400,-.5,0,180,1,160,[45,52,47],"Concrete");
  add("LobbyRoad",400,.02,-25,100,.12,14,[36,39,38],"Slate",{},false);
- for(const side of [-1,1])wall("LobbyBoundary",400+side*50,0,0,1,12,90);
- wall("LobbyBack",400,0,45,100,12,1);wall("LobbyFront",400,0,-45,100,12,1);
+ for(const side of [-1,1])wall("LobbyBoundary",400+side*90,0,0,1,12,160);
+ wall("LobbyBack",400,0,80,180,12,1);wall("LobbyFront",400,0,-80,180,12,1);
  add("BusStopShelterRoof",400,10,13,31,.5,12,[40,52,46],"Metal");
  for(const x of [385,415])for(const z of [8,18])add("ShelterPost",x,5,z,.25,10,.25,[94,106,90],"Metal");
  add("ShelterGlass",400,5,18,29,9,.15,[102,127,119],"Glass",{},false,.55);
@@ -291,6 +291,45 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("BusDestination",432,4.5,-39.6,8,1.4,.1,[17,27,21],"Metal",{Sign:"ASHFIELD / LAST SERVICE"},false);
  for(const x of [377,423]){add("LobbyLampPost",x,7,12,.25,14,.25,[72,79,67],"Metal");add("Lamp",x,14,12,1.5,.3,1.5,[229,204,145],"Metal",{},false);}
  prop("LobbyPracticeNote","lobbyNote","The last timetable","Read the timetable",389,3,14,1.2,.1,1,{Text:"Hold E to interact. New diary pages earn 2 Memory Shards each; each first story ending earns 40. Rewards are once per account, not per restart. The lobby is safe. No purchases are needed to enter the house."});
+ // Courtyard paving, planted borders, shops and a sheltered waiting garden.
+ for(let x=320;x<=480;x+=8)for(let z=24;z<=72;z+=8)add("CourtyardPaver",x,.035,z,7.7,.07,7.7,[83+(x%3)*3,86,77],"Slate",{},false);
+ for(const x of [325,475])for(const z of [-58,-5,40,68]){
+  add("LobbyPlanter",x,1,z,5,2,5,[85,88,76],"Brick");
+  add("LobbyShrub",x,2.5,z,4,2,4,[43,66,45],"Grass");
+  add("LobbyLampPost",x+4,7,z,.22,14,.22,[62,70,61],"Metal");add("Lamp",x+4,14,z,1.4,.3,1.4,[226,205,151],"Metal",{},false);
+ }
+ for(const x of [370,400,430]){
+  add("CourtyardBench",x,1.8,62,10,.3,2,[105,82,57]);
+  add("CourtyardBenchBack",x,3,63,10,2,.2,[105,82,57]);
+  for(const dx of [-4,4])add("CourtyardBenchLeg",x+dx,.85,62,.3,1.7,1.5,[64,70,61],"Metal");
+ }
+ // The class shop has a six-stud doorway, counter, display tables and four outfits.
+ wall("ClassShopBack",347,0,49,32,12,.5);
+ wall("ClassShopSide",331,0,35,.5,12,28);wall("ClassShopSide",363,0,35,.5,12,28);
+ wall("ClassShopFrontLeft",337.5,0,21,13,12,.5);wall("ClassShopFrontRight",356.5,0,21,13,12,.5);
+ wall("ClassShopDoorHeader",347,9,21,6,3,.5);
+ add("ClassShopRoof",347,12.2,35,33,.4,29,[47,56,48],"Slate");
+ add("ClassShopSign",347,10,20.6,25,1.6,.15,[33,57,46],"Metal",{Sign:"WARD & THREAD / CLASS OUTFITTERS"},false);
+ add("ClassShopCounter",347,1.8,40,19,3.6,2.5,[86,72,51]);
+ add("Lamp",347,11,32,1.6,.2,1.6,[229,205,146],"Metal",{},false);
+ prop("ClassShopkeeper","lobbyShop","Ward & Thread","Browse classes and Memory Shards",347,3.8,38.5,1.2,.2,1,{Text:"Choose your work before you return to the house."});
+ for(const [i,name]of ["WANDERER","ARCHIVIST","COURIER","CARETAKER"].entries()){
+  const x=335+i*8;
+  add("ClassDisplayPlinth",x,.5,46,3,1,3,[65,73,61]);
+  add("ClassDisplayCoat",x,3,46,1.7,3,1,[82+i*14,91+i*8,75+i*5],"Fabric",{},false);
+  add("ClassDisplayHead",x,5.05,46,1,1,1,[151,142,119],"Wood",{},false);
+  add("ClassDisplayPlaque",x,1.1,44.4,3,.8,.1,[30,45,36],"Metal",{Sign:name},false);
+ }
+ // Open-front ticket kiosk: difficulty belongs to departure, never the title screen.
+ add("TicketKioskRoof",454,8,30,23,.4,13,[55,65,52],"Metal");
+ for(const x of [443,465])for(const z of [24,36])add("KioskPost",x,4,z,.25,8,.25,[90,99,79],"Metal");
+ add("KioskCounter",454,1.8,32,20,3.6,2,[93,78,53]);
+ add("TicketSign",454,6.6,24,20,1.6,.15,[28,48,39],"Metal",{Sign:"ASHFIELD TICKETS / SOLO DEPARTURES"},false);
+ for(const [i,mode]of ["Easy","Intermediate","Hard"].entries())
+  prop("SoloTicket"+mode,"lobbySolo",mode+" ticket","Depart solo / "+mode,447+i*7,3.7,30.5,1,.15,1,{Mode:mode});
+ add("NoticeBoard",400,4,49,20,7,.4,[85,69,47]);
+ add("NoticeBoardPaper",400,4.5,48.7,17,5,.1,[170,164,134],"Fabric",{Sign:"ASHFIELD VISITORS\nCLASS SHOP WEST / TICKETS EAST\nBUSES LEAVE FROM THE FRONT PADS"},false);
+ for(let i=0;i<8;i++)add("CourtyardBollard",372+i*8,1.4,21,.45,2.8,.45,[79,85,73],"Metal");
  const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>400</X><Y>0.1</Y><Z>5</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
