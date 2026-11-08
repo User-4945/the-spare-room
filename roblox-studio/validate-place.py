@@ -43,10 +43,10 @@ for node in all_items:
     parts.append(info)
     if "Role" in extra:
         roles.append(info)
-assert len(parts) == 1848
-assert len(roles) == 71
+assert len(parts) == 2191
+assert len(roles) == 76
 assert {int(p["extra"]["Index"]) for p in roles if p["extra"]["Role"] == "diary"} == set(range(1, 21))
-assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 12
+assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 17
 assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} == {"morning", "names", "seal", "tomorrow", "glass", "blueprint", "lullaby", "letters"}
 assert len([p for p in parts if p["name"] == "RoomSign"]) == 10
 assert len([i for i in all_items if i.attrib["class"] == "SpawnLocation"]) == 1
@@ -89,7 +89,7 @@ server = (root / "SpareRoomServer.server.lua").read_text()
 assert "prompt.HoldDuration = 0.8" in server and "prompt.RequiresLineOfSight = true" in server
 assert 'damage(player, cost)' in server and 'action == "ReadClosed"' in server
 assert 's.sandwichAt = s.time + 120' in server
-print("PASS: XML, unique references, exact embedded sources, 1848 parts, 71 standing-accessible interactions, 20 diary pages, 14 rooms, chamber gate and eight choice endings and two death outcomes")
+print("PASS: XML, unique references, exact embedded sources, 2191 parts, 76 standing-accessible interactions, 20 diary pages, 14 rooms, chamber gate and eight choice endings and two death outcomes")
 
 
 assert len([p for p in parts if p["name"] == "VenueSign"]) == 8
@@ -125,3 +125,8 @@ assert '"Start",mode' not in client and '"Queue",mode' not in client
 assert 'shop=frame(canvas,"ClassesAndShards"' in client
 assert 'Lighting.ClockTime=hour' in server
 print("PASS: physical class shop, three solo ticket prompts, Play-only title and shared world clock")
+
+assert {"park_dedication","park_drawing","school_register","school_letter","school_report"} <= {p["extra"].get("Index") for p in roles}
+assert len([p for p in parts if p["name"]=="SchoolWindowGlass"])==4
+assert 'Lighting.ClockTime = 8' in server and '(8+worldSeconds/30)' in server
+print("PASS: park and school clues are reachable from town; four school windows and shared day/night clock")

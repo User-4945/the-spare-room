@@ -23,7 +23,7 @@ local destinations = {
  Upstairs = Vector3.new(0,16,8), House = Vector3.new(0,4,-15), Garden = Vector3.new(0,4,35), Basement = Vector3.new(0,-14,-12),
  Cinema = Vector3.new(-96,4,-79), Archive = Vector3.new(-56,4,-79), Clinic = Vector3.new(-16,4,-79),
  Station = Vector3.new(24,4,-79), Workshop = Vector3.new(64,4,-79), Costumes = Vector3.new(104,4,-79),
- Bookshop = Vector3.new(-76,4,-11), Cafe = Vector3.new(76,4,-11),
+ Park = Vector3.new(-85,4,35), School = Vector3.new(85,4,38), Bookshop = Vector3.new(-76,4,-11), Cafe = Vector3.new(76,4,-11),
 }
 local Revive = require(ReplicatedStorage:WaitForChild("SpareRoomRevive"))
 local states = {}
@@ -359,7 +359,7 @@ local function interact(player, part)
  end
  snapshot(player)
 end
-Lighting.ClockTime = 17
+Lighting.ClockTime = 8
 local worldSeconds=0
 local worldDay=1
 Lighting.GlobalShadows = true
@@ -649,8 +649,8 @@ local lobbyAccumulator=0
 RunService.Heartbeat:Connect(function(dt)
  -- One shared 12-minute day: keeps advancing while reading or in the safe lobby.
  worldSeconds+=dt
- worldDay=math.floor((17+worldSeconds/30)/24)+1
- local hour=(17+worldSeconds/30)%24
+ worldDay=math.floor((8+worldSeconds/30)/24)+1
+ local hour=(8+worldSeconds/30)%24
  Lighting.ClockTime=hour
  local daylight=math.clamp(math.sin((hour-6)/12*math.pi),0,1)
  Lighting.Brightness=1.2+daylight*1.3

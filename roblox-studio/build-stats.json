@@ -1,6 +1,6 @@
 {
-  "parts": 1848,
-  "interactables": 71,
+  "parts": 2191,
+  "interactables": 76,
   "basementRooms": 10,
   "diaryEntries": 20,
   "upstairsRooms": 4,
@@ -8,6 +8,8 @@
   "anomalies": 12,
   "venues": 8,
   "npcs": 11,
+  "park": 1,
+  "schoolRooms": 4,
   "classes": 4,
   "shardPacks": 3,
   "lobbyCapacity": 4

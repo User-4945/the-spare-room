@@ -146,7 +146,7 @@ local lobbyMenu=button(canvas,"LOBBY / L",UDim2.fromOffset(1100,26),UDim2.fromOf
  lobbyWalking=false title.Visible=true
 end)
 lobbyMenu.Visible=false
-local worldClock=text(canvas,"DAY 1 · 17:00",UDim2.fromOffset(880,674),UDim2.fromOffset(360,26),15)
+local worldClock=text(canvas,"DAY 1 · 08:00",UDim2.fromOffset(880,674),UDim2.fromOffset(360,26),15)
 local floatingQueue=text(canvas,"",UDim2.fromOffset(28,184),UDim2.fromOffset(300,60),17)
 floatingQueue.Visible=false
 shop=frame(canvas,"ClassesAndShards",UDim2.fromOffset(36,35),UDim2.fromOffset(1208,650))
@@ -262,7 +262,7 @@ local function openMap()
  heading.Text="ASHFIELD / DISTRICT GUIDE"
  local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
  local location=root and root.Position.Y < -6 and "Beneath the house" or root and root.Position.Y>12 and "Upstairs" or "House and district"
- body.Text="YOU ARE: "..location.."\n\nLeave through the house's front entrance. Follow the path to the road.\n\nACROSS THE ROAD — west to east\nThe Palladium cinema · Municipal Archive · St. Agnes Clinic · Ashfield Station · Ward & Sons · Velvet & Ash\n\nON THE HOUSE SIDE\nThe Second Copy bookshop to the west. The Empty Chair cafe to the east.\n\nAT HOME\nClimb the hall staircase to the study, nursery, loft and family bedroom. Look for hidden notes and unfinished tasks. The garden is behind the house. The maintenance hatch at the end of the hallway leads below. Use the return stairs to come home.\n\nPlaces change what you notice. Read the correspondence in every venue."
+ body.Text="YOU ARE: "..location.."\n\nLeave through the house's front entrance. Follow the path to the road.\n\nACROSS THE ROAD — west to east\nThe Palladium cinema · Municipal Archive · St. Agnes Clinic · Ashfield Station · Ward & Sons · Velvet & Ash\n\nON THE HOUSE SIDE\nThe Second Copy bookshop to the west. The Empty Chair cafe to the east.\n\nNEW PLACES\nAshfield Memorial Park is southwest of the house. Ashfield Primary School is southeast. Follow the side footpaths from the pavement and read the memorial, drawings and school records.\n\nAT HOME\nClimb the hall staircase to the study, nursery, loft and family bedroom. Look for hidden notes and unfinished tasks. The garden is behind the house. The maintenance hatch at the end of the hallway leads below. Use the return stairs to come home.\n\nPlaces change what you notice. Read the correspondence in every venue."
  closeButton.Text="Fold the map"
  chooseButton.Visible=false
  modal.Visible=true

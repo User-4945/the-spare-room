@@ -266,6 +266,60 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("FuseBoxCase",3.6,5,8,.3,2.5,1.8,[68,75,71],"Metal");
  for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,8,.2,.25,.65,[161,158,135],"SmoothPlastic");
  add("FuseWarning",3.3,6,8,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
+ // Two permanent district destinations, reached on foot from the house-side pavement.
+ for(const x of [-48,48])add("DistrictFootpath",x,.04,35,5,.08,130,[113,112,98],"Concrete",{},false);
+ add("ParkEntrancePath",-80,.04,27,64,.08,5,[113,112,98],"Concrete",{},false);
+ add("SchoolEntrancePath",82,.04,29,72,.08,5,[113,112,98],"Concrete",{},false);
+ add("ParkLawn",-85,-.1,68,64,.2,76,[59,78,49],"Grass",{},false);
+ add("ParkWalk",-85,.04,65,5,.08,76,[124,116,94],"Concrete",{},false);
+ add("ParkCrossWalk",-85,.04,65,60,.08,5,[124,116,94],"Concrete",{},false);
+ add("ParkSign",-96,5,29,22,2,.25,[32,66,44],"Wood",{Sign:"ASHFIELD MEMORIAL PARK"},false);
+ for(const x of [-114,-56])for(const z of [38,54,78,96]){
+  add("ParkTreeTrunk",x,5,z,1.1,10,1.1,[82,65,43]);
+  add("ParkCanopy",x,11,z,7,7,7,[37,66,39],"Grass",{},false);
+ }
+ for(const x of [-98,-72])for(const z of [47,83]){
+  add("ParkBenchSeat",x,1.7,z,8,.3,2,[106,82,51]);add("ParkBenchBack",x,2.8,z+1,8,2,.2,[106,82,51]);
+  for(const dx of [-3,3])add("ParkBenchLeg",x+dx,.8,z,.25,1.6,1.5,[59,69,57],"Metal");
+ }
+ add("MemorialStone",-103,2.2,65,4,4.4,2,[102,110,102],"Slate");
+ add("MemorialPlaque",-103,3,63.9,3.5,1.4,.1,[77,84,66],"Metal",{Sign:"FOR THOSE WE STILL REMEMBER"},false);
+ prop("ParkMemorialNote","record","The omitted dedication","Read the dedication",-103,2,63.8,1.3,.8,.1,{Index:"park_dedication",Text:"The mason charged for five names. Four lines have been filled. The fifth is polished smooth, but its letters are still visible when rain settles in the stone."});
+ add("ParkGazeboRoof",-85,9,96,16,.35,12,[67,78,59],"Slate");
+ for(const x of [-92,-78])for(const z of [91,101])add("GazeboPost",x,4.5,z,.25,9,.25,[135,123,91]);
+ desk(-85,0,97,6,2);
+ prop("ParkLostDrawing","record","The picnic drawing","Inspect the drawing",-85,3.5,97,1.2,.1,.9,{Index:"park_drawing",Text:"Two adults and three children sit beneath this shelter. Someone has pencilled YOU above a different child in each copy. A red bicycle leans against a tree."});
+ // School: reception hall, two classrooms, library and rear playground.
+ add("SchoolFloor",85,-.25,65,64,.5,64,[127,116,91],"WoodPlanks");
+ for(const x of [53,117]){
+  for(const [a,b]of [[33,41],[47,71],[77,97]])wall("SchoolWindowPier",x,0,(a+b)/2,.5,12,b-a);
+  for(const z of [44,74]){
+   wall("SchoolWindowSill",x,0,z,.5,3,6);wall("SchoolWindowLintel",x,8,z,.5,4,6);
+   add("SchoolWindowGlass",x,5.5,z,.15,5,6,[99,133,143],"Glass",{},true,.5);
+   add("SchoolWindowMullion",x,5.5,z,.3,5,.15,[165,169,149],"Metal");
+  }
+ }wall("SchoolBack",85,0,97,64,12,.5);
+ wall("SchoolFrontLeft",67.5,0,33,29,12,.5);wall("SchoolFrontRight",102.5,0,33,29,12,.5);wall("SchoolEntryHeader",85,9,33,6,3,.5);
+ add("SchoolRoof",85,12.25,65,65,.5,65,[62,72,64],"Slate");
+ add("SchoolSign",85,10,32.6,49,1.8,.15,[46,69,81],"Metal",{Sign:"ASHFIELD PRIMARY SCHOOL"},false);
+ for(const x of [81,89]){
+  for(const [a,b]of [[33,43],[49,73],[79,97]])wall("SchoolHallWall",x,0,(a+b)/2,.35,12,b-a);
+  for(const z of [46,76])wall("SchoolDoorHeader",x,9,z,.35,3,6);
+ }
+ for(const x of [67,103])wall("SchoolRoomDivider",x,0,61,28,12,.35);
+ for(const x of [67,85,103])for(const z of [46,78])add("Lamp",x,11.3,z,1.2,.2,1.2,[226,211,162],"Metal",{},false);
+ for(const x of [60,68,76])for(const z of [44,50,56]){desk(x,0,z,3,1.8);chair(x,0,z+2);}
+ add("ClassroomBlackboard",67,5,33.4,19,4,.15,[35,55,42],"Slate",{Sign:"OUR FAMILY / DRAW EVERYONE AT HOME",Side:"Back"},false);
+ desk(102,0,47,7,3);chair(102,0,50);
+ prop("SchoolRegister","record","The attendance register","Read the register",102,3.5,47,1.3,.1,1,{Index:"school_register",Text:"Three children at the same address. One entry has been marked transferred; the destination column is blank. Mum's signature appears beside all three. The youngest child's height is recorded in your handwriting."});
+ for(const x of [58,61])for(let n=1;n<=4;n++)add("SchoolLibraryShelf",x,n*1.8,80,2,.15,23,[98,80,54]);
+ desk(69,0,79,6,3);chair(69,0,82);
+ prop("SchoolLibraryLetter","record","A letter never collected","Read the teacher's letter",69,3.5,79,1.2,.1,.9,{Index:"school_letter",Text:"Dear parent: your children continue to describe a room absent from the approved plans. Please do not correct their drawings before our meeting. The envelope is addressed to Dad. It has never been opened."});
+ for(const x of [96,104,112])for(const z of [70,77,84]){desk(x,0,z,3,1.8);chair(x,0,z+2);}
+ prop("SchoolReportBoard","record","The duplicated school report","Inspect the school report",103,4,96.6,1.3,1.2,.1,{Index:"school_report",Text:"Both reports praise a drawing of the park. Different first names, identical marks, identical date. The teacher has written: Neither child is copying. Please keep both originals."});
+ for(const [x,z]of [[-83,34],[-83,86],[49,28],[120,36],[120,90]]){
+  add("DistrictNewLampPost",x,7,z,.2,14,.2,[53,67,58],"Metal");add("Lamp",x,14,z,1.4,.3,1.4,[227,207,153],"Metal",{},false);
+ }
  // The Last Bus Stop: a separate safe staging area east of Ashfield.
  add("LobbyGround",400,-.5,0,180,1,160,[45,52,47],"Concrete");
  add("LobbyRoad",400,.02,-25,100,.12,14,[36,39,38],"Slate",{},false);
@@ -334,7 +388,7 @@ const buildPlace=function buildRobloxPlace(sources) {
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
  const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars)+script("ModuleScript","SpareRoomRevive",sources.revive)+script("ModuleScript","SpareRoomEconomy",sources.economy)+script("ModuleScript","SpareRoomLobby",sources.lobby))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:10,anomalies:12,venues:8,npcs:11,classes:4,shardPacks:3,lobbyCapacity:4}};
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:10,anomalies:12,venues:8,npcs:11,park:1,schoolRooms:4,classes:4,shardPacks:3,lobbyCapacity:4}};
 };
 const dir=__dirname;
 const result=buildPlace({economy:fs.readFileSync(path.join(dir,"SpareRoomEconomy.lua"),"utf8"),lobby:fs.readFileSync(path.join(dir,"SpareRoomLobby.lua"),"utf8"),config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),revive:fs.readFileSync(path.join(dir,"SpareRoomRevive.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});
