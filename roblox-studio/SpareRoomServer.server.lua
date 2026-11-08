@@ -28,6 +28,9 @@ local destinations = {
 local Revive = require(ReplicatedStorage:WaitForChild("SpareRoomRevive"))
 local states = {}
 local prompts = {}
+local economy, lobby
+local lobbySpawn=Vector3.new(400,4,5)
+local function classStats(s) return Config.Classes[s.classId or "Wanderer"] or Config.Classes.Wanderer end
 local function value(part, name)
  local v = part:FindFirstChild(name)
  return v and v.Value or ""
@@ -64,7 +67,7 @@ local function snapshot(player)
  end
  table.sort(journal)
  remote:FireClient(player, "State", {
-  household = household, observed = observed, admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, sanity = s.sanity, stamina = s.stamina,
+  household = household, observed = observed, admin = isAdmin(player), flying = s.flying == true, day = s.day or 1, started = s.started, mode = s.mode, classId=s.classId or "Wanderer", sanity = s.sanity, stamina = s.stamina,
   diary = count(s.diary), records = count(s.records), rooms = count(s.rooms),
   anomalies = count(s.anomalies), hasKey = s.key, journal = journal,
   sandwich = math.max(0, math.ceil(s.sandwichAt - s.time)),
@@ -94,6 +97,7 @@ local function finish(player, id)
  if not s or s.ended or not ending then return end
  s.ended = id
  s.journal[id] = true
+ if economy and id~="consumed" and id~="fallen" then task.spawn(function() economy:award(player,"ending:"..id,40) end) end
  s.sprint = false
  s.active=nil s.flying=false
  if id=="consumed" then
@@ -108,7 +112,7 @@ end
 local function damage(player, amount)
  local s = states[player]
  if not s or s.ended then return end
- local loss = amount * Config.Modes[s.mode].damage
+ local loss = amount * Config.Modes[s.mode].damage * classStats(s).damage
  s.sanity = math.max(0, s.sanity - loss)
  if loss > 2 then remote:FireClient(player, "SanityHit", loss) end
  if s.sanity <= 0 then finish(player, "consumed") end
@@ -119,7 +123,7 @@ end
 local function reset(player, mode)
  local old = states[player]
  states[player] = {
-  started = true, mode = mode, sanity = 100, stamina = 100, diary = {}, records = {}, rooms = {},
+  classId=economy and economy:class(player) or "Wanderer", started = true, mode = mode, sanity = 100, stamina = 100, diary = {}, records = {}, rooms = {},
   anomalies = {}, journal = old and old.journal or {}, canSave = old and old.canSave or false,
   flags = {}, key = false, sandwichAt = 0, time = 0, nextAnomaly = Config.Modes[mode].delay,
   active = nil, menu = false, reading = nil, ended = nil, sprint = false, exhausted = false,
@@ -186,10 +190,66 @@ MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId,id)
  local player=Players:GetPlayerByUserId(userId)
  if player then reviveGate:purchaseFinished(player,id) end
 end)
+-- Currency is separate from revive credits; product filters never overlap.
+local Economy=require(ReplicatedStorage:WaitForChild("SpareRoomEconomy"))
+local Lobby=require(ReplicatedStorage:WaitForChild("SpareRoomLobby"))
+local economyOK,economyStore=pcall(function() return DataStoreService:GetDataStore("SpareRoomMemoryShards_v1") end)
+if not economyOK then economyStore={GetAsync=function() error("Storage unavailable") end,UpdateAsync=function() error("Storage unavailable") end} end
+local products,productIds={},{}
+for _,pack in ipairs(Config.ShardPacks) do
+ if pack.productId>0 and pack.productId~=Config.ReviveProductId and not products[pack.productId] then
+  products[pack.productId]=pack.amount table.insert(productIds,pack.productId)
+ end
+end
+local shardReceiptsReady=false
+local function inLobby(player) local s=states[player] return s~=nil and not s.started end
+local function economyStatus(player,message)
+ if player.Parent==Players then remote:FireClient(player,"EconomyStatus",message) end
+end
+economy=Economy.new({store=economyStore,classes=Config.Classes,products=products,market=MarketplaceService,
+ player=function(id) return Players:GetPlayerByUserId(id) end,present=function(p) return p.Parent==Players end,
+ lobby=inLobby,wait=function() task.wait() end,ready=function() return shardReceiptsReady end,
+ send=function(p,data) remote:FireClient(p,"Economy",data) end,status=economyStatus})
+if #productIds>0 then
+ local ok,err=pcall(function()
+  MarketplaceService:BindReceiptHandler(Enum.ReceiptType.DeveloperProduct,function(info)
+   return economy:receipt(info) and Enum.ReceiptDecision.Processed or Enum.ReceiptDecision.NotProcessedYet
+  end,productIds)
+ end)
+ shardReceiptsReady=ok
+ if not ok then warn("Shard checkout disabled: "..tostring(err)) end
+end
+MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId,id)
+ local p=Players:GetPlayerByUserId(userId) if p then economy:closed(p,id) end
+end)
+lobby=Lobby.new({modes=Config.Modes,available=inLobby,status=economyStatus,
+ send=function(p,data) if p.Parent==Players then remote:FireClient(p,"Queue",data) end end,
+ move=function(p,mode)
+  local x=mode=="Easy" and 378 or mode=="Intermediate" and 400 or 422
+  if p.Character then p.Character:PivotTo(CFrame.new(x,4,-6)) end
+ end,
+ start=function(p,mode,group)
+  p:SetAttribute("DepartureGroup",group) reset(p,mode)
+ end})
+local function returnLobby(player)
+ local s=states[player] if not s or s.reviveBusy then return end
+ lobby:leave(player)
+ s.started=false s.sanity=100 s.stamina=100 s.ended=nil s.reading=nil s.confirm=nil s.menu=false s.sprint=false s.active=nil s.flying=false
+ remote:FireClient(player,"AnomalyEnd")
+ local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+ if not h or h.Health<=0 then pcall(function() player:LoadCharacterAsync() end) end
+ if player.Character then player.Character:PivotTo(CFrame.new(lobbySpawn)) end
+ snapshot(player) economy:publish(player)
+end
 local function valid(player, part)
  local s = states[player]
  local root = position(player)
- if not s or paused(s) or not root or not part:IsDescendantOf(items) then return false end
+ if not s or not root or not part or not part:IsDescendantOf(items) then return false end
+ local role=value(part,"Role")
+ local lobbyItem=role=="lobbyQueue" or role=="lobbyNote"
+ if lobbyItem then
+  if s.started or s.reading then return false end
+ elseif paused(s) then return false end
  if (root.Position - part.Position).Magnitude > 7.5 then return false end
  local params = RaycastParams.new()
  params.FilterType = Enum.RaycastFilterType.Exclude
@@ -209,11 +269,16 @@ end
 local function interact(player, part)
  local s = states[player]
  local role = value(part, "Role")
- if role == "diary" then
+ if role=="lobbyQueue" then
+  lobby:join(player,value(part,"Mode"))
+ elseif role=="lobbyNote" then
+  read(player,part,value(part,"Text"),0)
+ elseif role == "diary" then
   local n = tonumber(value(part, "Index"))
   if not n or not Config.Diary[n] then return end
   local first = not s.diary[n]
   s.diary[n] = true
+  if first then task.spawn(function() economy:award(player,"diary:"..n,2) end) end
   read(player, part, Config.Diary[n], first and (n > 10 and 3 or 1) or 0)
  elseif role == "record" then
   local id = value(part, "Index")
@@ -249,7 +314,7 @@ local function interact(player, part)
   if s.time < s.sandwichAt then
    tell(player, "The next sandwich is ready in " .. math.ceil(s.sandwichAt - s.time) .. " seconds of active play.")
   else
-   s.sanity = math.min(100, s.sanity + Config.Modes[s.mode].sandwich)
+   s.sanity = math.min(100, s.sanity + Config.Modes[s.mode].sandwich + classStats(s).food)
    s.sandwichAt = s.time + 120
    tell(player, "You eat the sandwich. The kitchen smells ordinary again.")
   end
@@ -382,6 +447,7 @@ local function joined(player)
   started = false, mode = "Easy", sanity = 100, stamina = 100, diary = {}, records = {}, rooms = {},
   anomalies = {}, journal = {}, flags = {}, time = 0, sandwichAt = 0, sequence = 0, nextAnomaly = 45, lastRequest = 0,
  }
+ task.spawn(function() economy:load(player) end)
  if Config.SaveEndingJournal then
   task.spawn(function()
    local ok, saved = pcall(function() return DataStoreService:GetDataStore("SpareRoomRobloxEndings_v1"):GetAsync("u" .. player.UserId) end)
@@ -398,13 +464,19 @@ local function joined(player)
   humanoid.JumpPower = 45
   humanoid.Died:Connect(function()
    local state=states[player]
-   if not state or state.ended or not state.started then return end
+   if not state or state.ended then return end
+   if not state.started then
+    task.delay(2,function()
+     if states[player]==state and not state.started and player.Parent==Players then pcall(function() player:LoadCharacterAsync() end) end
+    end)
+    return
+   end
    finish(player,"fallen")
   end)
   local state=states[player]
   if state and (state.ended=="consumed" or state.ended=="fallen") and not state.reviveBusy then humanoid.Health=0 return end
   task.wait(0.1)
-  if character.Parent then character:PivotTo(CFrame.new(0, 4, -15)) end
+  if character.Parent then character:PivotTo(CFrame.new(state and state.started and Vector3.new(0,4,-15) or lobbySpawn)) end
  end)
  if not player.Character then task.defer(function() pcall(function() player:LoadCharacterAsync() end) end) end
 end
@@ -413,6 +485,7 @@ for _, player in ipairs(Players:GetPlayers()) do joined(player) end
 Players.PlayerRemoving:Connect(function(player)
  local s = states[player]
  if s then saveJournal(player, s) end
+ lobby:leave(player) economy:forget(player)
  states[player] = nil
  reviveGate:forget(player)
 end)
@@ -482,7 +555,19 @@ remote.OnServerEvent:Connect(function(player, action, data)
   snapshot(player)
   return
  end
- if action == "Ready" then snapshot(player) return end
+ if action=="Lobby" then returnLobby(player) return end
+ if action=="Queue" then
+  if now-(s.lastLobbyRequest or -10)<0.4 then return end s.lastLobbyRequest=now
+  if data=="Leave" then lobby:leave(player) elseif typeof(data)=="string" then lobby:join(player,data) end return
+ end
+ if action=="Class" or action=="BuyShards" or action=="ReloadEconomy" then
+  if now-(s.lastEconomyRequest or -10)<1 then return end s.lastEconomyRequest=now
+  if not inLobby(player) or lobby.membership[player] then economyStatus(player,"Leave the departure queue before changing classes or shopping.") return end
+  if action=="Class" and typeof(data)=="string" then economy:unlock(player,data)
+  elseif action=="BuyShards" and typeof(data)=="number" then economy:buy(player,data)
+  elseif action=="ReloadEconomy" then economy:load(player) end return
+ end
+ if action == "Ready" then snapshot(player) economy:publish(player) lobby:send(player) return end
  if action == "Sprint" then s.sprint = data == true return end
  if action == "Start" then
   if s.reviveBusy then return end
@@ -490,7 +575,7 @@ remote.OnServerEvent:Connect(function(player, action, data)
   s.lastStart = now
  end
  if action == "Start" then
-  if typeof(data) == "string" and Config.Modes[data] then reset(player, data) end
+  if not s.started and typeof(data) == "string" and Config.Modes[data] then lobby:leave(player) reset(player, data) end
  elseif action == "ReadClosed" then
   if s.reading and data == s.reading.id then
    local cost = s.reading.cost
@@ -552,18 +637,21 @@ local function eventPoint(player)
  return nil
 end
 local accumulator = 0
+local lobbyAccumulator=0
 RunService.Heartbeat:Connect(function(dt)
+ lobbyAccumulator+=dt
+ if lobbyAccumulator>=0.5 then local elapsed=lobbyAccumulator lobbyAccumulator=0 lobby:step(elapsed) end
  accumulator += dt
  for player, s in pairs(states) do
   local root = position(player)
   local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
   if humanoid then
-   local locked = paused(s)
+   local locked = s.started and paused(s) or (not s.started and s.reading~=nil)
    local moving = root and Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z).Magnitude > 1
    if not locked then
     if s.stamina >= 25 then s.exhausted = false end
     local sprinting = s.sprint and not s.exhausted and moving
-    s.stamina = math.clamp(s.stamina + (sprinting and -26 or 18) * dt, 0, 100)
+    s.stamina = math.clamp(s.stamina + (sprinting and -26*classStats(s).stamina or 18*classStats(s).recovery) * dt, 0, 100)
     if s.stamina == 0 then s.exhausted = true end
     humanoid.WalkSpeed = sprinting and 20 or 12
    else humanoid.WalkSpeed = 0 end
@@ -572,7 +660,7 @@ RunService.Heartbeat:Connect(function(dt)
   if not paused(s) then
    s.time += dt
    local mode = Config.Modes[s.mode]
-   s.sanity = math.max(0, s.sanity - mode.drain * dt)
+   s.sanity = math.max(0, s.sanity - mode.drain * classStats(s).drain * dt)
    if s.sanity <= 0 then finish(player, "consumed") continue end
    if root then
     local row = math.floor((root.Position.Z + 18) / 18)

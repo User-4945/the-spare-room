@@ -1,4 +1,4 @@
-# The Spare Room — Roblox Studio prototype 0.5
+# The Spare Room — Roblox Studio prototype 0.7
 
 An importable Roblox Studio place, rebuilt in Luau from the core ideas of The Spare Room.
 This is a starter adaptation, not a complete port of the browser/desktop releases.
@@ -6,7 +6,7 @@ This is a starter adaptation, not a complete port of the browser/desktop release
 ## Open it
 1. Download **The-Spare-Room.rbxlx** from this folder using GitHub's **Download raw file** button. Keep the .rbxlx extension.
 2. In Roblox Studio, open that file (File → Open from File, or Ctrl+O on Windows).
-3. Press **Play**, choose a difficulty, and explore.
+3. Press **Play** to enter The Last Bus Stop lobby. Choose a class, join a difficulty bus, or depart solo.
 4. In Edit mode, expand **Workspace → SpareRoomWorld** to inspect or edit the furnished map.
 5. In Play mode, lighting, labels, prompts and UI are created by the included scripts.
 
@@ -201,3 +201,36 @@ Revive product connected: `3729479338` (REVIVE). The owner-provided Creator Hub 
 
 ### Local Studio title-screen startup fix
 Revive DataStore acquisition is protected. An unpublished local file or disabled API access can disable paid revives without terminating server startup or leaving difficulty buttons unresponsive. Sanity, stamina and task panels stay hidden until a run starts. Test local-file startup and published purchase flow separately.
+
+## The Last Bus Stop — lobby, classes and Memory Shards (0.7)
+
+A separate, walkable bus-stop area contains a shelter, timetable, class/shop menu, three coloured departure pads and an Ashfield bus. Use **Explore Lobby**, then **L** or the lobby button to reopen the menu. Default Roblox prompts work on pads and the practice note. There is no sanity drain or anomaly spawning in the lobby; returning restores sanity and stamina. Death in the lobby respawns for free. Gameplay deaths still offer the existing consumable revive or a free return to the lobby.
+
+Each Easy/Intermediate/Hard bus holds up to four players and departs 15 seconds after the first joins. Leaving an empty queue removes it. Queue membership cannot duplicate; departing players leave the queue before a run begins. **Depart Solo** bypasses the queue. Classes cannot be changed while queued or during a run.
+
+This is a same-place, shared-world prototype: buses synchronise departure, not private matches. Parties share the house and city with other groups. Clues, timers, sanity and endings remain individual. There is no friend-only party invite or reserved-server matchmaking yet.
+
+| Class | Permanent unlock | Benefit |
+| --- | ---: | --- |
+| Wanderer | Free | Standard exploration stats |
+| Archivist | 80 shards | 20% less discovery sanity damage |
+| Courier | 100 shards | 25% less sprint stamina use; 15% faster recovery |
+| Caretaker | 120 shards | 20% less passive sanity loss; sandwiches restore 3 extra percentage points |
+
+A new diary page awards **2 Memory Shards**, once per page per account. A first story ending awards **40 shards**, once per ending per account. Death outcomes award nothing. The 20 pages and eight story endings can earn 360 shards, enough to unlock all three classes (300 total) without purchases. Re-reading, restarts, death and repeat endings cannot farm shards. Equipping an owned class is free. Class effects are locked in at departure.
+
+The server persists balance, owned classes, selected class, reward claims and purchase IDs together in `SpareRoomMemoryShards_v1`. Writes merge through `UpdateAsync`; leaving never overwrites newer receipts with a cached profile. Failed loading uses free Wanderer practice mode and disables class spending and checkout. Retry the saving connection in the class menu after publishing/enabling supported API access. Earned rewards during an outage are not queued indefinitely; retry the discovery in another run after saving is restored.
+
+### Connect optional Robux packs
+
+Create three **distinct developer products** in the same experience, then put their IDs into `SpareRoomConfig.ShardPacks`. Set their Robux prices in Creator Hub. Do not reuse product **3729479338**, which remains reserved for one revive.
+
+| Product to create | Fixed amount granted | Product ID |
+| --- | ---: | --- |
+| Pocket of Memories | 100 shards | Pending (0) |
+| Box of Memories | 300 shards | Pending (0) |
+| Archive of Memories | 800 shards | Pending (0) |
+
+All packs are disabled until configured. Roblox's native purchase window displays and confirms its actual price. Purchases are optional, repeatable and deterministic; there is no random class roll, currency trading or cash-out. Only server-verified receipts grant shards. The purchase ID and balance change are saved atomically before acknowledgement; duplicate receipt delivery does not add currency twice. Offline players/storage failures leave receipts unresolved for Roblox to retry. Filtered receipt handlers coexist with the revive product and HD Admin. Never grant from the purchase-window-close event.
+
+Tests: `python roblox-studio/test-lobby-economy.py /path/to/luau` exercises real modules with mocked storage, including UpdateAsync callback retries, insufficient funds, permanent unlocks, rejoin, duplicate/cancelled/wrong receipts, outages, queue capacity/cancellation and countdown grouping. Structural checks include all 67 interactables and lobby reachability. Actual Studio visuals, multiplayer movement and live checkout still require testing. No Robux was spent by these checks.

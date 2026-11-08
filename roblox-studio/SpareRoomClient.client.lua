@@ -31,6 +31,9 @@ local current = {started = false, sanity = 100, stamina = 100, journal = {}, mod
 local modalReason, readingId, confirmationNonce = nil, nil, nil
 local thirdPerson = false
 local cursorFree = false
+local lobbyWalking=false
+local wallet={balance=0,owned={Wanderer=true},selected="Wanderer",persistent=false}
+local queueMode=nil
 local flashlightOn = true
 local lastCameraMode = ""
 local active = nil
@@ -85,7 +88,7 @@ local function button(parent, content, pos, size, callback)
  return b
 end
 local function blocked()
- return not current.started or current.ended ~= nil or modalReason ~= nil
+ return (not current.started and not lobbyWalking) or current.ended ~= nil or modalReason ~= nil
 end
 local hud = frame(canvas, "Sanity", UDim2.fromOffset(28,26), UDim2.fromOffset(260,68))
 local sanityText = text(hud, "SANITY 100%", UDim2.fromScale(0.04, 0.03), UDim2.fromScale(0.92, 0.3), 16)
@@ -118,22 +121,77 @@ local edition=text(title,"A HOUSE THAT REMEMBERS",UDim2.fromOffset(64,60),UDim2.
 edition.TextXAlignment=Enum.TextXAlignment.Left
 local masthead=text(title,"THE SPARE\nROOM",UDim2.fromOffset(60,106),UDim2.fromOffset(800,174),70)
 masthead.Font=Enum.Font.Garamond masthead.TextXAlignment=Enum.TextXAlignment.Left masthead.TextYAlignment=Enum.TextYAlignment.Top
-local subtitle=text(title,"BENEATH THE HOUSE",UDim2.fromOffset(64,290),UDim2.fromOffset(650,40),22)
+local subtitle=text(title,"THE LAST BUS STOP",UDim2.fromOffset(64,290),UDim2.fromOffset(650,40),22)
 subtitle.TextXAlignment=Enum.TextXAlignment.Left
-local tagline=text(title,"There was always something underneath.",UDim2.fromOffset(64,340),UDim2.fromOffset(780,32),17)
+local tagline=text(title,"Choose who you are before the house remembers you.",UDim2.fromOffset(64,340),UDim2.fromOffset(780,32),17)
 tagline.TextXAlignment=Enum.TextXAlignment.Left tagline.TextColor3=Color3.fromRGB(179,179,158)
 local titleHousehold=text(title,"EXPLORERS CONNECTED · 1",UDim2.fromOffset(880,60),UDim2.fromOffset(330,32),14)
 text(title,"CHOOSE HOW THE HOUSE REMEMBERS YOU",UDim2.fromOffset(64,426),UDim2.fromOffset(800,28),13).TextXAlignment=Enum.TextXAlignment.Left
 local descriptions={"A gentler descent. More recovery, quieter nights.","The house notices. Balanced sanity and disturbances.","Memories slip faster. Less comfort, more disturbances."}
 for i, mode in ipairs({"Easy", "Intermediate", "Hard"}) do
- local card=button(title,"",UDim2.fromOffset(64+(i-1)*390,472),UDim2.fromOffset(370,116),function() remote:FireServer("Start",mode) end)
+ local card=button(title,"",UDim2.fromOffset(64+(i-1)*390,472),UDim2.fromOffset(370,116),function() remote:FireServer("Queue",mode) end)
  local label=text(card,string.upper(mode),UDim2.fromOffset(20,15),UDim2.fromOffset(330,28),21)
  label.TextXAlignment=Enum.TextXAlignment.Left
  local detail=text(card,descriptions[i],UDim2.fromOffset(20,52),UDim2.fromOffset(330,50),14)
  detail.TextXAlignment=Enum.TextXAlignment.Left detail.TextColor3=Color3.fromRGB(187,183,162)
+ detail.Size=UDim2.fromOffset(330,35)
+ button(card,"DEPART SOLO",UDim2.fromOffset(180,84),UDim2.fromOffset(170,26),function() remote:FireServer("Start",mode) end)
+ text(card,"JOIN BUS · 15s",UDim2.fromOffset(20,84),UDim2.fromOffset(155,26),12).TextXAlignment=Enum.TextXAlignment.Left
 end
 text(title,"EXPLORE TOGETHER / Your clues, sanity and endings remain your own.",UDim2.fromOffset(64,616),UDim2.fromOffset(1150,28),14).TextXAlignment=Enum.TextXAlignment.Left
 text(title,"WASD move · Hold E interact · M release mouse · G district guide · F flashlight",UDim2.fromOffset(64,662),UDim2.fromOffset(1150,24),12).TextXAlignment=Enum.TextXAlignment.Left
+local balanceText=text(title,"MEMORY SHARDS · loading…",UDim2.fromOffset(880,106),UDim2.fromOffset(330,35),17)
+local shardHud=text(canvas,"MEMORY SHARDS · 0",UDim2.fromOffset(28,170),UDim2.fromOffset(260,32),15)
+shardHud.Visible=false
+local queueText=text(title,"Choose a bus or depart solo.",UDim2.fromOffset(850,158),UDim2.fromOffset(360,65),17)
+local leaveQueue=button(title,"LEAVE QUEUE",UDim2.fromOffset(900,234),UDim2.fromOffset(260,36),function() remote:FireServer("Queue","Leave") end)
+leaveQueue.Visible=false
+local lobbyMenu=button(canvas,"LOBBY / L",UDim2.fromOffset(1100,26),UDim2.fromOffset(152,36),function()
+ lobbyWalking=false title.Visible=true
+end)
+lobbyMenu.Visible=false
+local floatingQueue=text(canvas,"",UDim2.fromOffset(28,184),UDim2.fromOffset(300,60),17)
+floatingQueue.Visible=false
+local shop=frame(title,"ClassesAndShards",UDim2.fromOffset(36,35),UDim2.fromOffset(1208,650))
+shop.ZIndex=30 shop.Visible=false
+text(shop,"CLASSES / MEMORY SHARDS",UDim2.fromOffset(28,20),UDim2.fromOffset(900,45),30).TextXAlignment=Enum.TextXAlignment.Left
+local shopBalance=text(shop,"",UDim2.fromOffset(28,70),UDim2.fromOffset(1100,35),17)
+local shopStatus=text(shop,"",UDim2.fromOffset(28,535),UDim2.fromOffset(1150,52),15)
+button(shop,"CLOSE",UDim2.fromOffset(1055,23),UDim2.fromOffset(120,36),function() shop.Visible=false modalReason=nil end)
+local classButtons={}
+for i,id in ipairs(Config.ClassOrder) do
+ local c=Config.Classes[id]
+ local card=frame(shop,id,UDim2.fromOffset(28+(i-1)*291,118),UDim2.fromOffset(276,185))
+ text(card,c.name,UDim2.fromOffset(14,9),UDim2.fromOffset(248,35),24)
+ text(card,c.description,UDim2.fromOffset(14,49),UDim2.fromOffset(248,67),15)
+ classButtons[id]=button(card,"",UDim2.fromOffset(14,130),UDim2.fromOffset(248,38),function() remote:FireServer("Class",id) end)
+end
+text(shop,"OPTIONAL SHARD PACKS / Roblox confirms the price before purchase",UDim2.fromOffset(28,322),UDim2.fromOffset(1150,34),17)
+for i,pack in ipairs(Config.ShardPacks) do
+ local configured=pack.productId>0 and pack.productId~=Config.ReviveProductId
+ local b=button(shop,tostring(pack.amount).." SHARDS / "..(configured and "View Roblox price" or "Not configured"),UDim2.fromOffset(28+(i-1)*388,370),UDim2.fromOffset(370,65),function() end)
+ b.Activated:Connect(function()
+  if configured then remote:FireServer("BuyShards",pack.productId) else shopStatus.Text="The creator must connect this pack’s new developer-product ID. No purchase was opened." end
+ end)
+ -- Button helper expects a callback; pack buttons connect their guarded callback above.
+end
+text(shop,"EARN SHARDS: +2 for each new diary page; +40 for each new story ending.\nRewards are once per account. Classes are permanent unlocks. No random rewards or shard trading.",UDim2.fromOffset(28,453),UDim2.fromOffset(1150,64),16)
+button(shop,"RETRY SAVING CONNECTION",UDim2.fromOffset(385,594),UDim2.fromOffset(430,35),function() remote:FireServer("ReloadEconomy") end)
+local function updateWallet()
+ balanceText.Text="MEMORY SHARDS · "..wallet.balance
+ shardHud.Text="MEMORY SHARDS · "..wallet.balance
+ shopBalance.Text=tostring(wallet.balance).." SHARDS · "..wallet.selected..(wallet.persistent and " · SAVED" or " · PRACTICE / SAVING UNAVAILABLE")
+ for id,b in pairs(classButtons) do
+  b.Text=wallet.selected==id and "EQUIPPED" or wallet.owned[id] and "EQUIP" or "UNLOCK / "..Config.Classes[id].cost.." SHARDS"
+ end
+end
+button(title,"CLASSES & SHARDS",UDim2.fromOffset(64,383),UDim2.fromOffset(260,36),function()
+ shop.Visible=true modalReason="classes" updateWallet()
+end)
+button(title,"EXPLORE LOBBY",UDim2.fromOffset(344,383),UDim2.fromOffset(235,36),function()
+ shop.Visible=false modalReason=nil lobbyWalking=true title.Visible=false
+end)
+updateWallet()
 local menuBlur=Instance.new("BlurEffect") menuBlur.Name="SpareRoomMenuBlur" menuBlur.Size=6 menuBlur.Parent=game:GetService("Lighting")
 local modal = frame(canvas, "Reading", UDim2.fromScale(0.12, 0.13), UDim2.fromScale(0.76, 0.72))
 modal.ZIndex = 20
@@ -156,7 +214,7 @@ local closeButton
 local chooseButton
 local function closeModal()
  local reason = modalReason
- if reason=="ending" then remote:FireServer("Start",current.mode) return end
+ if reason=="ending" then remote:FireServer("Lobby") return end
  modalReason = nil
  modal.Visible = false
  if reason == "read" then remote:FireServer("ReadClosed", readingId)
@@ -165,7 +223,7 @@ local function closeModal()
  elseif reason == "household" then remote:FireServer("Pause", false)
  elseif reason == "map" then remote:FireServer("Pause", false)
  elseif reason == "journal" then remote:FireServer("Pause", false)
- elseif reason == "ending" then remote:FireServer("Start", current.mode) end
+ elseif reason == "ending" then remote:FireServer("Lobby") end
 end
 closeButton = button(modal, "Close", UDim2.fromScale(0.05, 0.85), UDim2.fromScale(0.42, 0.1), closeModal)
 chooseButton = button(modal, "Choose this ending", UDim2.fromScale(0.52, 0.85), UDim2.fromScale(0.43, 0.1), function()
@@ -480,6 +538,7 @@ end
 UserInputService.InputBegan:Connect(function(input, processed)
  if processed then return end
  if input.KeyCode == Enum.KeyCode.F8 then toggleAdmin() return end
+ if input.KeyCode == Enum.KeyCode.L and not current.started then lobbyWalking=false title.Visible=true return end
  if input.KeyCode == Enum.KeyCode.M then toggleMouse() return end
  if input.KeyCode == Enum.KeyCode.F then toggleTorch() return end
  if input.KeyCode == Enum.KeyCode.G then openMap() return end
@@ -492,8 +551,21 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 UserInputService.WindowFocusReleased:Connect(function() remote:FireServer("Sprint", false) end)
 remote.OnClientEvent:Connect(function(action, data)
- if action == "State" then
+ if action=="Economy" then
+  wallet=data updateWallet()
+ elseif action=="EconomyStatus" then
+  shopStatus.Text=data
+  queueText.Text=data
+ elseif action=="Queue" then
+  queueMode=data.mode
+  local message=data.mode and (data.mode.." BUS · "..data.members.."/4\nDEPARTS IN "..data.seconds.."s") or "Choose a bus or depart solo."
+  queueText.Text=message floatingQueue.Text=message leaveQueue.Visible=data.mode~=nil
+ elseif action == "State" then
   current = data
+  if data.started then
+   lobbyWalking=false shop.Visible=false
+   if modalReason=="classes" then modalReason=nil end
+  end
   if not data.ended and modalReason=="ending" then
    modalReason=nil modal.Visible=false reviveButton.Visible=false reviveNotice.Visible=false
   end
@@ -501,7 +573,7 @@ remote.OnClientEvent:Connect(function(action, data)
   householdButton.Text="HOUSEHOLD / "..#(data.household or {})
   adminButton.Visible = data.admin and data.started and not data.ended
   if not data.started or data.ended then adminPanel.Visible=false end
-  title.Visible = not data.started
+  title.Visible = not data.started and not lobbyWalking
   staminaHud.Visible = data.started
   hud.Visible = data.started
   tasks.Visible = data.started
@@ -511,7 +583,7 @@ remote.OnClientEvent:Connect(function(action, data)
   staminaFill.Size=UDim2.fromScale(math.clamp(data.stamina/100,0,1),1)
   staminaFill.BackgroundColor3=data.stamina<25 and Color3.fromRGB(186,113,81) or Color3.fromRGB(135,171,161)
   local mark = function(yes) return yes and "✓ " or "□ " end
-  tasksText.Text = "BENEATH THE HOUSE\n\n"
+  tasksText.Text = "BENEATH THE HOUSE / "..(data.classId or "Wanderer").."\n\n"
    .. mark(data.diary >= 20) .. "Collect diary pages (" .. data.diary .. "/20)\n"
    .. mark(data.records >= 3) .. "Find family records (" .. data.records .. "/3)\n"
    .. mark(data.hasKey) .. "Find the unnumbered key\n"
@@ -542,7 +614,7 @@ remote.OnClientEvent:Connect(function(action, data)
   modalReason = "ending"
   heading.Text = data.id == "consumed" and "YOU LOST: YOUR SANITY GOT CONSUMED" or data.title
   body.Text = data.text
-  closeButton.Text = "Restart / Free"
+  closeButton.Text = "Return to lobby / Free"
   reviveButton.Visible=data.id=="consumed" or data.id=="fallen"
   reviveNotice.Visible=data.id=="consumed" or data.id=="fallen"
   paper.Size=UDim2.fromScale(0.88,0.48)
@@ -568,12 +640,15 @@ end)
 RunService:BindToRenderStep("SpareRoomVisuals", Enum.RenderPriority.Camera.Value + 1, function(dt)
  fitCanvas()
  local isBlocked = blocked()
- menuBlur.Size=not current.started and 6 or modalReason and 3 or 0
+ menuBlur.Size=not current.started and not lobbyWalking and 6 or modalReason and 3 or 0
+ shardHud.Visible=current.started and not current.ended
+ lobbyMenu.Visible=not current.started and lobbyWalking
+ floatingQueue.Visible=not current.started and lobbyWalking and queueMode~=nil
  local camera=workspace.CurrentCamera
  if camera then
-  if not current.started then
+  if not current.started and not lobbyWalking then
    camera.CameraType=Enum.CameraType.Scriptable
-   camera.CFrame=CFrame.lookAt(Vector3.new(math.sin(os.clock()*0.08)*1.2,8,-38),Vector3.new(0,5,-12))
+   camera.CFrame=CFrame.lookAt(Vector3.new(400+math.sin(os.clock()*0.08)*1.2,8,-12),Vector3.new(400,5,14))
   elseif camera.CameraType==Enum.CameraType.Scriptable then camera.CameraType=Enum.CameraType.Custom end
  end
  controlHints.Visible=not isBlocked

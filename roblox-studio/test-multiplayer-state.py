@@ -9,6 +9,7 @@ def function(name):
  return source[start:end]
 stubs='''
 local Config=require("./Config")
+local function classStats(s) return Config.Classes[s.classId or "Wanderer"] end
 local states={}
 local remote={events={}}
 function remote:FireClient(player,action,data) table.insert(self.events,{player=player,action=action,data=data}) end

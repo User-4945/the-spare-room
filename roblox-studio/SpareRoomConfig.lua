@@ -1,9 +1,22 @@
 -- The Spare Room: Roblox Studio starter. All positions use Roblox studs.
 return {
- Version = "Roblox prototype 0.6",
+ Version = "Roblox prototype 0.7",
  -- Create a repeatable Developer Product priced at 30 Robux in this experience.
  -- The old gamepass 2073110257 cannot be used as a consumable product.
  ReviveProductId = 3729479338, -- REVIVE developer product; creator-configured price: 30 Robux.
+ Classes = {
+  Wanderer={name="Wanderer",cost=0,description="Free. Standard stamina, recovery and sanity loss.",damage=1,drain=1,stamina=1,recovery=1,food=0},
+  Archivist={name="Archivist",cost=80,description="20% less sanity lost from disturbing discoveries.",damage=0.8,drain=1,stamina=1,recovery=1,food=0},
+  Courier={name="Courier",cost=100,description="Sprint uses 25% less stamina; stamina recovers 15% faster.",damage=1,drain=1,stamina=0.75,recovery=1.15,food=0},
+  Caretaker={name="Caretaker",cost=120,description="20% less passive sanity loss; sandwiches restore 3% extra.",damage=1,drain=0.8,stamina=1,recovery=1,food=3},
+ },
+ ClassOrder={"Wanderer","Archivist","Courier","Caretaker"},
+ -- Create three distinct developer products in the SAME experience. Never reuse the revive ID.
+ ShardPacks={
+  {name="Pocket of Memories",amount=100,productId=0},
+  {name="Box of Memories",amount=300,productId=0},
+  {name="Archive of Memories",amount=800,productId=0},
+ },
  ReviveSanity = 50,
  SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
  Modes = {

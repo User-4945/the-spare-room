@@ -266,14 +266,39 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("FuseBoxCase",3.6,5,8,.3,2.5,1.8,[68,75,71],"Metal");
  for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,8,.2,.25,.65,[161,158,135],"SmoothPlastic");
  add("FuseWarning",3.3,6,8,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
- const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>0</X><Y>0.1</Y><Z>-15</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
+ // The Last Bus Stop: a separate safe staging area east of Ashfield.
+ add("LobbyGround",400,-.5,0,100,1,90,[45,52,47],"Concrete");
+ add("LobbyRoad",400,.02,-25,100,.12,14,[36,39,38],"Slate",{},false);
+ for(const side of [-1,1])wall("LobbyBoundary",400+side*50,0,0,1,12,90);
+ wall("LobbyBack",400,0,45,100,12,1);wall("LobbyFront",400,0,-45,100,12,1);
+ add("BusStopShelterRoof",400,10,13,31,.5,12,[40,52,46],"Metal");
+ for(const x of [385,415])for(const z of [8,18])add("ShelterPost",x,5,z,.25,10,.25,[94,106,90],"Metal");
+ add("ShelterGlass",400,5,18,29,9,.15,[102,127,119],"Glass",{},false,.55);
+ add("LobbyBench",400,2,15,19,.35,2,[109,85,56]);
+ for(const x of [394,406])add("LobbyBenchLeg",x,1,15,.3,2,1.5,[69,73,65],"Metal");
+ add("BusStopSign",400,8.5,17.8,23,1.8,.15,[28,48,40],"Metal",{Sign:"THE LAST BUS STOP / ASHFIELD"},false);
+ add("DepartureBoard",400,5,17.7,16,3,.12,[27,35,31],"Wood",{Sign:"CHOOSE A CLASS. JOIN A BUS.\nTHE HOUSE REMEMBERS EVERY ARRIVAL."},false);
+ for(const [i,mode]of ["Easy","Intermediate","Hard"].entries()){
+  const x=378+i*22;
+  add("QueuePad",x,.06,-8,16,.12,10,[[74,104,82],[128,110,67],[117,69,66]][i],"Concrete",{},false);
+  add("QueueSign",x,5,-13,14,2,.2,[30,43,36],"Metal",{Sign:mode.toUpperCase()+" / UP TO 4 EXPLORERS"},false);
+  prop("BusQueue"+mode,"lobbyQueue",mode+" departure","Join "+mode+" bus",x,2.8,-8,2,.2,1,{Mode:mode});
+ }
+ add("LobbyBusBody",432,3,-27,10,5,25,[71,86,66],"Metal");
+ add("LobbyBusRoof",432,6,-27,10,.4,25,[41,48,42],"Metal");
+ for(const side of [-1,1])for(const z of [-35,-31,-27,-23,-19])add("BusWindow",432+side*5.02,4.5,z,.08,2.4,3,[87,110,108],"Glass",{},false,.2);
+ for(const z of [-35,-19])for(const side of [-1,1])add("BusWheel",432+side*4.6,1,z,1.2,2.2,2.2,[25,28,26],"SmoothPlastic");
+ add("BusDestination",432,4.5,-39.6,8,1.4,.1,[17,27,21],"Metal",{Sign:"ASHFIELD / LAST SERVICE"},false);
+ for(const x of [377,423]){add("LobbyLampPost",x,7,12,.25,14,.25,[72,79,67],"Metal");add("Lamp",x,14,12,1.5,.3,1.5,[229,204,145],"Metal",{},false);}
+ prop("LobbyPracticeNote","lobbyNote","The last timetable","Read the timetable",389,3,14,1.2,.1,1,{Text:"Hold E to interact. New diary pages earn 2 Memory Shards each; each first story ending earns 40. Rewards are once per account, not per restart. The lobby is safe. No purchases are needed to enter the house."});
+ const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>400</X><Y>0.1</Y><Z>5</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
- const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars)+script("ModuleScript","SpareRoomRevive",sources.revive))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:10,anomalies:12,venues:8,npcs:11}};
+ const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars)+script("ModuleScript","SpareRoomRevive",sources.revive)+script("ModuleScript","SpareRoomEconomy",sources.economy)+script("ModuleScript","SpareRoomLobby",sources.lobby))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:10,anomalies:12,venues:8,npcs:11,classes:4,shardPacks:3,lobbyCapacity:4}};
 };
 const dir=__dirname;
-const result=buildPlace({config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),revive:fs.readFileSync(path.join(dir,"SpareRoomRevive.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});
+const result=buildPlace({economy:fs.readFileSync(path.join(dir,"SpareRoomEconomy.lua"),"utf8"),lobby:fs.readFileSync(path.join(dir,"SpareRoomLobby.lua"),"utf8"),config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),revive:fs.readFileSync(path.join(dir,"SpareRoomRevive.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});
 fs.writeFileSync(path.join(dir,"The-Spare-Room.rbxlx"),result.xml);
 fs.writeFileSync(path.join(dir,"build-stats.json"),JSON.stringify(result.stats,null,2)+"\n");
 console.log(result.stats);
