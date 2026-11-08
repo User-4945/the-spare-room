@@ -14,9 +14,9 @@ return {
  ClassOrder={&quot;Wanderer&quot;,&quot;Archivist&quot;,&quot;Courier&quot;,&quot;Caretaker&quot;},
  -- Create three distinct developer products in the SAME experience. Never reuse the revive ID.
  ShardPacks={
-  {name=&quot;Pocket of Memories&quot;,amount=100,productId=0},
-  {name=&quot;Box of Memories&quot;,amount=300,productId=0},
-  {name=&quot;Archive of Memories&quot;,amount=800,productId=0},
+  {name=&quot;+50 Memory Shards&quot;,amount=50,productId=3729646165},
+  {name=&quot;+150 Memory Shards&quot;,amount=150,productId=3729646314},
+  {name=&quot;+1000 Memory Shards&quot;,amount=1000,productId=3729646477},
  },
  ReviveSanity = 50,
  SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.

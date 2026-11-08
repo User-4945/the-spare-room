@@ -4,6 +4,10 @@ import subprocess,sys,tempfile
 root=Path(__file__).parent
 checks=r'''
 local Economy=require("./Economy") local Lobby=require("./Lobby") local Config=require("./Config")
+assert(Config.ShardPacks[1].productId==3729646165 and Config.ShardPacks[1].amount==50)
+assert(Config.ShardPacks[2].productId==3729646314 and Config.ShardPacks[2].amount==150)
+assert(Config.ShardPacks[3].productId==3729646477 and Config.ShardPacks[3].amount==1000)
+for _,pack in ipairs(Config.ShardPacks) do assert(pack.productId~=Config.ReviveProductId) end
 local p={UserId=1} local q={UserId=2} local r={UserId=3} local t={UserId=4} local u={UserId=5}
 local online={[p]=true,[q]=true,[r]=true,[t]=true,[u]=true}
 local waiting={[p]=true,[q]=true,[r]=true,[t]=true,[u]=true}

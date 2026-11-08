@@ -227,10 +227,12 @@ Create three **distinct developer products** in the same experience, then put th
 
 | Product to create | Fixed amount granted | Product ID |
 | --- | ---: | --- |
-| Pocket of Memories | 100 shards | Pending (0) |
-| Box of Memories | 300 shards | Pending (0) |
-| Archive of Memories | 800 shards | Pending (0) |
+| +50 Memory Shards | 50 shards | 3729646165 |
+| +150 Memory Shards | 150 shards | 3729646314 |
+| +1000 Memory Shards | 1000 shards | 3729646477 |
 
-All packs are disabled until configured. Roblox's native purchase window displays and confirms its actual price. Purchases are optional, repeatable and deterministic; there is no random class roll, currency trading or cash-out. Only server-verified receipts grant shards. The purchase ID and balance change are saved atomically before acknowledgement; duplicate receipt delivery does not add currency twice. Offline players/storage failures leave receipts unresolved for Roblox to retry. Filtered receipt handlers coexist with the revive product and HD Admin. Never grant from the purchase-window-close event.
+All three packs are configured. Roblox's native purchase window displays and confirms its actual price. Purchases are optional, repeatable and deterministic; there is no random class roll, currency trading or cash-out. Only server-verified receipts grant shards. The purchase ID and balance change are saved atomically before acknowledgement; duplicate receipt delivery does not add currency twice. Offline players/storage failures leave receipts unresolved for Roblox to retry. Filtered receipt handlers coexist with the revive product and HD Admin. Never grant from the purchase-window-close event.
 
 Tests: `python roblox-studio/test-lobby-economy.py /path/to/luau` exercises real modules with mocked storage, including UpdateAsync callback retries, insufficient funds, permanent unlocks, rejoin, duplicate/cancelled/wrong receipts, outages, queue capacity/cancellation and countdown grouping. Structural checks include all 67 interactables and lobby reachability. Actual Studio visuals, multiplayer movement and live checkout still require testing. No Robux was spent by these checks.
+
+Owner-provided Creator Hub screenshot confirms the connected packs: 50 shards / 100 Robux, 150 shards / 200 Robux, and 1,000 shards / 1,500 Robux. Prices remain managed in Creator Hub; Roblox checkout displays the actual applicable price. The disabled badges in that screenshot refer to managed pricing, not the product ID configuration.
