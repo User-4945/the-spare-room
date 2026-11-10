@@ -1,0 +1,83 @@
+name: Finish verified settings refresh on pinned Mac runner
+on:
+  push:
+    branches: [settings-final-mac]
+permissions:
+  contents: write
+  actions: write
+jobs:
+  final-mac:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      SETTINGS_SOURCE_COMMIT: 'f738adf72c049df2703fd95e8db8ef9031e69ccd'
+      SETTINGS_REFRESH_RUN_ID: '42861881795'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 'f738adf72c049df2703fd95e8db8ef9031e69ccd'
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Preserve batch revision and runtime provenance
+        run: node -e "const fs=require('fs'),p='scripts/prepare-settings-refresh.cjs';fs.writeFileSync(p,fs.readFileSync(p,'utf8').replaceAll('process.env.GITHUB_RUN_ID','process.env.SETTINGS_REFRESH_RUN_ID').replaceAll('process.env.GITHUB_SHA','process.env.SETTINGS_SOURCE_COMMIT'))"
+      - run: node scripts/prepare-settings-refresh.cjs 1.5.1 mac
+      - run: node --test tests/updater.cjs
+      - run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --mac --publish never
+      - name: Test installed Mac app
+        run: |
+          export SPARE_ROOM_TEST_ANGLE=default
+          export SPARE_ROOM_SMOKE_PROFILE="$RUNNER_TEMP/settings-profile"
+          export SPARE_ROOM_SMOKE_REPORT="$RUNNER_TEMP/settings-smoke.json"
+          'platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room' --smoke-test
+          node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences)process.exit(1)"
+      - run: |
+          mkdir -p final-mac-output
+          cp platform-build/*.dmg final-mac-output/
+          cp installer-build.json final-mac-output/mac-BUILD.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: settings-1.5.1-mac
+          path: final-mac-output/
+  publish:
+    needs: final-mac
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SETTINGS_SOURCE_COMMIT: 'f738adf72c049df2703fd95e8db8ef9031e69ccd'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 'f738adf72c049df2703fd95e8db8ef9031e69ccd'
+      - name: Coordinate with original batch
+        id: original
+        shell: bash
+        run: |
+          status=$(gh api repos/$GH_REPO/actions/runs/42861881795 --jq '.conclusion')
+          if [ "$status" = 'success' ]; then echo 'complete=true' >> "$GITHUB_OUTPUT"; exit 0; fi
+          active=$(gh api 'repos/'$GH_REPO'/actions/runs/42861881795/jobs?per_page=100' --jq '[.jobs[]|select(.name=="publish" and .status=="in_progress")]|length')
+          if [ "$active" != '0' ]; then echo 'Original publisher is active; refusing competing uploads'; exit 1; fi
+          gh api repos/$GH_REPO/actions/runs/42861881795/cancel --method POST || true
+          echo 'complete=false' >> "$GITHUB_OUTPUT"
+      - name: Download the 26 successful platform artifacts
+        if: steps.original.outputs.complete != 'true'
+        run: gh run download 42861881795 --pattern 'settings-*' --dir settings-artifacts
+      - uses: actions/download-artifact@v4
+        if: steps.original.outputs.complete != 'true'
+        with:
+          name: settings-1.5.1-mac
+          path: settings-artifacts/settings-1.5.1-mac
+      - name: Verify provenance and publish all nine releases
+        if: steps.original.outputs.complete != 'true'
+        run: |
+          node -e "const fs=require('fs'),p='scripts/publish-settings-refresh.cjs';fs.writeFileSync(p,fs.readFileSync(p,'utf8').replaceAll('process.env.GITHUB_SHA','process.env.SETTINGS_SOURCE_COMMIT'))"
+          node scripts/publish-settings-refresh.cjs
