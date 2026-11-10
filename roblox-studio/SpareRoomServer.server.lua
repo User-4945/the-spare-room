@@ -265,7 +265,7 @@ local function read(player, part, text, cost)
  s.sequence += 1
  s.reading = {id = s.sequence, part = part, cost = cost}
  s.sprint = false
- remote:FireClient(player, "Read", {id = s.sequence, title = value(part, "Title"), text = text, scene=value(part,"Flag")=="projectorSeen" and "projector" or nil})
+ remote:FireClient(player, "Read", {id = s.sequence, title = value(part, "Title"), text = text, scene=(value(part,"Flag")=="projectorSeen" or value(part,"Scene")=="projector") and "projector" or nil})
 end
 local function sourceRequirements(s,r)
  if not r then return true end
@@ -338,6 +338,7 @@ local function interact(player, part)
   local flag=value(part,"Flag")
   local first=not s.flags[flag]
   s.flags[flag]=true
+  if value(part,"Scene")=="projector" then s.flags.projectorSeen=true end
   read(player,part,value(part,"Text"),first and (tonumber(value(part,"Cost")) or 0) or 0)
  elseif role == "mum" then
   s.flags.mum = true

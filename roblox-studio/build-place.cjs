@@ -303,7 +303,7 @@ const buildPlace=function buildRobloxPlace(sources) {
   add("OriginalVenueSign",x,10,z+14.3,25,1.6,.12,[37,57,47],"Metal",{Sign:p.name,Side:"Back",Venue:p.id.toUpperCase()},false);
   add("Lamp",x,11,z,1.4,.2,1.4,[225,206,155],"Metal",{},false);
   desk(x,0,z+3,7,3);chair(x-5,0,z+3);
-  prop("OriginalVenueClue_"+p.id,"story",p.name,"Investigate evidence",x,3.5,z+3,1.2,.1,.9,{Flag:"venue:"+p.id,Text:p.clue,Cost:"4"});
+  prop("OriginalVenueClue_"+p.id,"story",p.name,"Investigate evidence",x,3.5,z+3,1.2,.1,.9,{Flag:"venue:"+p.id,Text:p.clue,Cost:"4",Scene:p.id==="cinema"?"projector":""});
   p.choices.forEach(([action,title,text],k)=>prop("CityEnding_"+p.id+"_"+k,"ending",title,action,x-5+k*10,3,z-8,1,.15,.7,{Ending:"city:"+p.id+":"+k}));
   for(const dx of [-10,10])for(let y=1;y<=3;y++){
    add("OriginalVenueShelf",x+dx,y*2,z-8,3,.15,7,[93,75,54]);
