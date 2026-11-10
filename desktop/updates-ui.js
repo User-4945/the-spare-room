@@ -1,31 +1,36 @@
 const api=window.spareUpdates,$=id=>document.getElementById(id);
 let lastState={},dirty=false,saving=false;
 function preferenceStatus(){
- const changed=$('prereleases').checked!==lastState.preferences?.allowPrereleases;
- $('preferences-status').textContent=changed?'Unsaved changes. Save preferences to apply this choice.':lastState.preferences?.allowPrereleases?'Saved: stable releases and prereleases.':'Saved: latest stable releases only.';
+ const changed=$('update-mode').value!==(lastState.preferences?.updateMode||'stable')||$('prereleases').checked!==lastState.preferences?.allowPrereleases||$('developer-versions').checked!==!!lastState.preferences?.allowDeveloperVersions;
+ $('preferences-status').textContent=changed?'Unsaved changes. Save preferences to apply this choice.':lastState.preferences?.updateMode==='never'?'Saved: automatic checks are off.':lastState.preferences?.allowDeveloperVersions?'Saved: developer updates included.':lastState.preferences?.allowPrereleases?'Saved: stable releases and prereleases.':'Saved: latest stable releases only.';
 }
 function render(state){
  lastState=state;document.body.classList.toggle('halloween-settings',!!state.halloween);
  const busy=['checking','downloading','verifying','installing'].includes(state.phase);
  const notes=state.notes||state.release&&{version:state.release.version,body:state.release.notes};
+ if(!dirty||saving)$('update-mode').value=state.preferences?.updateMode||'stable';
  if(!dirty||saving)$('prereleases').checked=!!state.preferences?.allowPrereleases;
+ if(!dirty||saving)$('developer-versions').checked=!!state.preferences?.allowDeveloperVersions;
+ $('developer-settings').hidden=!state.adminAuthenticated;$('admin-lock').hidden=!state.adminAuthenticated;
+ if(state.adminMessage)$('admin-status').textContent=state.adminMessage;
  preferenceStatus();
- $('title').textContent=state.notes?'Updated to v'+state.notes.version:state.phase==='available'?(state.release?.refresh?'A refreshed build is available':state.release?.prerelease?'A new prerelease is available':'A new release is available'):'Game updates';
+ $('title').textContent=state.notes?'Updated to v'+state.notes.version:state.phase==='available'?(state.release?.developer?'A developer build is available':state.release?.refresh?'A refreshed build is available':state.release?.prerelease?'A new prerelease is available':'A new release is available'):'Game updates';
  $('status').textContent=state.message;
  $('version').textContent='Installed: '+state.currentVersion+(state.currentRevision?' · build '+state.currentRevision:'')+(state.currentPrerelease?' · prerelease':'')+(state.lastChecked?' · Last checked: '+new Date(state.lastChecked).toLocaleString():'');
  $('progress').hidden=state.phase!=='downloading';$('progress').value=state.progress||0;
  $('install').hidden=state.phase!=='available'||!state.release?.canInstall;
- for(const id of ['install','check','save-token','clear-token','save-preferences','prereleases'])$(id).disabled=busy||saving;
+ for(const id of ['install','check','save-token','clear-token','save-preferences','update-mode','prereleases'])$(id).disabled=busy||saving;
  $('notes-section').hidden=!notes;$('notes').textContent=notes?.body||'';
  $('access-status').textContent=state.hasToken?'Optional GitHub access is saved on this device.':'Using public updates. No login required.';
  if(state.phase==='access')$('access').open=true;
 }
 async function action(fn){try{const state=await fn();if(state)render(state)}catch{$('status').textContent='That action could not finish. Please try again.'}}
-$('prereleases').onchange=()=>{dirty=true;preferenceStatus()};
+$('update-mode').onchange=()=>{$('prereleases').checked=$('update-mode').value==='always';dirty=true;preferenceStatus()};
+$('prereleases').onchange=()=>{$('update-mode').value=$('prereleases').checked?'always':'stable';dirty=true;preferenceStatus()};
 $('save-preferences').onclick=async()=>{
- const allowPrereleases=$('prereleases').checked;saving=true;
- for(const id of ['save-preferences','prereleases','check','install'])$(id).disabled=true;
- try{const state=await api.savePreferences({allowPrereleases});dirty=false;saving=false;render(state)}
+ const updateMode=$('update-mode').value,allowPrereleases=updateMode==='always',allowDeveloperVersions=$('developer-versions').checked;saving=true;
+ for(const id of ['save-preferences','update-mode','prereleases','check','install'])$(id).disabled=true;
+ try{const state=await api.savePreferences({updateMode,allowPrereleases,allowDeveloperVersions});dirty=false;saving=false;render(state)}
  catch{saving=false;render(lastState);$('preferences-status').textContent='Preferences were not saved. Wait for the current action and try again.'}
 };
 $('check').onclick=()=>action(()=>api.check());
@@ -35,3 +40,7 @@ $('close').onclick=()=>api.close();
 $('save-token').onclick=()=>{const token=$('token').value;$('token').value='';action(()=>api.saveToken(token))};
 $('clear-token').onclick=()=>action(()=>api.clearToken());
 api.onStatus(render);action(()=>api.state());
+
+$('developer-versions').onchange=()=>{dirty=true;preferenceStatus()};
+$('settings-admin-form').onsubmit=async event=>{event.preventDefault();const username=$('admin-user').value,password=$('admin-pass').value;$('admin-pass').value='';$('admin-signin').disabled=true;try{render(await api.adminLogin({username,password}));}catch{$('admin-status').textContent='Could not sign in. Check your connection and try again.';}finally{$('admin-signin').disabled=false;}};
+$('admin-lock').onclick=()=>action(()=>api.adminLock());

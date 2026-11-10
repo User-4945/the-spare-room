@@ -87,3 +87,16 @@ test('replaced refresh revision requires another review before execution',async 
 });
 
 test('manual same-version reinstall shows refresh notes for a legacy profile',t=>{const f=fixture(t,{version:'2.0.0'});fs.writeFileSync(path.join(f.profile,'updater-state.json'),JSON.stringify({lastLaunchVersion:'2.0.0',allowPrereleases:true}));const next=new UpdateService({...f.options,revision:100,notes:'Refreshed build notes'});assert.equal(next.state().notes.body,'Refreshed build notes');assert.equal(next.state().preferences.allowPrereleases,true);});
+
+test('three update modes persist; Never makes no background request but manual check still works',async t=>{
+ const f=fixture(t);
+ await f.service.savePreferences({updateMode:'never'});
+ assert.equal(f.calls,0);assert.equal(f.service.state().preferences.updateMode,'never');
+ await f.service.check(false);assert.equal(f.calls,0);
+ const restarted=new UpdateService(f.options);await restarted.check(false);assert.equal(f.calls,0);
+ await restarted.check(true);assert.equal(f.calls,1);
+ await restarted.savePreferences({updateMode:'stable'});assert.equal(restarted.state().preferences.allowPrereleases,false);assert.equal(f.calls,2);
+ f.transport.json=async()=>[{...release('2.1.0'),prerelease:true}];
+ await restarted.savePreferences({updateMode:'always'});assert.equal(restarted.state().release.version,'2.1.0');
+ await assert.rejects(restarted.savePreferences({updateMode:'sometimes'}),/Invalid/);
+});

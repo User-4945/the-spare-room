@@ -1,0 +1,106 @@
+name: Refresh update preferences in all native releases
+on:
+  push:
+    branches: [settings-all-release-refresh]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: spare-room-settings-all-release-refresh
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["3.0.0", "2.7.6", "2.7.5", "2.6.5", "2.5.0", "2.0.5", "2.0.0", "1.5.1", "2.1.0"]
+        platform: [win, mac, linux]
+        include:
+          - platform: win
+            runner: windows-latest
+          - platform: mac
+            runner: macos-latest
+          - platform: linux
+            runner: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Prepare only this release's shipped gameplay
+        run: node scripts/prepare-settings-refresh.cjs '${{ matrix.version }}' '${{ matrix.platform }}'
+      - run: node --test tests/updater.cjs
+      - name: Build native package
+        run: |
+          node scripts/prepare-desktop.cjs
+          npx electron-builder --config platforms/electron-builder.cjs --${{ matrix.platform }} --publish never
+      - name: Test Windows installation
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem platform-build/*Setup*.exe | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP 'spare-settings-installed'
+          $p = Start-Process $installer.FullName -ArgumentList @('/S', "/D=$installDir") -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Install failed' }
+          $env:SPARE_ROOM_SMOKE_PROFILE = Join-Path $env:RUNNER_TEMP 'spare-settings-profile'
+          $env:SPARE_ROOM_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP 'settings-smoke.json'
+          $p = Start-Process (Join-Path $installDir 'The Spare Room.exe') -ArgumentList @('--smoke-test') -PassThru
+          if (!$p.WaitForExit(180000)) { $p.Kill(); throw 'Launch timed out' }
+          $r = Get-Content $env:SPARE_ROOM_SMOKE_REPORT -Raw | ConvertFrom-Json
+          if ($p.ExitCode -ne 0 -or !$r.ok -or !$r.settingsPreferences) { throw 'Installed settings check failed' }
+      - name: Install Linux graphics dependencies
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y libasound2t64 libgtk-3-0t64 libnss3 libgbm1 xvfb
+      - name: Test Mac and Linux packages
+        if: matrix.platform != 'win'
+        shell: bash
+        run: |
+          export SPARE_ROOM_SMOKE_PROFILE="$RUNNER_TEMP/settings-profile"
+          export SPARE_ROOM_SMOKE_REPORT="$RUNNER_TEMP/settings-smoke.json"
+          if [ '${{ matrix.platform }}' = 'mac' ]; then
+            export SPARE_ROOM_TEST_ANGLE=default
+            'platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room' --smoke-test
+          else
+            xvfb-run -a platform-build/linux-unpacked/the-spare-room --no-sandbox --smoke-test
+          fi
+          node -e "const r=require(process.env.SPARE_ROOM_SMOKE_REPORT);if(!r.ok||!r.settingsPreferences)process.exit(1)"
+      - name: Package source matching this installer
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p installer-output
+          python3 scripts/package-desktop-source.py
+      - name: Collect verified platform files
+        shell: bash
+        run: |
+          mkdir -p settings-output
+          find platform-build -maxdepth 1 -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' \) -exec cp {} settings-output/ \;
+          cp installer-build.json 'settings-output/${{ matrix.platform }}-BUILD.json'
+          if [ '${{ matrix.platform }}' = 'linux' ]; then cp installer-output/*.zip RELEASE_NOTES.md settings-output/; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: settings-${{ matrix.version }}-${{ matrix.platform }}
+          path: settings-output/
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: settings-*
+          path: settings-artifacts
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/publish-settings-refresh.cjs
+

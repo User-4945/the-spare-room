@@ -59,23 +59,35 @@ async function verifyInstaller(file,expected,size){
  const fd=fs.openSync(file,'r'),magic=Buffer.alloc(2);fs.readSync(fd,magic,0,2,0);fs.closeSync(fd);if(magic.toString()!=='MZ')throw Error('The download is not a Windows executable');
  const hash=crypto.createHash('sha256');for await(const part of fs.createReadStream(file))hash.update(part);if(hash.digest('hex').toLowerCase()!==expected.toLowerCase())throw Error('Installer checksum verification failed');
 }
+function selectDeveloperRelease(release,manifest,current,currentRevision=0,platform='win32'){
+ if(!release||release.draft!==false||manifest?.schema!==1||manifest.channel!=='developer'||!versionParts(manifest.version)||!Number.isSafeInteger(manifest.revision)||manifest.revision<=0)return null;
+ const comparison=compareVersions(manifest.version,current);if(comparison<0||comparison===0&&manifest.revision<=currentRevision)return null;
+ const name=platform==='win32'?'The-Spare-Room-Developer-Setup-'+manifest.version+'-x64.exe':null;
+ const asset=release.assets?.find(a=>a.name===name&&a.state==='uploaded'&&Number.isSafeInteger(a.id)&&a.id>0&&a.size>0&&a.size<400*1024*1024&&/^sha256:[a-f0-9]{64}$/i.test(a.digest||''));
+ if(!asset)return null;
+ return {id:release.id,version:manifest.version,revision:manifest.revision,refresh:comparison===0,developer:true,prerelease:true,page:'https://github.com/'+REPO+'/releases/tag/'+encodeURIComponent(release.tag_name),tag:release.tag_name,name:'Beneath the House · Developer preview',notes:String(manifest.notes||'Unfinished developer preview. Uses a separate story save.').slice(0,60000),asset};
+}
 class UpdateService extends EventEmitter{
  constructor({profile,version,prerelease=false,platform='win32',notes='',revision=0,tag='',transport,isOnline=()=>true,now=Date.now,runInstaller,prepareInstall=async()=>{}}){
   super();Object.assign(this,{profile,version,prerelease,platform,revision,tag,transport,isOnline,now,runInstaller,prepareInstall});this.file=path.join(profile,'updater-state.json');this.saved=readJSON(this.file);this.busy=false;this.candidate=null;this.status={phase:'idle',message:'Checks for updates once a day while the game is open and connected. Save your preferences to check a different update channel.',version};
   const previous=this.saved.lastLaunchVersion,pending=this.saved.pendingUpdate;
   if(pending&&pending.version===version&&(!pending.revision||pending.revision===revision)){this.saved.releaseNotes={version,body:pending.notes};if(pending.prerelease===false||pending.prerelease===undefined&&!prerelease)this.saved.confirmedStable=version;delete this.saved.pendingUpdate;}
   else if(previous&&(previous!==version||this.saved.lastLaunchRevision!==revision)){this.saved.releaseNotes={version,body:notes||'The game has been updated.'};}
-  this.saved.allowPrereleases=this.saved.allowPrereleases===true;this.saved.lastLaunchVersion=version;this.saved.lastLaunchRevision=revision;this.persist();
+  this.saved.allowDeveloperVersions=this.saved.allowDeveloperVersions===true;this.saved.allowPrereleases=this.saved.allowPrereleases===true;this.saved.updateMode=["always","stable","never"].includes(this.saved.updateMode)?this.saved.updateMode:(this.saved.allowPrereleases?"always":"stable");this.saved.allowPrereleases=this.saved.updateMode==="always";this.saved.lastLaunchVersion=version;this.saved.lastLaunchRevision=revision;this.persist();
  }
  persist(){writeJSON(this.file,this.saved)}
- state(){return {...this.status,currentVersion:this.version,currentRevision:this.revision,currentPrerelease:this.prerelease&&this.saved.confirmedStable!==this.version,preferences:{allowPrereleases:this.saved.allowPrereleases},lastChecked:this.saved.lastChecked||null,notes:this.saved.releaseNotes||null,latestPage:this.candidate?.page||(this.saved.allowPrereleases?'https://github.com/'+REPO+'/releases':LATEST_PAGE)}}
+ state(){return {...this.status,currentVersion:this.version,currentRevision:this.revision,currentPrerelease:this.prerelease&&this.saved.confirmedStable!==this.version,preferences:{updateMode:this.saved.updateMode,allowPrereleases:this.saved.allowPrereleases,allowDeveloperVersions:this.saved.allowDeveloperVersions},lastChecked:this.saved.lastChecked||null,notes:this.saved.releaseNotes||null,latestPage:this.candidate?.page||(this.saved.allowPrereleases?'https://github.com/'+REPO+'/releases':LATEST_PAGE)}}
  publish(phase,message,extra={}){this.status={phase,message,...extra};this.emit('status',this.state());return this.state()}
- due(){const n=this.now();return (!this.saved.lastChecked||n-this.saved.lastChecked>=DAY||n<this.saved.lastChecked)&&(!this.saved.lastAttempt||n-this.saved.lastAttempt>=15*60*1000||n<this.saved.lastAttempt)}
+ due(){if(this.saved.updateMode==="never")return false;const n=this.now();return (!this.saved.lastChecked||n-this.saved.lastChecked>=DAY||n<this.saved.lastChecked)&&(!this.saved.lastAttempt||n-this.saved.lastAttempt>=15*60*1000||n<this.saved.lastAttempt)}
  async savePreferences(value){
-  if(!value||typeof value.allowPrereleases!=='boolean')throw Error('Invalid update preferences');
+  if(!value||value.updateMode!==undefined&&!['always','stable','never'].includes(value.updateMode)||value.updateMode===undefined&&typeof value.allowPrereleases!=='boolean')throw Error('Invalid update preferences');
   if(this.busy)throw Error('Wait for the current update action to finish');
-  this.saved.allowPrereleases=value.allowPrereleases;
+  if(value.allowDeveloperVersions!==undefined&&typeof value.allowDeveloperVersions!=='boolean')throw Error('Invalid developer preference');
+  if(value.allowDeveloperVersions!==undefined)this.saved.allowDeveloperVersions=value.allowDeveloperVersions;
+  this.saved.updateMode=value.updateMode||(value.allowPrereleases?"always":"stable");
+  this.saved.allowPrereleases=this.saved.updateMode==="always";
   delete this.saved.lastChecked;delete this.saved.lastAttempt;this.candidate=null;this.persist();
+  if(this.saved.updateMode==='never')return this.publish('idle','Preferences saved. Automatic update checks are off. Check now remains available.');
   this.publish('idle','Preferences saved. Checking the selected update channel…');
   return this.check(true);
  }
@@ -94,7 +106,21 @@ class UpdateService extends EventEmitter{
   // An already installed prerelease may receive its own refresh without opting into other prereleases.
   return selectRelease(r,this.version,this.prerelease,this.saved.confirmedStable,this.prerelease||this.saved.allowPrereleases,this.platform,this.revision);
  }
+ async findDeveloperRelease(){
+  const release=await this.transport.json(API+'/releases/426674255');
+  const asset=release?.assets?.find(a=>a.name==='DEVELOPER-CHANNEL.json'&&a.state==='uploaded'&&Number.isSafeInteger(a.id)&&a.size>0&&a.size<65536);
+  if(!asset)return null;
+  const manifest=JSON.parse(await this.transport.text(assetURL(asset)));
+  return selectDeveloperRelease(release,manifest,this.version,this.revision,this.platform);
+ }
  async findRelease(){
+  const normal=await this.findPublicRelease();
+  if(!this.saved.allowDeveloperVersions)return normal;
+  const developer=await this.findDeveloperRelease();
+  if(!developer)return normal;
+  return !normal||compareVersions(developer.version,normal.version)>0||compareVersions(developer.version,normal.version)===0&&normal.prerelease&&developer.revision>normal.revision?developer:normal;
+ }
+ async findPublicRelease(){
   if(!this.saved.allowPrereleases){
    const release=await this.transport.json(API+'/releases/latest');
    if(!release||release.prerelease!==false||release.draft!==false)throw Error('GitHub did not return a stable release');
@@ -122,7 +148,7 @@ class UpdateService extends EventEmitter{
   }catch(error){if(error.status){this.saved.lastChecked=this.now();this.persist()}this.candidate=null;return this.publish([401,403,404].includes(error.status)?'access':'error',[401,403,404].includes(error.status)?'GitHub could not provide the release, or its request limit was reached. Public updates do not require a login. Try again later or open the latest release in your browser.':'Could not reach GitHub. Keep playing and try again when your connection is available.');}
   finally{this.busy=false}
  }
- publicCandidate(){if(!this.candidate)return null;let c=this.candidate;return {version:c.version,revision:c.revision,refresh:c.refresh,name:c.name,notes:c.notes,prerelease:c.prerelease,canInstall:this.platform==='win32'&&!!c.asset}}
+ publicCandidate(){if(!this.candidate)return null;let c=this.candidate;return {version:c.version,revision:c.revision,refresh:c.refresh,developer:!!c.developer,name:c.name,notes:c.notes,prerelease:c.prerelease,canInstall:this.platform==='win32'&&!!c.asset}}
  async install(){
   if(this.busy||!this.candidate)return this.state();if(this.platform!=='win32')return this.publish('fallback','Open the release page to install the update for your operating system.',{release:this.publicCandidate()});const chosen=this.candidate;if(!chosen.asset)return this.publish('fallback','This release has no Windows installer. Open its GitHub page to download it.',{release:this.publicCandidate()});
   this.busy=true;let directory;
@@ -145,4 +171,4 @@ class UpdateService extends EventEmitter{
  notesPresented(){if(this.saved.releaseNotes){this.saved.notesShownVersion=this.saved.releaseNotes.version;this.persist()}}
  acknowledgeNotes(){delete this.saved.releaseNotes;this.persist();this.emit('status',this.state());}
 }
-module.exports={UpdateService,createTransport,selectRelease,selectLatest,compareVersions,versionParts,verifyInstaller,allowedURL,readJSON,writeJSON,API,LATEST_PAGE,DAY};
+module.exports={selectDeveloperRelease,UpdateService,createTransport,selectRelease,selectLatest,compareVersions,versionParts,verifyInstaller,allowedURL,readJSON,writeJSON,API,LATEST_PAGE,DAY};

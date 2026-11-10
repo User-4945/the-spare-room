@@ -1,0 +1,883 @@
+[
+  {
+    "tag": "v.3.0.0",
+    "id": 437829244,
+    "version": "3.0.0",
+    "ref": "67f639ff7cc75918ae0647c38414d662870aa677",
+    "prerelease": true,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 721868498,
+        "digest": "sha256:84e144862e0941cd46d60b3498ab4f1a99bc914b210bea0f147f2cd99f509c70"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 721868430,
+        "digest": "sha256:b6545d3885d8b56b3c94524df5da858d22e5ba08f187a0e4f1b5943e6f46daaf"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 721868444,
+        "digest": "sha256:76a8046fbd079a4a5a06f4fd572d292eafd260b19727bee87a46f69e5549ae15"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 721868525,
+        "digest": "sha256:b95db18e3964aac9f1ecf8afc3771393040fa4420558b70acda60d901b06b608"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 721868546,
+        "digest": "sha256:ae6cdd5429ff69f437014f11300adb17fec6e024db271f84a18b3ad20d6f14bb"
+      },
+      {
+        "name": "The-Spare-Room-3.0.0-linux-x64.AppImage",
+        "id": 721868403,
+        "digest": "sha256:e516030dfd2e077760786f9bd8262d53d857bc6a8e03e65dc692901208895c77"
+      },
+      {
+        "name": "The-Spare-Room-3.0.0-linux-x64.deb",
+        "id": 721868397,
+        "digest": "sha256:923870e9a0c4c1567fd3ac7d9f005d5097327819a136611fdcb9d7de3904f851"
+      },
+      {
+        "name": "The-Spare-Room-3.0.0-mac-universal.dmg",
+        "id": 721868436,
+        "digest": "sha256:b845d54b44ec37dd6d80b20f6910d4da094ac7e8e88ec569c2829ac04325fde6"
+      },
+      {
+        "name": "The-Spare-Room-Setup-3.0.0-x64.exe",
+        "id": 721868451,
+        "digest": "sha256:3c68c4429f8ac3e9f51d4fefd50d7f1f5a7970cbffb629b64e25ad98c880e4d4"
+      },
+      {
+        "name": "The-Spare-Room-v3.0.0-desktop-source.zip",
+        "id": 721868412,
+        "digest": "sha256:b0af9d0aa51fd1461347550e59fd39674ee188ce923be5517eb86c866135e960"
+      },
+      {
+        "name": "The-Spare-Room-v3.0.0-installable-web.zip",
+        "id": 721868408,
+        "digest": "sha256:b920f70a2111ffde0dcf3b3559b7d529ddd382d429fd9f332cc594f37aef10c6"
+      },
+      {
+        "name": "The-Spare-Room-v3.0.0-web.zip",
+        "id": 721868401,
+        "digest": "sha256:22330f4c05f16245b84f016ba25dace46fb3fe948bba749ff6ee7a3dccd0d760"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 721868466,
+        "digest": "sha256:f1b23f0add7dfce29ee3a00d60725c8b3a31b723a81e4fb9af9b866077ed26d5"
+      }
+    ]
+  },
+  {
+    "tag": "v2.7.6",
+    "id": 434235503,
+    "version": "2.7.6",
+    "ref": "5651bbda7e90a6edb6d95491bd23e19e253f5c27",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710748474,
+        "digest": "sha256:40832c6b79833740726c375cdd909b2c7dc73894e0e763066f4b1926d534d729"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 710321595,
+        "digest": "sha256:b45726b856652fc86d30ea07beb147adb90a215fb497031ac25d6cc6f6cd2ac2"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710746910,
+        "digest": "sha256:736bbea44788ba65f87ceb8b8d23cbf32ad78376404b3f9967e7561ed3f5992d"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 710321623,
+        "digest": "sha256:6aec84dfcad9ad48d2056c9882072764385898cec4b0b1cdaa47c2a74703a448"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710747521,
+        "digest": "sha256:a8d80c40c7f6511976021ddf60dee2fd5946c67da0cb7cff016084c208b94c39"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 710746839,
+        "digest": "sha256:fe94f2c553de514e788b93be9158247221957c910676cf4a6cafdd8f196acd22"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710748616,
+        "digest": "sha256:f9c44f078475cd50c63b948e900615332a094de7eeb0038d5b4e79a6693a0ed1"
+      },
+      {
+        "name": "The-Spare-Room-2.7.6-linux-x64.AppImage",
+        "id": 710746842,
+        "digest": "sha256:f08f8a3cbe648d2e87c2bd8f13fd0a87f7f2b0cf38e47255777c26137e5509dd"
+      },
+      {
+        "name": "The-Spare-Room-2.7.6-linux-x64.deb",
+        "id": 710746837,
+        "digest": "sha256:5facd0397fc7cf23dcd7aa15dd62351c66265ae7e4e428ef8e38d514b814366c"
+      },
+      {
+        "name": "The-Spare-Room-2.7.6-mac-universal.dmg",
+        "id": 710747531,
+        "digest": "sha256:b7165fccbb2d4238aad13bf9045b287e2ef9a1d2341723f170252982c241b53e"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.7.6-x64.exe",
+        "id": 710748098,
+        "digest": "sha256:9c569153479f17a4ef8b660f076cd49e822c8dabf2a87f63be678fcef174239f"
+      },
+      {
+        "name": "The-Spare-Room-v2.7.6-desktop-source.zip",
+        "id": 710746841,
+        "digest": "sha256:dead905c3af2e3a7e458e63ffd9849140a662ff60318e022b1481237cdf9eec0"
+      },
+      {
+        "name": "The-Spare-Room-v2.7.6-installable-web.zip",
+        "id": 710746836,
+        "digest": "sha256:aa3861c96a9a7a55da0c8b306e215d3b2496e870ec50e3b0a88fca029260f694"
+      },
+      {
+        "name": "The-Spare-Room-v2.7.6-web.zip",
+        "id": 710746897,
+        "digest": "sha256:a99b49242f1fd3b2a5bf533218d63cab5a0d733530df0f4780cad7959abcc4bd"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 710321656,
+        "digest": "sha256:a5c1a1953263ee1587635d501ea6464cce490237c5761c6e92fb50de41b82a70"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710748100,
+        "digest": "sha256:8288a879c81daa4477cd0159d625ca42990d5e451716eeed67b4010419a38892"
+      }
+    ]
+  },
+  {
+    "tag": "v.2.7.5",
+    "id": 426674255,
+    "version": "2.7.5",
+    "ref": "9cc65b564f8b2f06c4fb0a5afb7cce678a5bf811",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710714791,
+        "digest": "sha256:a499d74243017675ad8438c25f5adbf11b6dfd25ee56e253f1b8c4ffa3cfbba5"
+      },
+      {
+        "name": "DEVELOPER-CHANNEL.json",
+        "id": 710736021,
+        "digest": "sha256:07528530c11136f5fd92c6e75e6ae9f33112e02621c2d4dd7638148fdb41f3d4"
+      },
+      {
+        "name": "developer-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710716666,
+        "digest": "sha256:cc2451cd8d3f6206b1faa34ef081bcd43b87d70519cc4d1eeeb206c14a950345"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 686017600,
+        "digest": "sha256:4488b77f39e41a0ae8470684654da8aac5da3565bc4bade3c7770d5bdb2c97c2"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710714217,
+        "digest": "sha256:9335e3f44451e1ba0373b67929079fe03b78cea8b9c7cdb055a26fe4e810eb23"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 686017660,
+        "digest": "sha256:5cf21135c9a62e30c902533a6f871f6d6c1b94dd70da8b884ec73037ca4ae139"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710730460,
+        "digest": "sha256:ee34f9060ebe70e5a47837747737c8ffadd03d0e52204e8ba16119bc293e4d75"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 686017546,
+        "digest": "sha256:82bb6e942e47b3f6bb99d509785046482abe06a47ebc80d08a7859a3bccb8ea8"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710736200,
+        "digest": "sha256:5e53b87f7f2c51f4b3a9fd07b5b982027839c3c1ff3f3d757b6fcf99b83f77ef"
+      },
+      {
+        "name": "The-Spare-Room-2.7.5-linux-x64.AppImage",
+        "id": 710714194,
+        "digest": "sha256:50118df6aedec6f4a8283b088b7af8f721417d019f4979205c4087a92a16286d"
+      },
+      {
+        "name": "The-Spare-Room-2.7.5-linux-x64.deb",
+        "id": 710714188,
+        "digest": "sha256:8a84bfb1dc950dbdb96f23b8b0edc0f37987dc1f35e17163db4dc6e007224496"
+      },
+      {
+        "name": "The-Spare-Room-2.7.5-mac-universal.dmg",
+        "id": 710730476,
+        "digest": "sha256:d87e1c2c31f10a418e56df1acbba4c48f45464c070e83951331c1dbc7193da17"
+      },
+      {
+        "name": "The-Spare-Room-Developer-Setup-3.0.0-x64.exe",
+        "id": 710716665,
+        "digest": "sha256:728beee2222d6b312edc11500ef8ff91694be23e349958e629950c7b9705f6e3"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.7.5-x64.exe",
+        "id": 710714600,
+        "digest": "sha256:caf516478892a969b0ca2c4ea97b34452298b2097ea11b9f99f56252d704c13a"
+      },
+      {
+        "name": "The-Spare-Room-v2.7.5-desktop-source.zip",
+        "id": 710714182,
+        "digest": "sha256:694e1e528d12c51718f14bdb934468b4619391854eb07b341c49cb5ab36fdfe3"
+      },
+      {
+        "name": "The-Spare-Room-v2.7.5-installable-web.zip",
+        "id": 710714191,
+        "digest": "sha256:afc9ef1e0b77bb2051fbe2c1ecf03729d980caa9ae18849b17df6ec2dec7de1e"
+      },
+      {
+        "name": "The-Spare-Room-v2.7.5-web.zip",
+        "id": 710714186,
+        "digest": "sha256:59009ac18961137a8122590787ab59d115b276c73276255df81126df87ee749a"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 686017720,
+        "digest": "sha256:de7d644682e18d8eb2ab7366abff04540b295d4f3b40f45fa264be23a3f6cce4"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710714557,
+        "digest": "sha256:583b44606f3fc9f1a05c508d7fd80dccd86b1e7ede22db8f146e130af83dff57"
+      }
+    ]
+  },
+  {
+    "tag": "v2.6.5",
+    "id": 422913580,
+    "version": "2.6.5",
+    "ref": "e03fa25410b20f59428d722bc1f5ab80ccc94b39",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710714012,
+        "digest": "sha256:2019f64a9f95dd9a36269940e0fc60fda92b89ede6c6544f156836387ae869a9"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 686018269,
+        "digest": "sha256:31dc187e2c74708ea8ddc68e87bf29db729ee84d68c5475ec49e3231901a8278"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710712801,
+        "digest": "sha256:ef81387bc3d3a5f54bf169bd79fe45606cd58fd85efc724a9b4c32717c2360ca"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 686018296,
+        "digest": "sha256:941fbf1917d51ab1fda329ee555a2cbf80d688481f2ecb8735a82af015cf959d"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710713280,
+        "digest": "sha256:f0e84602e4f363332d669654f94859caf9d18ee55d34897865ad706a8228785e"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 686018226,
+        "digest": "sha256:d62148964f71059e0345219758428790ff2eab59df9da6f21edeb72b46a7a73f"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710714079,
+        "digest": "sha256:2b4af6bc5f6dae83adbe7bbb864bcebad3d5a516cdaaa462d0fd93ef5cae65b2"
+      },
+      {
+        "name": "The-Spare-Room-2.6.5-linux-x64.AppImage",
+        "id": 710712805,
+        "digest": "sha256:f0058ec8b25be1a9b68684edeb1110b26fe24d0ae1f4c5cabcba5dd8abda451c"
+      },
+      {
+        "name": "The-Spare-Room-2.6.5-linux-x64.deb",
+        "id": 710712809,
+        "digest": "sha256:6d7680b04baf59d608a17dee07855a7ea19029122a1af118ca9dc3c545c5e983"
+      },
+      {
+        "name": "The-Spare-Room-2.6.5-mac-universal.dmg",
+        "id": 710713295,
+        "digest": "sha256:4236f2f97fd6da3feff33f878bd575487729246731cae8c45b11c15cc504d0d9"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.6.5-x64.exe",
+        "id": 710713784,
+        "digest": "sha256:537fe2bb9da286350f11fc34d1dba3659abff7694f0c2f4f39b9de93ec4905d9"
+      },
+      {
+        "name": "The-Spare-Room-v2.6.5-desktop-source.zip",
+        "id": 710712821,
+        "digest": "sha256:1b978307e7e809fcaad96ac4dfe94479bc89c1909db53a5d6a841f52fef5de05"
+      },
+      {
+        "name": "The-Spare-Room-v2.6.5-installable-web.zip",
+        "id": 686018199,
+        "digest": "sha256:ddd375b4941d711c2160dcf5c82b5d477cb40a12b9bfe89b8af799d7a13be490"
+      },
+      {
+        "name": "The-Spare-Room-v2.6.5-web.zip",
+        "id": 686018250,
+        "digest": "sha256:c6518027620e17f540cc136e461eca9a7bc34c6d56f31f6fa636594cc6bfd817"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 686018335,
+        "digest": "sha256:1baa036067d06fbeef740ffca2edf56c3a8868a31cc92a84c04efa8780a9d13a"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710713776,
+        "digest": "sha256:52d4a9758a627d818296ea350fcbd16f52c14578ed049194b4fcd64d5deb6272"
+      }
+    ]
+  },
+  {
+    "tag": "v.2.5.0",
+    "id": 421814321,
+    "version": "2.5.0",
+    "ref": "25212ffdb3bdaf8596c42b12c05a4b033b665843",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710712594,
+        "digest": "sha256:d4b8d44c828ff4f63f1f316adaeedb65cd8d317aea1724574b356291dfabde9e"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 686018805,
+        "digest": "sha256:ef9e7c184e89758ac46fa379bcb7c857999f10d6c8bf9047d2032db83727db2e"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710711354,
+        "digest": "sha256:e812733b7eb221edb72b7e3701fd5aaf78abd32ec62da9df055cb8204e10fa22"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 686018844,
+        "digest": "sha256:8412d949216385706b85d175e4a970df823055e3ca093399e9dc7c8230f2836f"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710711861,
+        "digest": "sha256:6651a903084df8b3fd5fc4638d9c000fae645059c734a18c7a91e31c4c940285"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 686018758,
+        "digest": "sha256:9a7b13977fab5eef893dd58bdab06e6c19662e0ae21c4fad34dc0809c774ac19"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710712694,
+        "digest": "sha256:71e66d4de0545d37ad43fc5fed7f9be5f8571181128da6aabea1d591f867b456"
+      },
+      {
+        "name": "The-Spare-Room-2.5.0-linux-x64.AppImage",
+        "id": 710711369,
+        "digest": "sha256:80a75d3faa0acf95f5d5d5bee2adc7546c4dcc2f7ae8ac0cf971c991f7d16508"
+      },
+      {
+        "name": "The-Spare-Room-2.5.0-linux-x64.deb",
+        "id": 710711371,
+        "digest": "sha256:bd10a5e52661c894944b602a525d19eff492a23bd20b5b07180bc798ca383407"
+      },
+      {
+        "name": "The-Spare-Room-2.5.0-mac-universal.dmg",
+        "id": 710711875,
+        "digest": "sha256:6d6684a8bfd97243e9dc9a288da20b6c5f618ffed8d4834cc61243847f4b3b7c"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.5.0-x64.exe",
+        "id": 710712383,
+        "digest": "sha256:38af39161b48aa50783b3b4dcfd892ccc716ccc895958a5af8cdcb51cd8bbe4d"
+      },
+      {
+        "name": "The-Spare-Room-v2.5.0-desktop-source.zip",
+        "id": 710711364,
+        "digest": "sha256:e105f26a6f56f1b6b7b8b4267c23855e9f64cafc3eb9b32f8ae418dc1185021f"
+      },
+      {
+        "name": "The-Spare-Room-v2.5.0-installable-web.zip",
+        "id": 686018746,
+        "digest": "sha256:6a9927e538c651c2ece78c1c92143a7cbc2c63245ba9ce215ea76fecedc58502"
+      },
+      {
+        "name": "The-Spare-Room-v2.5.0-web.zip",
+        "id": 686018793,
+        "digest": "sha256:4cb6624799f33f93e2f936b67d2ae95acdf19547daaa42ae975de67b47705cf7"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 686018892,
+        "digest": "sha256:1c0648ed5b772d9de345736c4c21b231fd00cf1b870a42c56c2f6e1ba543682c"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710712375,
+        "digest": "sha256:1229ac8c747cea9eb041649cad75ce5bdbf4530c2ffc3ecfcff5a94a569b0c68"
+      }
+    ]
+  },
+  {
+    "tag": "v2.0.5",
+    "id": 419799692,
+    "version": "2.0.5",
+    "ref": "e008c6c1c562cc5da0daf2fe3abede2083560086",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710709751,
+        "digest": "sha256:cb4d563924ce98030d50bde2d3d741be9a53b651df5d326b29ac1be83ba6b857"
+      },
+      {
+        "name": "DESKTOP_README.md",
+        "id": 685835487,
+        "digest": "sha256:8628dcccb551079b5c45067352de5ef202987b2e0776060156468002a417acc7"
+      },
+      {
+        "name": "INSTALL-PLATFORMS.md",
+        "id": 685835486,
+        "digest": "sha256:80042ebed49f570750a7b1c5c85eb2f07e6d19c1cb83b11ba70c1c9eb86b5e7e"
+      },
+      {
+        "name": "INSTALLER_BUILD.json",
+        "id": 685835483,
+        "digest": "sha256:123acddcc8d1c94ae04a604fe1df9c4845ada5d889e58d030ee45a4dfa5c4855"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 685835649,
+        "digest": "sha256:123acddcc8d1c94ae04a604fe1df9c4845ada5d889e58d030ee45a4dfa5c4855"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710708684,
+        "digest": "sha256:5f39b8063cc664af37ebc4ba7427f8dc4fc622097900c756588f200114b16357"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 685835652,
+        "digest": "sha256:8515122a5349ef4d7ff7f69a3d24e5f928a2e9017bb134fce8a130d37fc6ace2"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710733838,
+        "digest": "sha256:aac2a3d6e5556323ae877332d221e252fe1343b9a60405b14aa4fe07686f6140"
+      },
+      {
+        "name": "PLATFORM-SHA256SUMS.txt",
+        "id": 710734797,
+        "digest": "sha256:bf578082bc590f6640ee7f3a99e0d7d6015adf55b63dc4f5fc8a3cb9254aeb3b"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 685835482,
+        "digest": "sha256:ff3c43d4e62fc74d030f029e98d27daa7a346ca31d25f94cbaad6c46c95a097f"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710734732,
+        "digest": "sha256:bf578082bc590f6640ee7f3a99e0d7d6015adf55b63dc4f5fc8a3cb9254aeb3b"
+      },
+      {
+        "name": "The-Spare-Room-2.0.5-linux-x64.AppImage",
+        "id": 710708707,
+        "digest": "sha256:fc549b3052f50326210bd6bbf539c31a68f389b30fa579b22ab84fcd60165687"
+      },
+      {
+        "name": "The-Spare-Room-2.0.5-linux-x64.deb",
+        "id": 710708718,
+        "digest": "sha256:87c7a6fd1299d30265327c7f4d96f3423bf7852dedb39478e801feedfe858c1d"
+      },
+      {
+        "name": "The-Spare-Room-2.0.5-mac-universal.dmg",
+        "id": 710733864,
+        "digest": "sha256:ba1e2bee53bdffa16bff93d5c4ec3bc43192eb04d02b1799cdaeaf2231634c22"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.0.5-x64.exe",
+        "id": 710709380,
+        "digest": "sha256:bea6921fa9df3b8b1e36ad9a77ada8ce7d950324b1de810aca5e1e19b9e434bd"
+      },
+      {
+        "name": "The-Spare-Room-v2.0.5-desktop-source.zip",
+        "id": 710708695,
+        "digest": "sha256:8be11e97f6bef8144951cd46f90a3442c6ca330b972d6f686bd0876ba0c8f05d"
+      },
+      {
+        "name": "The-Spare-Room-v2.0.5-installable-web.zip",
+        "id": 685835567,
+        "digest": "sha256:3614e0d9eb0243d3b39f510ef7bb3d790d0747a6c97c13601bf5aad9afbed8fb"
+      },
+      {
+        "name": "The-Spare-Room-v2.0.5-web.zip",
+        "id": 685835573,
+        "digest": "sha256:08f965ca408a8e4f095bb7727d7a92424650bf45dcfef0f60cc4e834cc7ec874"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 685835706,
+        "digest": "sha256:2b3db3c0bd043e4febd1d07ef58af3932c46ff9db4f440601bc4f6025c09fc1c"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710709355,
+        "digest": "sha256:8380924604874e42565201f2fdc788115c2d019fb70cd00a0c636c924ce5350c"
+      }
+    ]
+  },
+  {
+    "tag": "v2.0.0",
+    "id": 416392822,
+    "version": "2.0.0",
+    "ref": "c5cd1cafc8849d6b4bd24df46224d89d8e698dc2",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710708343,
+        "digest": "sha256:8a11a7f77c5a1e34a094407727e8baef1102241d7cc67602268cdb31027f9ab1"
+      },
+      {
+        "name": "DESKTOP_README.md",
+        "id": 685836466,
+        "digest": "sha256:1fe27545dfdcfa1dbe5e061832787d617f6315acfd91d754a2f10b852e5e1fd1"
+      },
+      {
+        "name": "INSTALL-PLATFORMS.md",
+        "id": 685836469,
+        "digest": "sha256:80042ebed49f570750a7b1c5c85eb2f07e6d19c1cb83b11ba70c1c9eb86b5e7e"
+      },
+      {
+        "name": "INSTALLER_BUILD.json",
+        "id": 685836462,
+        "digest": "sha256:043489d6b7693142a7429f34d7a537794be4e29fd8de7a96700aed2143542acf"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 685836611,
+        "digest": "sha256:043489d6b7693142a7429f34d7a537794be4e29fd8de7a96700aed2143542acf"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710706285,
+        "digest": "sha256:2240440f208a43f47bb31f50efa37377cf6800897c63eb8f1c4b8a7f8024ee74"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 685836625,
+        "digest": "sha256:d2ba8e3c4faa120ad4a0878f5afd0a6f7b48d9c064caa0e5340289c9ae66dc73"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710706945,
+        "digest": "sha256:e16a328b41426c94d64bca27b3bad9720ac361d603d724e644c63d2cc1d05b17"
+      },
+      {
+        "name": "PLATFORM-SHA256SUMS.txt",
+        "id": 710708547,
+        "digest": "sha256:7040d1e166e1946ef6032e46ef675b8f7f4195ecb09d8dd9f447f332a01d6438"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 685836460,
+        "digest": "sha256:c8eec90c0d93a4c11da8640f567b069bdcdad0f459fb117d6e5c055c8d9d28cb"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710708476,
+        "digest": "sha256:7040d1e166e1946ef6032e46ef675b8f7f4195ecb09d8dd9f447f332a01d6438"
+      },
+      {
+        "name": "The-Spare-Room-2.0.0-linux-x64.AppImage",
+        "id": 710706305,
+        "digest": "sha256:940b54ec803859ba8809a66d9acd23bedabdfe694274ca73ea2e45189df127cf"
+      },
+      {
+        "name": "The-Spare-Room-2.0.0-linux-x64.deb",
+        "id": 710706313,
+        "digest": "sha256:c65247eb1e81d0e3b37597c5a14fafdd1774ca8bd1587a4e75328c698f409d30"
+      },
+      {
+        "name": "The-Spare-Room-2.0.0-mac-universal.dmg",
+        "id": 710706959,
+        "digest": "sha256:4abfac923cbc2ef9eed6a4138dd2cc5cc684465772722af5e1979bffc2741387"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.0.0-x64.exe",
+        "id": 710707959,
+        "digest": "sha256:09dc69507c3d8b46637ab0658aaf90e597ec9e715a419eb0d534b2c6b2b6e2d9"
+      },
+      {
+        "name": "The-Spare-Room-v2.0.0-desktop-source.zip",
+        "id": 710706292,
+        "digest": "sha256:5dbcc68d0e5517cb1612eefb3f9e5940c947fd4deedd2a50e189a982820bfd52"
+      },
+      {
+        "name": "The-Spare-Room-v2.0.0-installable-web.zip",
+        "id": 685836541,
+        "digest": "sha256:26250083d14d35e24cef21bbfdfa1acc422cf7e453bdeaa11aeaafc2dc949b9f"
+      },
+      {
+        "name": "The-Spare-Room-v2.0.0-web.zip",
+        "id": 685836560,
+        "digest": "sha256:207ed1771e930a96eb7f710106d8007e49d24578f25a006029318010608e946b"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 685836676,
+        "digest": "sha256:2ad8f3ab579ad5e5ca50b355bd09ae0ab4fbc224d3c320aa3f92172b2ea64c8a"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710707941,
+        "digest": "sha256:3bf23fcc587111d5ed1194b697d9f940f88005c887541877f38248b2dce29f06"
+      }
+    ]
+  },
+  {
+    "tag": "v1.5.1",
+    "id": 416387457,
+    "version": "1.5.1",
+    "ref": "1c9fcbc427f8a15f9829b7f30b1adbb3f4487bd7",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710705973,
+        "digest": "sha256:7f52bc15884627224d7e7d014113a855c1825b02dd345bfe862ae716532edf1c"
+      },
+      {
+        "name": "DESKTOP_README.md",
+        "id": 685837436,
+        "digest": "sha256:50512dce251b5119e0f7a0d66de81ab97480d442d7efc83b7a9b480134a1cf1f"
+      },
+      {
+        "name": "INSTALL-PLATFORMS.md",
+        "id": 685837434,
+        "digest": "sha256:80042ebed49f570750a7b1c5c85eb2f07e6d19c1cb83b11ba70c1c9eb86b5e7e"
+      },
+      {
+        "name": "INSTALLER_BUILD.json",
+        "id": 685837433,
+        "digest": "sha256:efa04c99f12ad5e416e2c1f74359bb17361b42a1a6814cb8a493129adc8eda51"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 685837571,
+        "digest": "sha256:efa04c99f12ad5e416e2c1f74359bb17361b42a1a6814cb8a493129adc8eda51"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710704546,
+        "digest": "sha256:456da12f4ecdfc49087e97f2118bb7f3ae1aed8df973e3edbd4041b5ef597f85"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 685837582,
+        "digest": "sha256:d535e1e39172d335826a1d61e75c5cd1bb7396a32db9e2b8f87cfc137258ba8f"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710705168,
+        "digest": "sha256:c40d7fa6d678a78f8ea25a3644fb938f0c8f9a358d2a1584af5d2d81cf1f1602"
+      },
+      {
+        "name": "PLATFORM-SHA256SUMS.txt",
+        "id": 710706156,
+        "digest": "sha256:ec8ddd0581a683d44067be73680f7ce34a6aa5215730a291427cb752a87e3f0f"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 685837456,
+        "digest": "sha256:586727621eb1c6018e6c6611668faa97b9628e85c96c5c1a97fc25f9badc27b1"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710706083,
+        "digest": "sha256:ec8ddd0581a683d44067be73680f7ce34a6aa5215730a291427cb752a87e3f0f"
+      },
+      {
+        "name": "The-Spare-Room-1.5.1-linux-x64.AppImage",
+        "id": 710704559,
+        "digest": "sha256:eb34d2d01236e82b242ab7c39ef3d4533e766c11bace655ccc29a89b97b356d0"
+      },
+      {
+        "name": "The-Spare-Room-1.5.1-linux-x64.deb",
+        "id": 710704555,
+        "digest": "sha256:b42bad11ddfce3236234bafb12905a366381b87e888e92921c06ece618ff4941"
+      },
+      {
+        "name": "The-Spare-Room-1.5.1-mac-universal.dmg",
+        "id": 710705179,
+        "digest": "sha256:fd8638317bf28f828ceb7c1b9fe6b0b96159087186b70e5d0705ce6c97d02182"
+      },
+      {
+        "name": "The-Spare-Room-Setup-1.5.1-x64.exe",
+        "id": 710705717,
+        "digest": "sha256:9587b494bd8d2d2c96d62fe891d24927128da32b1a0e4e678058b7075a11ad71"
+      },
+      {
+        "name": "The-Spare-Room-v1.5.1-desktop-source.zip",
+        "id": 710704558,
+        "digest": "sha256:16f4087b59d66b1c70e2cfbcf4e7bfcfeae166d6de4fe2b07848ea0b7ef0bdea"
+      },
+      {
+        "name": "The-Spare-Room-v1.5.1-installable-web.zip",
+        "id": 685837531,
+        "digest": "sha256:ac594cc0efc7c5cd5ad27b742534ad57d55a5c663a8b67200b00e4e1a4bfb422"
+      },
+      {
+        "name": "The-Spare-Room-v1.5.1-web.zip",
+        "id": 685837538,
+        "digest": "sha256:7e2dd5bae12488923ed5d57162c06e0eaf9c6f01fd92a2fa29679c0bd6bd4904"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 685837654,
+        "digest": "sha256:8a22eca995ba4243bb0667e7e0e100feee4b8690293314022d0a043e2667f0f3"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710705702,
+        "digest": "sha256:9c756c4396f507cb4a4c11883d96bdc6d7fa2035e9c296a50ffd3408371711d2"
+      }
+    ]
+  },
+  {
+    "tag": "v.2.1.0",
+    "id": 416406503,
+    "version": "2.1.0",
+    "ref": "5c47415e7dd559f7ff7e59f8e08e539da0565386",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD-REFRESH.json",
+        "id": 710711035,
+        "digest": "sha256:130f8a45e1e2840198d3ce8970b8334dc624b8a9cd3b2abf2f11adee6c22411e"
+      },
+      {
+        "name": "DESKTOP_README.md",
+        "id": 685838253,
+        "digest": "sha256:8ffa77493eaa271bc8bafae697b51f7364f9372f0451fccdb7ac2a2ac9db88dc"
+      },
+      {
+        "name": "INSTALL-PLATFORMS.md",
+        "id": 685838260,
+        "digest": "sha256:80042ebed49f570750a7b1c5c85eb2f07e6d19c1cb83b11ba70c1c9eb86b5e7e"
+      },
+      {
+        "name": "INSTALLER_BUILD.json",
+        "id": 685838259,
+        "digest": "sha256:a9b68d352ce84aab863458109cdcb519bba83f451956b0b3669ff9e77f480517"
+      },
+      {
+        "name": "linux-BUILD.json",
+        "id": 685838351,
+        "digest": "sha256:a9b68d352ce84aab863458109cdcb519bba83f451956b0b3669ff9e77f480517"
+      },
+      {
+        "name": "linux-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710710068,
+        "digest": "sha256:ba4e4b05965ab7ce5816a865b758012ef76078189361cea4f9617805f0209f1a"
+      },
+      {
+        "name": "mac-BUILD.json",
+        "id": 685838358,
+        "digest": "sha256:8f143f3f83678fdfb537d447e6eb1b2c241b1c7c1f4680733208477b237b44d3"
+      },
+      {
+        "name": "mac-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710734910,
+        "digest": "sha256:f838a1607b256e5a936cc46d34a6de2b4afdc7bd3805d38adb311e6e44fd0bfb"
+      },
+      {
+        "name": "PLATFORM-SHA256SUMS.txt",
+        "id": 710735760,
+        "digest": "sha256:6885219f4067701c05201d5b5870f4a325cef4a017257b0e7ed115aaf2baca82"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "id": 685838261,
+        "digest": "sha256:5d14be5a6be0df8a116fe44c20afba1cbc0bc5470415416ec011cb906665520f"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 710735547,
+        "digest": "sha256:6885219f4067701c05201d5b5870f4a325cef4a017257b0e7ed115aaf2baca82"
+      },
+      {
+        "name": "The-Spare-Room-2.1.0-linux-x64.AppImage",
+        "id": 710710084,
+        "digest": "sha256:a5d8ece96200cc97c8980a05fccfa12dc4be35e336bac7e4e4240fc6f3b2fbbb"
+      },
+      {
+        "name": "The-Spare-Room-2.1.0-linux-x64.deb",
+        "id": 710710077,
+        "digest": "sha256:11ac9c1663655c6ae147403c78df96692717ed8449d47262596df9d6dcd688bf"
+      },
+      {
+        "name": "The-Spare-Room-2.1.0-mac-universal.dmg",
+        "id": 710734933,
+        "digest": "sha256:0c0d93f7f6fd38cd372c58f6ce4f95a0476bd7e8e4fa4319615196a14525cc9e"
+      },
+      {
+        "name": "The-Spare-Room-Setup-2.1.0-x64.exe",
+        "id": 710710674,
+        "digest": "sha256:ee210657c9c06c3026dfd384d92dca939dc329a7ec11d31fc611657606f25f10"
+      },
+      {
+        "name": "The-Spare-Room-v2.1.0-desktop-source.zip",
+        "id": 710710076,
+        "digest": "sha256:fa3efaf96e839cd55094f4292be029e563f5f24c4866e5f74556ec2f68781a23"
+      },
+      {
+        "name": "The-Spare-Room-v2.1.0-installable-web.zip",
+        "id": 685838313,
+        "digest": "sha256:d90f0e492eead0d594fec2ecb1aa22136b0b1f093120f063d845b69182eb6f38"
+      },
+      {
+        "name": "The-Spare-Room-v2.1.0-web.zip",
+        "id": 685838312,
+        "digest": "sha256:23dff0401b705ab5458335fe1f20eb88d84903b85252cf84e1b0f5e7fb7c3920"
+      },
+      {
+        "name": "win-BUILD.json",
+        "id": 685838427,
+        "digest": "sha256:115a6bbaa56b2ab84322ff31228dbd99f2e0cb819fd9351c4dd01841c2f75023"
+      },
+      {
+        "name": "win-DEVELOPER-REFRESH-BUILD.json",
+        "id": 710710643,
+        "digest": "sha256:70dad8b5c2ad1e8b2d295eaf9c53cb20c24bd5f43446852ada08d35d5edde2a5"
+      }
+    ]
+  }
+]
