@@ -18,7 +18,7 @@ local Config={
   {name="+1000 Memory Shards",amount=1000,productId=3729646477},
  },
  ReviveSanity = 50,
- SaveEndingJournal = false, -- Enable only after publishing and configuring DataStore access.
+ SaveEndingJournal = true, -- Saves where Roblox DataStore access is available; local practice still works.
  Modes = {
   Easy = {drain = 0.025, damage = 0.75, sandwich = 15, delay = 45},
   Intermediate = {drain = 0.045, damage = 1, sandwich = 12, delay = 34},
