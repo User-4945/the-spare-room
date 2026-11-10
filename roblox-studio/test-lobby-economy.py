@@ -66,7 +66,7 @@ print("PASS: atomic shard rewards, receipt retries/duplicates/outages, permanent
 '''
 with tempfile.TemporaryDirectory() as d:
  p=Path(d)
- for target,source in [('Economy','SpareRoomEconomy'),('Lobby','SpareRoomLobby'),('Config','SpareRoomConfig')]:
-  (p/(target+'.lua')).write_text((root/(source+'.lua')).read_text())
+ for target,source in [('Economy','SpareRoomEconomy'),('Lobby','SpareRoomLobby'),('Content','SpareRoomContent'),('Config','SpareRoomConfig')]:
+  (p/(target+'.lua')).write_text((root/(source+'.lua')).read_text().replace('require(script.Parent:WaitForChild("SpareRoomContent"))','require("./Content")'))
  (p/'test.lua').write_text(checks)
  subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'luau',str(p/'test.lua')],check=True)

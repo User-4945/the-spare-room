@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 local DataStoreService = game:GetService("DataStoreService")
 local Config = require(ReplicatedStorage:WaitForChild("SpareRoomConfig"))
+local Content=require(ReplicatedStorage:WaitForChild("SpareRoomContent"))
 local world = workspace:WaitForChild("SpareRoomWorld")
 local items = world:WaitForChild("Interactables")
 local remote = Instance.new("RemoteEvent")
@@ -105,7 +106,7 @@ local function finish(player, id)
   if humanoid then humanoid.Health=0 end
  end
  remote:FireClient(player, "AnomalyEnd")
- remote:FireClient(player, "Ending", {id = id, title = ending.title, text = ending.text})
+ remote:FireClient(player, "Ending", {id = id, title = ending.title, text = id=="legacy:burn" and not(s.flags.photo and s.flags.tape) and ending.unprotectedText or ending.text})
  snapshot(player)
  saveJournal(player, s)
 end
@@ -123,7 +124,7 @@ end
 local function reset(player, mode)
  local old = states[player]
  states[player] = {
-  classId=economy and economy:class(player) or "Wanderer", started = true, mode = mode, sanity = 100, stamina = 100, diary = {}, records = {}, rooms = {},
+  classId=economy and economy:class(player) or "Wanderer", started = true, mode = mode, sanity = 100, stamina = 100, diary = {}, evidence={}, records = {}, rooms = {},
   anomalies = {}, journal = old and old.journal or {}, canSave = old and old.canSave or false,
   flags = {}, key = false, sandwichAt = 0, time = 0, nextAnomaly = Config.Modes[mode].delay,
   active = nil, menu = false, reading = nil, ended = nil, sprint = false, exhausted = false,
@@ -266,10 +267,44 @@ local function read(player, part, text, cost)
  s.sprint = false
  remote:FireClient(player, "Read", {id = s.sequence, title = value(part, "Title"), text = text})
 end
+local function sourceRequirements(s,r)
+ if not r then return true end
+ local function has(id)
+  local n=string.match(id,"^diary(%d+)$")
+  return n and s.diary[tonumber(n)] or s.evidence and s.evidence[id]
+ end
+ for _,id in ipairs(r.items or {}) do if not has(id) then return false end end
+ for _,f in ipairs(r.flags or {}) do if not s.flags[f] then return false end end
+ for _,id in ipairs(r.anomalies or {}) do if not s.anomalies["source:"..id] then return false end end
+ local types={photos="photo",records="record",drawings="drawing",letters="letter",memories="memory",dad="dad"}
+ for key,kind in pairs(types) do
+  if r[key] then
+   local n=0 for _,item in ipairs(Content.deepItems) do if item.type==kind and has(item.id) then n+=1 end end
+   if n<r[key] then return false end
+  end
+ end
+ local witnessed=0 for id in pairs(s.anomalies) do if string.sub(id,1,7)=="source:" then witnessed+=1 end end
+ return count(s.diary)>=(r.diary or 0) and witnessed>=(r.anomalyCount or 0)
+  and (not r.sanityMin or s.sanity>=r.sanityMin) and (not r.sanityMax or s.sanity<=r.sanityMax)
+end
+local function roomUnlocked(s,id)
+ local items=s.evidence or {}
+ if id=="archive" then return items["key-archive"] end
+ if id=="study" then return items["key-study"] end
+ if id=="observation" then return items["key-observation"] end
+ if id=="sealed" then return items["key-observation"] and s.flags.valve end
+ return true
+end
 local function interact(player, part)
  local s = states[player]
  local role = value(part, "Role")
- if role=="lobbyQueue" then
+ if role=="roomGate" then
+  local room=value(part,"Room")
+  if not roomUnlocked(s,room) then tell(player,"The door needs its labelled key"..(room=="sealed" and " and an isolated boiler valve." or ".")) return end
+  local root=position(player) local side=part.Position.X>0 and 1 or -1
+  local inside=root and math.abs(root.Position.X)>4
+  player.Character:PivotTo(CFrame.new(inside and 0 or side*8,-14,part.Position.Z))
+ elseif role=="lobbyQueue" then
   lobby:join(player,value(part,"Mode"))
  elseif role=="lobbyShop" then
   if lobby.membership[player] then economyStatus(player,"Leave the departure queue before shopping.")
@@ -279,6 +314,14 @@ local function interact(player, part)
   if Config.Modes[mode] then lobby:leave(player) reset(player,mode) end
  elseif role=="lobbyNote" then
   read(player,part,value(part,"Text"),0)
+ elseif role=="observe" then
+  local options={} for _,a in ipairs(Config.Anomalies) do if a.source and a.room==value(part,"Room") then table.insert(options,a.id) end end
+  if #options>0 and not s.active then s.requestedAnomaly=options[math.random(#options)] s.nextAnomaly=s.time end
+ elseif role=="evidence" then
+  local id=value(part,"Evidence") s.evidence=s.evidence or {}
+  local first=not s.evidence[id] s.evidence[id]=true
+  if id=="key-chamber" then s.key=true end
+  read(player,part,value(part,"Text"),first and value(part,"Category")~="key" and 2 or 0)
  elseif role == "diary" then
   local n = tonumber(value(part, "Index"))
   if not n or not Config.Diary[n] then return end
@@ -331,7 +374,7 @@ local function interact(player, part)
   s.active = nil
   s.nextAnomaly = s.time + 10
  elseif role == "gate" then
-  if count(s.diary) < 12 or count(s.records) < 3 or not s.key then
+  if count(s.diary) < 12 or (count(s.records) < 3 and not sourceRequirements(s,{records=3})) or not s.key then
    tell(player, "The chamber needs 12 diary pages, 3 family records and the unnumbered key.")
   else
    player.Character:PivotTo(CFrame.new(9, -14, 63))
@@ -344,13 +387,16 @@ local function interact(player, part)
    and count(s.anomalies) >= (e.anomalies or 0) and (not e.anchor or s.flags.anchor)
    and (not e.valve or s.flags.valve) and (not e.mum or s.flags.mum)
    and (not e.sanityMax or s.sanity <= e.sanityMax)
+  ready=ready and sourceRequirements(s,e.requirements)
+  if e.dayOnly and (Lighting.ClockTime<7 or Lighting.ClockTime>18) then ready=false end
   for _,flag in ipairs(e.flags or {}) do if not s.flags[flag] then ready=false end end
   if ready then
    s.sequence += 1
    s.confirm = {id = id, nonce = s.sequence, part = part}
-   remote:FireClient(player, "Confirm", {id = id, nonce = s.sequence, title = e.title, text = e.text})
+   remote:FireClient(player, "Confirm", {id = id, nonce = s.sequence, title = e.title, text = id=="legacy:burn" and not(s.flags.photo and s.flags.tape) and e.unprotectedText or e.text})
    s.menu = true
   else
+   if e.requirements then tell(player,"This ending needs more original evidence, room decisions or witnessed anomalies. Keep exploring the basement stations.") return end
    if e.flags then tell(player,"Read the room’s hidden note and complete its unfinished task first.") return end
    tell(player, "Requires diary pages: " .. (e.diary or 0) .. ", records: " .. (e.records or 0) .. ", anomalies: " .. (e.anomalies or 0)
     .. (e.anchor and "; hold the ordinary memory" or "") .. (e.valve and "; isolate the boiler pipe" or "")
@@ -359,6 +405,10 @@ local function interact(player, part)
  end
  snapshot(player)
 end
+local atmosphere=Instance.new("Atmosphere") atmosphere.Name="AshfieldHaze"
+atmosphere.Density=0.18 atmosphere.Offset=0.05 atmosphere.Color=Color3.fromRGB(191,204,184)
+atmosphere.Decay=Color3.fromRGB(91,110,98) atmosphere.Glare=0.12 atmosphere.Haze=1.2 atmosphere.Parent=Lighting
+local rays=Instance.new("SunRaysEffect") rays.Intensity=0.025 rays.Spread=0.8 rays.Parent=Lighting
 Lighting.ClockTime = 8
 local worldSeconds=0
 local worldDay=1
@@ -392,7 +442,7 @@ for _, part in ipairs(world:GetDescendants()) do
    light.Color = Color3.fromRGB(239, 207, 155)
    light.Brightness = part.Position.Y < -5 and 0.65 or 1.1
    light.Range = part.Position.Y < -5 and 17 or 25
-   light.Shadows = true
+   light.Shadows = part.Position.Y < -5 or math.abs(part.Position.X)<25
    light.Parent = part
   end
   local sign = part:FindFirstChild("Sign")
@@ -452,7 +502,7 @@ for _, part in ipairs(items:GetChildren()) do
 end
 local function joined(player)
  states[player] = {
-  started = false, mode = "Easy", sanity = 100, stamina = 100, diary = {}, records = {}, rooms = {},
+  started = false, mode = "Easy", sanity = 100, stamina = 100, diary = {}, evidence={}, records = {}, rooms = {},
   anomalies = {}, journal = {}, flags = {}, time = 0, sandwichAt = 0, sequence = 0, nextAnomaly = 45, lastRequest = 0,
  }
  task.spawn(function() economy:load(player) end)
@@ -599,7 +649,11 @@ remote.OnServerEvent:Connect(function(player, action, data)
    s.menu = false
    s.confirm = nil
    local root = position(player)
-   if root and (root.Position - c.part.Position).Magnitude < 8 then finish(player, c.id) end
+   local e=Config.Endings[c.id]
+   local allowed=e and sourceRequirements(s,e.requirements)
+   for _,flag in ipairs(e and e.flags or {}) do if not s.flags[flag] then allowed=false end end
+   if e and e.dayOnly and (Lighting.ClockTime<7 or Lighting.ClockTime>18) then allowed=false end
+   if root and allowed and (root.Position - c.part.Position).Magnitude < 8 then finish(player, c.id) end
   end
  elseif action == "CancelEnding" then s.confirm = nil s.menu = false end
 end)
@@ -689,18 +743,19 @@ RunService.Heartbeat:Connect(function(dt)
      if point then
       s.sequence += 1
       local a = nil
-      if s.adminAnomaly then
-       for _, candidate in ipairs(Config.Anomalies) do if candidate.id == s.adminAnomaly then a = candidate break end end
-       s.adminAnomaly = nil
+      if s.adminAnomaly or s.requestedAnomaly then
+       local requested=s.adminAnomaly or s.requestedAnomaly
+       for _, candidate in ipairs(Config.Anomalies) do if candidate.id == requested then a = candidate break end end
+       s.adminAnomaly = nil s.requestedAnomaly=nil
       else a = nextNaturalAnomaly(s) end
       local templates=ReplicatedStorage:FindFirstChild("SpareRoomAvatarTemplates")
       if (a.id=="watcher" or a.id=="doll" or a.id=="family") and (not templates or not templates:FindFirstChild(a.id=="doll" and "Doll" or "Watcher")) then
        a=Config.Anomalies[3] -- API avatar creation may still be loading; retry through the next bag.
       end
-      s.active = {elapsed = 0, duration = 14, floor = root.Position.Y < -6 and "below" or "above"}
+      s.active = {elapsed = 0, duration = a.source and 18 or 14, floor = root.Position.Y < -6 and "below" or "above"}
       s.anomalies[a.id] = true
-      remote:FireClient(player, "Anomaly", {id = a.id, title = a.title, text = a.text, position = point, duration = s.active.duration})
-      damage(player, 2.5)
+      remote:FireClient(player, "Anomaly", {id = a.visualId or a.id, title = a.title, text = a.text, position = point, duration = s.active.duration})
+      if not a.source then damage(player, 2.5) end
      else s.nextAnomaly = s.time + 8 if s.adminAnomaly then tell(player, "Move to an open floor area so the anomaly can appear safely.") end end
     end
    end

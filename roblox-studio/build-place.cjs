@@ -19,6 +19,7 @@ const buildPlace=function buildRobloxPlace(sources) {
   return item("Part",name,cframe+size+bool("Anchored",true)+bool("CanCollide",solid)+bool("CanTouch",false)+bool("CanQuery",true)+num("Transparency",transparency)+`<token name="Material">${materials[material]||528}</token>`+`<Color3uint8 name="Color3uint8">${color[0]*65536+color[1]*256+color[2]}</Color3uint8>`+`<token name="TopSurface">0</token><token name="BottomSurface">0</token>`,children);
  }
  const world=[], interactions=[];
+ const content=sources.contentData;
  const add=(...a)=>world.push(part(...a));
  const prop=(name,role,title,action,x,y,z,w,h,d,extra={},color=[205,190,150])=>{
   interactions.push(part(name,x,y,z,w,h,d,color,role==="key"?"Metal":"Wood",{Role:role,Title:title,Action:action,...extra},false,(role==="doll"||role==="mum")?1:0));
@@ -215,7 +216,8 @@ const buildPlace=function buildRobloxPlace(sources) {
  for(const z of [-57,-33])add("Pavement",0,.05,z,260,.1,6,[127,124,110],"Concrete");
  for(let x=-120;x<=120;x+=12)add("RoadMark",x,.015,-45,5,.02,.2,[181,169,128],"SmoothPlastic",{},false);
  for(const x of [-130,130])add("DistrictBoundary",x,6,0,1,16,260,[47,57,49],"Brick");
- for(const z of [-130,130])add("DistrictBoundary",0,6,z,260,16,1,[47,57,49],"Brick");
+ add("DistrictBoundary",0,6,130,260,16,1,[47,57,49],"Brick");
+ for(const x of [-68,68])add("DistrictBoundary",x,6,-130,124,16,1,[47,57,49],"Brick");
  add("GardenPath",0,.04,-24,6,.08,16,[112,110,96],"Concrete");
  const venues=[
   [-96,-79,"CINEMA","THE PALLADIUM",[83,45,44]],[-56,-79,"ARCHIVE","MUNICIPAL ARCHIVE",[62,76,65]],
@@ -266,6 +268,87 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("FuseBoxCase",3.6,5,8,.3,2.5,1.8,[68,75,71],"Metal");
  for(let i=0;i<4;i++)add("FuseSwitch",3.35,4.3+i*.43,8,.2,.25,.65,[161,158,135],"SmoothPlastic");
  add("FuseWarning",3.3,6,8,.05,.4,1.2,[192,160,65],"Metal",{Sign:"MAIN / 240V",Side:"Left"},false);
+ // Source-driven evidence and decision stations across the existing basement rooms.
+ const roomIndex=Object.fromEntries(content.BENEATH.rooms.map((r,i)=>[r.id,i]));
+ for(const room of content.BENEATH.rooms){
+  const i=roomIndex[room.id],x=i%2?16:-16,z=-9+Math.floor(i/2)*18;
+  const evidence=content.deepItems.filter(n=>n.room===room.id&&n.type!=="diary");
+  evidence.forEach((n,k)=>{
+   const px=x-8+(k%5)*4,pz=z-8.6;
+   prop("Evidence_"+n.id,"evidence",n.title,n.type==="key"?"Take key":"File evidence",px,-13.5+Math.floor(k/5)*1.6,pz,1,1.1,.08,{Evidence:n.id,Text:n.text,Category:n.type});
+  });
+  (content.deepActions[room.id]||[]).forEach(([flag,label,text],k)=>{
+   prop("Decision_"+room.id+"_"+flag,"story",label,label,x+10,-13.5,z-5+k*2, .15,1,.9,{Flag:flag,Text:text,Cost:"0"});
+  });
+ }
+ const endingRoom=content.deepEndRoom;
+ for(const room of content.BENEATH.rooms){
+  const list=content.BENEATH.endings.filter(e=>endingRoom[e.category]===room.id),i=roomIndex[room.id],x=i%2?16:-16,z=-9+Math.floor(i/2)*18;
+  list.forEach((e,k)=>prop("DeepEnding_"+e.id,"ending",e.name,"Consider ending",x-9+k*3,-13,z+7,1,.2,.7,{Ending:"deep:"+e.id}));
+ }
+ // Annex preserves all 20 original city venues; boulevard connects through the old north boundary.
+ add("CityAnnexGround",0,-.45,-220,260,.5,240,[47,60,47],"Grass");
+ for(const z of [-145,-185,-225,-265]){
+  add("AnnexStreet",0,-.1,z,250,.2,10,[43,47,47],"Concrete");
+  for(const dz of [-7,7])add("AnnexPavement",0,.04,z+dz,250,.08,4,[124,120,105],"Concrete",{},false);
+ }
+ add("AnnexBoulevard",0,.02,-126,7,.04,45,[119,117,101],"Concrete",{},false);
+ for(const p of content.cityPlaces){
+  const x=p.x,z=p.z;
+  add("OriginalVenueFloor",x,-.25,z,28,.5,28,[106,98,79]);
+  wall("OriginalVenueBack",x,0,z-14,28,12,.5);
+  for(const dx of [-14,14])wall("OriginalVenueSide",x+dx,0,z,.5,12,28);
+  wall("OriginalVenueFront",x-8.5,0,z+14,11,12,.5);wall("OriginalVenueFront",x+8.5,0,z+14,11,12,.5);wall("OriginalVenueHeader",x,9,z+14,6,3,.5);
+  add("OriginalVenueRoof",x,12.2,z,29,.4,29,[57,66,57],"Slate");
+  add("OriginalVenueSign",x,10,z+14.3,25,1.6,.12,[37,57,47],"Metal",{Sign:p.name,Side:"Back",Venue:p.id.toUpperCase()},false);
+  add("Lamp",x,11,z,1.4,.2,1.4,[225,206,155],"Metal",{},false);
+  desk(x,0,z+3,7,3);chair(x-5,0,z+3);
+  prop("OriginalVenueClue_"+p.id,"story",p.name,"Investigate evidence",x,3.5,z+3,1.2,.1,.9,{Flag:"venue:"+p.id,Text:p.clue,Cost:"4"});
+  p.choices.forEach(([action,title,text],k)=>prop("CityEnding_"+p.id+"_"+k,"ending",title,action,x-5+k*10,3,z-8,1,.15,.7,{Ending:"city:"+p.id+":"+k}));
+  for(const dx of [-10,10])for(let y=1;y<=3;y++){
+   add("OriginalVenueShelf",x+dx,y*2,z-8,3,.15,7,[93,75,54]);
+   for(let n=0;n<5;n++)add("OriginalVenueProp",x+dx,y*2+.6,z-10+n,1,1.1,.65,[89+n*7,98,78]);
+  }
+ }
+ for(const [room,index]of [["archive",3],["study",5],["sealed",6],["observation",7]]){
+  const side=index%2?1:-1,z=-9+Math.floor(index/2)*18;
+  interactions.push(part("KeyedRoomGate_"+room,side*4,-13.5,z,.55,9,6,[89,80,56],"Wood",{Role:"roomGate",Room:room,Title:"The "+room+" door",Action:"Use keyed door"},true));
+ }
+ // Permanent original house/garden clues and sixteen original ending paths.
+ const legacyActions=[
+ ["photo","The old family photograph","Keep the photograph",20,3.6,17,"Proof that you were here. You keep the original, including the person outside the frame."],
+ ["tape","An old voice recording","Keep the recording",13,3.6,-10,"Your voice answers Mum from another room. Another child's voice answers with you."],
+ ["tomorrowDiary","Tomorrow's diary","Read tomorrow's diary",-16,3.5,16,"You came home to care for Mum. Tomorrow's entry describes a door opening tonight."],
+ ["truth","The book of names","Read both names",15,3.5,17,"Both your names are here. One has been crossed out. The ink has not dried."],
+ ["called","The telephone","Call for help",18,3.5,-11,"A familiar voice answers before the telephone finishes ringing."],
+ ["power","The fuse box","Isolate the spare-room circuit",3.1,5,8,"You isolate the labelled branch safely. Along the street, the lamps seem clearer."],
+ ["ward","The chalk circle","Complete the chalk circle",12,1,2,"You close the final gap in the chalk line."],
+ ["music","The garden music box","Wind the music box",-25,3.5,45,"The little mechanism plays a lullaby with its last line missing."],
+ ["wellQuiet","The quiet well","Let the well fall quiet",-18,2,62.3,"The echoes stop answering. You leave the stones undisturbed."],
+ ["gateWords","Three words at the gate","Say WE WERE HERE",0,4,88,"You speak the words in the order the hidden notes gave you."],
+ ["planted","An empty flowerbed","Plant the black seeds",24,1,50,"You press the seeds into ordinary soil and leave room for tomorrow."],
+ ["buried","A memory beneath roots","Bury the painful memory",-30,1,68,"You lay the written memory beneath the roots. You keep the rest."],
+ ["lantern","The garden lantern","Light the lantern",25,3,70,"The flame throws one shadow. This one moves when you do."],
+ ["projectorSeen","A home movie","Watch the projector",-96,4,-82,"On the screen, Mum reaches for the spare-room door. The film stops before she turns the handle."]
+ ];
+ for(const [flag,title,action,x,y,z,text]of legacyActions)
+  prop("LegacyAction_"+flag,"story",title,action,x,y,z,1.4,.6,.9,{Flag:flag,Text:text,Cost:"3"});
+ const notePositions=[[-3.6,4,9],[-20,4,-13],[3.6,5,18],[-23,3,44],[23,4,68],[22.8,2,1]];
+ content.legacy.noteDefs.forEach((n,i)=>{
+  const [x,y,z]=notePositions[i];prop("LegacyNote_"+n.id,"story",n.title,"Read sticky note",x,y,z,.12,1,1.2,{Flag:n.id,Text:n.text,Cost:"3"},[202,181,103]);
+ });
+ add("MusicBoxTable",-25,1.6,45,5,3.2,2,[99,76,53]);
+ add("WellStoneRim",-18,.6,65,5,1.2,5,[105,109,92],"Slate");
+ add("WellDarkCentre",-18,1.21,65,3,.02,3,[12,20,16],"Slate",{},false);
+ add("GardenGatePost",-4,4,88,.5,8,.5,[106,93,65]);add("GardenGatePost",4,4,88,.5,8,.5,[106,93,65]);
+ for(const [i,id]of Object.keys(content.legacy.endings).entries()){
+  const e=content.legacy.endings[id],x=-20+(i%8)*5,z=102+Math.floor(i/8)*5;
+  prop("LegacyEnding_"+id,"ending",e.title,"Consider this path",x,3,z,1.2,.25,.8,{Ending:"legacy:"+id});
+ }
+ // Room-specific observation stations reveal original anomalies without admin tools.
+ for(const room of content.BENEATH.rooms){const i=roomIndex[room.id],x=i%2?16:-16,z=-9+Math.floor(i/2)*18;
+  prop("Observe_"+room.id,"observe",room.name,"Wait and observe",i%2?7:-7,-13,z,1,.3,.8,{Room:room.id});
+ }
  // Two permanent district destinations, reached on foot from the house-side pavement.
  for(const x of [-48,48])add("DistrictFootpath",x,.04,35,5,.08,130,[113,112,98],"Concrete",{},false);
  add("ParkEntrancePath",-80,.04,27,64,.08,5,[113,112,98],"Concrete",{},false);
@@ -370,8 +453,6 @@ const buildPlace=function buildRobloxPlace(sources) {
  for(const [i,name]of ["WANDERER","ARCHIVIST","COURIER","CARETAKER"].entries()){
   const x=335+i*8;
   add("ClassDisplayPlinth",x,.5,46,3,1,3,[65,73,61]);
-  add("ClassDisplayCoat",x,3,46,1.7,3,1,[82+i*14,91+i*8,75+i*5],"Fabric",{},false);
-  add("ClassDisplayHead",x,5.05,46,1,1,1,[151,142,119],"Wood",{},false);
   add("ClassDisplayPlaque",x,1.1,44.4,3,.8,.1,[30,45,36],"Metal",{Sign:name},false);
  }
  // Open-front ticket kiosk: difficulty belongs to departure, never the title screen.
@@ -384,14 +465,36 @@ const buildPlace=function buildRobloxPlace(sources) {
  add("NoticeBoard",400,4,49,20,7,.4,[85,69,47]);
  add("NoticeBoardPaper",400,4.5,48.7,17,5,.1,[170,164,134],"Fabric",{Sign:"ASHFIELD VISITORS\nCLASS SHOP WEST / TICKETS EAST\nBUSES LEAVE FROM THE FRONT PADS"},false);
  for(let i=0;i<8;i++)add("CourtyardBollard",372+i*8,1.4,21,.45,2.8,.45,[79,85,73],"Metal");
+ // Lobby detail pass: curb stones, roof trim, pavement lamps and shop fixtures.
+ for(let x=316;x<=484;x+=6){add("LobbyCurb",x,.2,-16,5.8,.4,.45,[139,136,117],"Concrete");add("LobbyCurb",x,.2,75,5.8,.4,.45,[139,136,117],"Concrete");}
+ for(const x of [331,363])add("ShopRoofCornice",x,11.8,35,.7,.4,29,[149,137,102]);
+ for(const z of [21,49])add("ShopRoofCornice",347,11.8,z,33,.4,.7,[149,137,102]);
+ for(const x of [333,361]){
+  add("ShopDisplayFrame",x,5,20.65,2.4,6,.35,[91,81,57]);
+  add("ShopDisplayGlass",x,5,20.4,2,5.5,.12,[103,130,122],"Glass",{},false,.65);
+ }
+ add("ShopRug",347,.035,31,18,.07,10,[79,58,46],"Fabric",{},false);
+ add("ShopRegister",351,4,40,2,.7,1.3,[43,56,47],"Metal");
+ for(const x of [338,340,342])add("ShopFoldedClothing",x,3.9,40,1.5,.5,1.2,[102,116,92],"Fabric");
+ for(let i=0;i<4;i++)add("ShopHangingRail",334+i*8,7,47,4,.1,.1,[138,132,108],"Metal");
+ add("LobbyClockFace",400,7.5,49,3,2.2,.12,[169,164,136],"Wood",{Sign:"LAST SERVICE / ASHFIELD"},false);
+ for(const x of [382,418]){
+  add("LobbyBin",x,1.5,17,1.7,3,1.7,[53,68,57],"Metal");
+  add("LobbyBinLid",x,3.1,17,1.9,.2,1.9,[35,46,38],"Metal");
+ }
+ for(const z of [39,55,69])for(const x of [319,481]){
+  add("LobbyTallTree",x,5,z,1.2,10,1.2,[80,64,43]);
+  for(let k=0;k<3;k++)add("LobbyTreeCrown",x,9+k*2,z,8-k,4,8-k,[40+k*5,65+k*5,43+k*4],"Grass",{},false);
+ }
  const spawn=item("SpawnLocation","HomeSpawn",`<Vector3 name="size"><X>5</X><Y>0.2</Y><Z>5</Z></Vector3><CoordinateFrame name="CFrame"><X>400</X><Y>0.1</Y><Z>5</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>`+bool("Anchored",true)+bool("Neutral",true)+bool("CanCollide",false)+num("Transparency",1)+num("Duration",0));
  const script=(cls,name,source)=>item(cls,name,`<ProtectedString name="Source">${esc(source)}</ProtectedString>`+(cls==="ModuleScript"?"":bool("Disabled",false)));
  const folder=item("Folder","SpareRoomWorld","",world.join("")+spawn+item("Folder","Interactables","",interactions.join("")));
- const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars)+script("ModuleScript","SpareRoomRevive",sources.revive)+script("ModuleScript","SpareRoomEconomy",sources.economy)+script("ModuleScript","SpareRoomLobby",sources.lobby))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
- return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:10,anomalies:12,venues:8,npcs:11,park:1,schoolRooms:4,classes:4,shardPacks:3,lobbyCapacity:4}};
+ const xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4"><External>null</External><External>nil</External>${item("Workspace","Workspace","",folder)}${item("ReplicatedStorage","ReplicatedStorage","",script("ModuleScript","SpareRoomConfig",sources.config)+script("ModuleScript","SpareRoomAvatars",sources.avatars)+script("ModuleScript","SpareRoomRevive",sources.revive)+script("ModuleScript","SpareRoomEconomy",sources.economy)+script("ModuleScript","SpareRoomLobby",sources.lobby)+script("ModuleScript","SpareRoomContent",sources.content))}${item("ServerScriptService","ServerScriptService","",script("Script","SpareRoomServer",sources.server)+script("Script","SpareRoomNPCs",sources.npcs))}${item("StarterPlayer","StarterPlayer","",item("StarterPlayerScripts","StarterPlayerScripts","",script("LocalScript","SpareRoomClient",sources.client)))}${item("Lighting","Lighting",`<token name="LightingStyle">1</token>`+bool("GlobalShadows",true))}</roblox>`;
+ return {xml,stats:{parts:count,interactables,basementRooms:10,diaryEntries:20,upstairsRooms:4,endings:68,anomalies:37,venues:28,npcs:21,park:1,schoolRooms:4,classes:4,shardPacks:3,lobbyCapacity:4}};
 };
 const dir=__dirname;
-const result=buildPlace({economy:fs.readFileSync(path.join(dir,"SpareRoomEconomy.lua"),"utf8"),lobby:fs.readFileSync(path.join(dir,"SpareRoomLobby.lua"),"utf8"),config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),revive:fs.readFileSync(path.join(dir,"SpareRoomRevive.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});
+fs.writeFileSync(path.join(dir,"SpareRoomContent.lua"),require("./generate-content.cjs")(JSON.parse(fs.readFileSync(path.join(dir,"source-content.json"),"utf8"))));
+const result=buildPlace({contentData:JSON.parse(fs.readFileSync(path.join(dir,"source-content.json"),"utf8")),content:fs.readFileSync(path.join(dir,"SpareRoomContent.lua"),"utf8"),economy:fs.readFileSync(path.join(dir,"SpareRoomEconomy.lua"),"utf8"),lobby:fs.readFileSync(path.join(dir,"SpareRoomLobby.lua"),"utf8"),config:fs.readFileSync(path.join(dir,"SpareRoomConfig.lua"),"utf8"),server:fs.readFileSync(path.join(dir,"SpareRoomServer.server.lua"),"utf8"),client:fs.readFileSync(path.join(dir,"SpareRoomClient.client.lua"),"utf8"),revive:fs.readFileSync(path.join(dir,"SpareRoomRevive.lua"),"utf8"),avatars:fs.readFileSync(path.join(dir,"SpareRoomAvatars.lua"),"utf8"),npcs:fs.readFileSync(path.join(dir,"SpareRoomNPCs.server.lua"),"utf8")});
 fs.writeFileSync(path.join(dir,"The-Spare-Room.rbxlx"),result.xml);
 fs.writeFileSync(path.join(dir,"build-stats.json"),JSON.stringify(result.stats,null,2)+"\n");
 console.log(result.stats);

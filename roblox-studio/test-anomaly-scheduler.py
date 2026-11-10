@@ -4,7 +4,7 @@ import re, subprocess, sys, tempfile
 root = Path(__file__).parent
 server = (root/'SpareRoomServer.server.lua').read_text()
 client = (root/'SpareRoomClient.client.lua').read_text()
-config = (root/'SpareRoomConfig.lua').read_text()
+config = (root/'SpareRoomConfig.lua').read_text().replace('require(script.Parent:WaitForChild("SpareRoomContent"))', 'require("./Content")')
 section = config.split(' Anomalies = {',1)[1].split('\n Endings = {',1)[0]
 ids = re.findall(r'id = "([^"]+)"', section)
 assert len(ids) == 12 and len(set(ids)) == 12
@@ -18,6 +18,7 @@ end = server.index('local function eventPoint(player)',start)
 scheduler = server[start:end]
 with tempfile.TemporaryDirectory() as d:
     folder=Path(d)
+    (folder/'Content.lua').write_text((root/'SpareRoomContent.lua').read_text())
     (folder/'Config.lua').write_text(config)
     (folder/'test.lua').write_text('local Config=require("./Config")\n'+scheduler+'''
 math.randomseed(4945)
@@ -35,8 +36,8 @@ for cycle=1,1000 do
 end
 local other={}
 nextNaturalAnomaly(other)
-assert(#other.anomalyBag==11 and #s.anomalyBag==0,"Player schedules are shared")
-print("PASS: 12,000 natural draws; every type per cycle; no adjacent repeats; independent player bags")
+assert(#other.anomalyBag==#Config.Anomalies-1 and #s.anomalyBag==0,"Player schedules are shared")
+print("PASS: 37,000 natural draws; every type per cycle; no adjacent repeats; independent player bags")
 ''')
     subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'luau',str(folder/'test.lua')],check=True)
 print('PASS: all twelve anomalies have constructors and animation handlers; shared duration and modal mouse unlock hooks')

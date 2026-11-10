@@ -37,6 +37,8 @@ jobs:
         run: python3 roblox-studio/test-multiplayer-state.py /tmp/luau/luau
       - name: Test lobby queues, classes and currency receipts
         run: python3 roblox-studio/test-lobby-economy.py /tmp/luau/luau
+      - name: Test imported permanent content and ending requirements
+        run: python3 roblox-studio/test-content-parity.py /tmp/luau/luau
       - name: Test server-verified revive entitlement
         run: python3 roblox-studio/test-revive.py /tmp/luau/luau
       - name: Package Studio starter project

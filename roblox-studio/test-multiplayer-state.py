@@ -48,6 +48,7 @@ print("PASS: two-player evidence, sanity, pauses, cooldowns, endings, journals a
 '''
 with tempfile.TemporaryDirectory() as d:
  p=Path(d)
- (p/'Config.lua').write_text((root/'SpareRoomConfig.lua').read_text())
+ (p/'Content.lua').write_text((root/'SpareRoomContent.lua').read_text())
+ (p/'Config.lua').write_text((root/'SpareRoomConfig.lua').read_text().replace('require(script.Parent:WaitForChild("SpareRoomContent"))', 'require("./Content")'))
  (p/'test.lua').write_text(stubs+function('paused')+'\n'+function('finish')+'\n'+function('damage')+'\n'+function('reset')+'\n'+checks)
  subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'luau',str(p/'test.lua')],check=True)

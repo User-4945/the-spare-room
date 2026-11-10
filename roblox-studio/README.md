@@ -1,4 +1,4 @@
-# The Spare Room — Roblox Studio prototype 0.7
+# The Spare Room — Roblox Studio prototype 0.8
 
 An importable Roblox Studio place, rebuilt in Luau from the core ideas of The Spare Room.
 This is a starter adaptation, not a complete port of the browser/desktop releases.
@@ -246,3 +246,18 @@ One shared 12-minute day/night cycle starts at 17:00, advances while reading/in 
 Two permanent walkable destinations occupy the southwest and southeast of the house-side district, connected to the pavement by footpaths. The park includes cross paths, benches, mature trees, lamps, a memorial and a gazebo; two new records deepen the family mystery. The school includes a reception area, two furnished classrooms, a library, windows and three collectible school records. Both destinations appear in the district guide and owner teleport list. There are no new currency purchases or ending requirements.
 
 The existing shared 12-minute day/night cycle now begins at **08:00** for a clear daytime arrival. The park, school, town, house and lobby share the same clock; it keeps advancing during menus and reading. Outdoor lighting retains the nighttime visibility floor. Full structural checks cover 2,191 map parts and 76 reachable interactions. Roblox Studio visual/physics testing remains necessary.
+
+## Permanent-content port and lobby visual refresh
+
+Imported from the original v3 source: all 20 city destinations (a connected north annex), six named residents, all 59 underground collectibles, 20 original diary texts, 30 underground ending requirements, 16 original house/garden ending paths, and the original city choices. Together with three upstairs paths and the prototype’s five retained paths, the catalogue has **66 story endings plus two death outcomes**. The eight earlier prototype venues remain, for 28 city interiors in total. Four additional keyed basement doors preserve archive/study/observation/sealed-room progression independently for each player.
+
+Ward & Thread now displays four native Roblox avatar rigs instead of primitive coat/head figures. The lobby adds roof trim, shop windows, rugs, folded clothing, a register, curb stones, bins and more trees. Atmosphere and subtle sun rays accompany the existing day/night lighting; outdoor point-light shadows are limited to reduce the expanded town’s rendering cost. Avatar catalogue loading still has the existing self-contained fallback when Roblox assets cannot load.
+
+### Parity limits — do not describe this as an exact finished port
+- The permanent narrative/content catalogue is imported; the retired Halloween quest lines, countdown events and seasonal endings are not ported here.
+- The 25 imported underground anomalies currently reuse 12 animated Roblox effect families, with original captions and observation stations. They are adaptations, not 25 exact recreations of the original visual effects.
+- The projector clue uses a reading interaction; the original film sequence and a true reflective mirror are not yet recreated in Roblox.
+- The city annex is fixed and shared. Per-run seeded city generation, private party worlds, original NPC schedules and full active-run save migration remain separate work.
+- Story journals, collectible interactions, ending choices and gates need full Studio playthroughs. Structural and mocked code checks do not certify real physics, rendering or multiplayer gameplay.
+
+`source-content.json` records original narrative data; `SpareRoomContent.lua` is its generated Luau form. `test-content-parity.py` checks imported quantities and the actual server ending-requirement evaluator. The browser/desktop and Roblox builds do not share save files or paid currency.

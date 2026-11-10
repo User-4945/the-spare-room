@@ -17,6 +17,7 @@ assert {"Workspace", "ReplicatedStorage", "ServerScriptService", "StarterPlayer"
 scripts = {
     "SpareRoomEconomy": "SpareRoomEconomy.lua",
     "SpareRoomLobby": "SpareRoomLobby.lua",
+    "SpareRoomContent": "SpareRoomContent.lua",
     "SpareRoomRevive": "SpareRoomRevive.lua",
     "SpareRoomAvatars": "SpareRoomAvatars.lua",
     "SpareRoomNPCs": "SpareRoomNPCs.server.lua",
@@ -43,11 +44,11 @@ for node in all_items:
     parts.append(info)
     if "Role" in extra:
         roles.append(info)
-assert len(parts) == 2191
-assert len(roles) == 76
+assert len(parts) == 3618
+assert len(roles) == 247
 assert {int(p["extra"]["Index"]) for p in roles if p["extra"]["Role"] == "diary"} == set(range(1, 21))
 assert len([p for p in roles if p["extra"]["Role"] == "record"]) == 17
-assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} == {"morning", "names", "seal", "tomorrow", "glass", "blueprint", "lullaby", "letters"}
+assert {p["extra"]["Ending"] for p in roles if p["extra"]["Role"] == "ending"} >= {"morning", "names", "seal", "tomorrow", "glass", "blueprint", "lullaby", "letters"}
 assert len([p for p in parts if p["name"] == "RoomSign"]) == 10
 assert len([i for i in all_items if i.attrib["class"] == "SpawnLocation"]) == 1
 
@@ -76,20 +77,22 @@ def reachable(floor, start, bounds):
                 seen.add(q)
                 queue.append(q)
     return seen
-surface = reachable(0, (2.5,-11), (-129,129,-129,129)) | reachable(0, (0,-20), (-129,129,-129,129))
+surface = reachable(0, (2.5,-11), (-129,129,-335,129)) | reachable(0, (0,-20), (-129,129,-335,129))
 basement = reachable(-18, (0,-12), (-27,27,-17,71))
 chamber = reachable(-18, (9,63), (5,27,55,71))
+basement_access=set(basement)
+for origin in [(8,9),(8,27),(-8,45),(8,45)]:basement_access |= reachable(-18,origin,(-27,27,-17,71))
 lobby_points=reachable(0,(400,5),(311,489,-79,79))
 upper = reachable(12, (0,8), (-23,23,-15,23))
 for p in roles:
-    points = lobby_points if p["x"]>300 else upper if p["y"] > 12 else surface if p["y"] > -5 else chamber if p["x"] > 4 and p["z"] > 54 else basement
+    points = lobby_points if p["x"]>300 else upper if p["y"] > 12 else surface if p["y"] > -5 else chamber if p["x"] > 4 and p["z"] > 54 else basement_access
     assert any((x/2-p["x"])**2 + (z/2-p["z"])**2 < 3.5**2 for x,z in points), "No standing interaction position: " + p["name"]
 assert (18,126) not in basement, "Chamber gate can be bypassed by walking"
 server = (root / "SpareRoomServer.server.lua").read_text()
 assert "prompt.HoldDuration = 0.8" in server and "prompt.RequiresLineOfSight = true" in server
 assert 'damage(player, cost)' in server and 'action == "ReadClosed"' in server
 assert 's.sandwichAt = s.time + 120' in server
-print("PASS: XML, unique references, exact embedded sources, 2191 parts, 76 standing-accessible interactions, 20 diary pages, 14 rooms, chamber gate and eight choice endings and two death outcomes")
+print("PASS: XML, unique references, exact embedded sources, 3618 parts, 247 standing-accessible interactions, 20 diary pages, 14 rooms, chamber gate and 66 story endings and two death outcomes")
 
 
 assert len([p for p in parts if p["name"] == "VenueSign"]) == 8
@@ -130,3 +133,9 @@ assert {"park_dedication","park_drawing","school_register","school_letter","scho
 assert len([p for p in parts if p["name"]=="SchoolWindowGlass"])==4
 assert 'Lighting.ClockTime = 8' in server and '(8+worldSeconds/30)' in server
 print("PASS: park and school clues are reachable from town; four school windows and shared day/night clock")
+
+assert len([p for p in roles if p["extra"]["Role"]=="evidence"])==39
+assert len([p for p in roles if p["extra"]["Role"]=="ending"])==66
+assert len([p for p in parts if p["name"]=="OriginalVenueSign"])==20
+assert not any(p["name"] in {"ClassDisplayHead","ClassDisplayCoat"} for p in parts)
+print("PASS: 59 original collectible objects, 66 physical ending choices, 20 source city venues and avatar display fixtures")

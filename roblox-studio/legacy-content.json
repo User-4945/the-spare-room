@@ -1,0 +1,154 @@
+{
+  "advancedEndings": {
+    "grid": [
+      "Ending 25 · A city with its lights on",
+      "You isolate the circuit feeding the spare room. Along every street, the lamps brighten. Mother calls from a house with one fewer door."
+    ],
+    "dawn": [
+      "Ending 26 · The first bus home",
+      "You sit beside the porter and wait until daylight. When the next bus arrives, the passengers are ordinary strangers. For once, nobody knows your name."
+    ],
+    "witness": [
+      "Ending 27 · The witness",
+      "You watch the film, then tell the archivist exactly what you saw. This time, there is a witness outside the house. Mother can no longer be made to forget."
+    ],
+    "keeper": [
+      "Ending 28 · Keep the door closed",
+      "You choose to remain, with a warning on the fuse box and the lantern beside the door. The house does not stop whispering. You learn when not to listen."
+    ]
+  },
+  "noteDefs": [
+    {
+      "id": "note1",
+      "p": [
+        1.38,
+        1.45,
+        3.8
+      ],
+      "axis": "x",
+      "title": "BEFORE YOU LEAVE",
+      "text": "The gate knows three words.\nFirst: WE.\nDo not knock back."
+    },
+    {
+      "id": "note2",
+      "p": [
+        -6.13,
+        1.05,
+        8.5
+      ],
+      "axis": "x",
+      "title": "DON’T FEED IT",
+      "text": "Second: WERE.\nThe sandwiches appear because\nsomeone keeps setting your place."
+    },
+    {
+      "id": "note3",
+      "p": [
+        2.8,
+        1.65,
+        17.87
+      ],
+      "axis": "z",
+      "title": "COUNT THE CHAIRS",
+      "text": "Third: HERE.\nSay all three at the garden gate.\nTake nobody’s reflection with you."
+    },
+    {
+      "id": "note4",
+      "p": [
+        -5.8,
+        1.5,
+        -8.87
+      ],
+      "axis": "z",
+      "title": "THE GARDENER",
+      "text": "Turn the music box in the shed.\nTake its lullaby to the well.\nDo not look down while it sings."
+    },
+    {
+      "id": "note5",
+      "p": [
+        8.88,
+        1.4,
+        -7
+      ],
+      "axis": "x",
+      "title": "PLEASE REMEMBER",
+      "text": "If every note is found,\nwrite your own name in the diary.\nYou are allowed to be whole."
+    },
+    {
+      "id": "note6",
+      "p": [
+        4.2,
+        0.45,
+        2.12
+      ],
+      "axis": "z",
+      "title": "UNDER THE MIRROR",
+      "text": "The glass remembers the room.\nSometimes it remembers someone\nwho is no longer standing there."
+    }
+  ],
+  "endings": {
+    "truth": [
+      "Ending IV · Both our names",
+      "Mother steps into the room beside you. She tells the child everything she made herself forget.\nThe walls loosen like a held breath. Two voices become one.\nAt breakfast, there are three places at the table."
+    ],
+    "escape": [
+      "Ending V · Outside",
+      "The telephone rings once. You take Mother’s hand and open the front door.\nBeyond it is a street you recognise. At every window stands your reflection.\nYou keep walking."
+    ],
+    "ward": [
+      "Ending VI · The keeper",
+      "The mirror steps across the chalk circle. It takes the diary and all the memories it contains.\n“Someone must keep them,” it says.\nYou and Mother leave. At night, every mirror in your new home faces the wall."
+    ],
+    "gate": [
+      "Ending VII · We were here",
+      "You speak the three words. The gate opens onto a morning that has not happened yet.\nThe house calls after you in Mother’s voice. This time, you do not answer."
+    ],
+    "well": [
+      "Ending VIII · The lullaby below",
+      "The music box sings into the well. A child finishes the song from somewhere far beneath the water.\nWhen you return to the house, the spare room is a cupboard.\nEvery night, a new flower grows beside the well."
+    ],
+    "whole": [
+      "Ending IX · Your own handwriting",
+      "You write your own name over both names in the diary.\nThe mirror cracks without breaking. Mother remembers a single child, with every memory intact.\nThe sticky notes disappear. You leave one of your own: “We got out.”"
+    ],
+    "morning": [
+      "Ending X · A garden for tomorrow",
+      "At dawn, every flower faces the house. You invite Mother outside.\nShe names the flowers instead of naming the things she lost.\nFor the first time, the diary has no entry for tomorrow."
+    ],
+    "burial": [
+      "Ending XI · What the earth keeps",
+      "You leave the memory beneath the roots. The spare room fills with the smell of rain.\nMother remembers love without remembering the room.\nEvery autumn, you find one small brass leaf beneath the tree."
+    ],
+    "light": [
+      "Ending XII · Your own shadow",
+      "The lantern lights a path beyond the garden. You follow the shadow that moves exactly when you do.\nBehind you, the house keeps calling your name.\nYou let the flame answer."
+    ],
+    "grid": [
+      "Ending 25 · A city with its lights on",
+      "You isolate the circuit feeding the spare room. Along every street, the lamps brighten. Mother calls from a house with one fewer door."
+    ],
+    "dawn": [
+      "Ending 26 · The first bus home",
+      "You sit beside the porter and wait until daylight. When the next bus arrives, the passengers are ordinary strangers. For once, nobody knows your name."
+    ],
+    "witness": [
+      "Ending 27 · The witness",
+      "You watch the film, then tell the archivist exactly what you saw. This time, there is a witness outside the house. Mother can no longer be made to forget."
+    ],
+    "keeper": [
+      "Ending 28 · Keep the door closed",
+      "You choose to remain, with a warning on the fuse box and the lantern beside the door. The house does not stop whispering. You learn when not to listen."
+    ],
+    "burn": [
+      "Ending I · An empty room",
+      "The photograph and recording prove that you were here. You burn the diary. The door becomes a patch of wallpaper.\nMother finally says your name.\nThat night, you hear a child crying inside the wall."
+    ],
+    "enter": [
+      "Ending II · The remembered",
+      "You enter the room. The figure has your face at seven years old.\n“I kept everything you couldn’t bear,” it says.\nYou sit beside it. Downstairs, Mother calls both your names.\nFor the first time, you answer together."
+    ],
+    "release": [
+      "Ending III · The spare",
+      "You unlock the door. Someone wearing your face walks downstairs.\nMother embraces them. “You’re finally home.”\nYou try to follow, but the hallway ends at a bedroom. On its desk is a diary.\nYou pick up the pen."
+    ]
+  }
+}

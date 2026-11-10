@@ -3,6 +3,7 @@ local Players=game:GetService("Players")
 local RS=game:GetService("ReplicatedStorage")
 local Physics=game:GetService("PhysicsService")
 local Pathfinding=game:GetService("PathfindingService")
+local Content=require(RS:WaitForChild("SpareRoomContent"))
 local Factory=require(RS:WaitForChild("SpareRoomAvatars"))
 local folder=Instance.new("Folder") folder.Name="SpareRoomNPCs" folder.Parent=workspace
 local templates=Instance.new("Folder") templates.Name="SpareRoomAvatarTemplates" templates.Parent=RS
@@ -156,5 +157,39 @@ for i=1,8 do
   end
   task.wait(0.35)
   walkRoute(model,h,{Vector3.new(math.max(-120,x-22),0,z),Vector3.new(math.min(120,x+22),0,z),Vector3.new(x,0,z)},rng)
+ end)
+end
+
+-- Six named residents from the original city, with independent Roblox avatar routines.
+for i,resident in ipairs(Content.residents) do
+ task.spawn(function()
+  local venue for _,p in ipairs(Content.cityPlaces) do if p.id==resident.id then venue=p break end end
+  if not venue then return end
+  local rng=Random.new() local gender=i%2==0 and "Female" or "Male"
+  local model=Factory.create(Factory.randomStyle(resident.name,gender,rng))
+  model:SetAttribute("NaturalResident",true) model:SetAttribute("Role","Citizen")
+  local point=Vector3.new(venue.x,0,venue.z+19)
+  local h=setup(model,point,false) naturalAnimation(model,h)
+  local head=model:FindFirstChild("Head")
+  if head then
+   local prompt=Instance.new("ProximityPrompt") prompt.ObjectText=resident.name prompt.ActionText="Speak"
+   prompt.HoldDuration=.8 prompt.MaxActivationDistance=6 prompt.RequiresLineOfSight=true prompt.Parent=head
+   prompt.Triggered:Connect(function(player)
+    local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if root and (root.Position-head.Position).Magnitude<7.5 then
+     model:SetAttribute("TalkingUntil",os.clock()+5)
+     local remote=RS:FindFirstChild("SpareRoomEvent") if remote then remote:FireClient(player,"Caption",venue.clue) end
+    end
+   end)
+  end
+  walkRoute(model,h,{point,point+Vector3.new(8,0,0),point-Vector3.new(8,0,0)},rng)
+ end)
+end
+for i,id in ipairs({"Wanderer","Archivist","Courier","Caretaker"}) do
+ task.spawn(function()
+  local model=Factory.create(Factory.randomStyle(id,i%2==0 and "Female" or "Male",Random.new(i*73)))
+  local h=setup(model,Vector3.new(335+(i-1)*8,1,46),true)
+  h.DisplayName=id model:SetAttribute("Role","ClassDisplay")
+  naturalAnimation(model,h)
  end)
 end

@@ -1,6 +1,6 @@
 -- The Spare Room: Roblox Studio starter. All positions use Roblox studs.
-return {
- Version = "Roblox prototype 0.7",
+local Config={
+ Version = "Roblox prototype 0.8",
  -- Create a repeatable Developer Product priced at 30 Robux in this experience.
  -- The old gamepass 2073110257 cannot be used as a consumable product.
  ReviveProductId = 3729479338, -- REVIVE developer product; creator-configured price: 30 Robux.
@@ -75,3 +75,19 @@ return {
  Rooms = {"Storage Room", "Boiler Room", "Maintenance Tunnel", "Archive Room", "Forgotten Family Room", "Hidden Study", "Sealed Corridor", "Observation Room", "Former Children's Area", "Locked Chamber"},
 }
 
+
+local Content=require(script.Parent:WaitForChild("SpareRoomContent"))
+for i,n in ipairs(Content.BENEATH.diary) do Config.Diary[i]=n.text end
+for _,e in ipairs(Content.BENEATH.endings) do
+ Config.Endings["deep:"..e.id]={title=e.name,text=e.description.."\n\nAchievement: "..e.achievement,requirements=e.requirements}
+end
+for _,p in ipairs(Content.cityPlaces) do
+ for k,c in ipairs(p.choices) do Config.Endings["city:"..p.id..":"..(k-1)]={title=c[2],text=c[3],flags={"venue:"..p.id}} end
+end
+local visual={portrait="family",chair="chair",names="blocks",breath="coat",drawer="pages",ink="pages",clock="clock",coat="coat",chalk="blocks",cups="plates",steps="steps",page="pages",shadow="watcher",radio="lamp",door="door",boxes="blocks",glass="family",pipe="lamp",drawing="pages",label="blocks",lamp="lamp",frost="coat",scale="door",inventory="plates",lullaby="doll"}
+for _,a in ipairs(Content.BENEATH.anomalies) do
+ table.insert(Config.Anomalies,{id="source:"..a.id,visualId=visual[a.id],title=a.name,text=a.description,room=a.room,source=true})
+end
+for id,e in pairs(Content.legacy.endings) do Config.Endings["legacy:"..id]={title=e.title,text=e.text,flags=e.flags,dayOnly=id=="dawn"} end
+Config.Endings["legacy:burn"].unprotectedText="You burn the diary. The door disappears, taking its memories with it.\nMum asks your name. You cannot remember.\nIn your pocket is a photograph of an empty house."
+return Config
