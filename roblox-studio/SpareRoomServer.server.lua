@@ -265,7 +265,7 @@ local function read(player, part, text, cost)
  s.sequence += 1
  s.reading = {id = s.sequence, part = part, cost = cost}
  s.sprint = false
- remote:FireClient(player, "Read", {id = s.sequence, title = value(part, "Title"), text = text})
+ remote:FireClient(player, "Read", {id = s.sequence, title = value(part, "Title"), text = text, scene=value(part,"Flag")=="projectorSeen" and "projector" or nil})
 end
 local function sourceRequirements(s,r)
  if not r then return true end

@@ -17,6 +17,7 @@ assert {"Workspace", "ReplicatedStorage", "ServerScriptService", "StarterPlayer"
 scripts = {
     "SpareRoomEconomy": "SpareRoomEconomy.lua",
     "SpareRoomLobby": "SpareRoomLobby.lua",
+    "SpareRoomPresentation": "SpareRoomPresentation.client.lua",
     "SpareRoomContent": "SpareRoomContent.lua",
     "SpareRoomRevive": "SpareRoomRevive.lua",
     "SpareRoomAvatars": "SpareRoomAvatars.lua",
