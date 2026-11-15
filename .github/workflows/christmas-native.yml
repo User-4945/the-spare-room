@@ -17,7 +17,7 @@ jobs:
           - platform: win
             runner: windows-latest
           - platform: mac
-            runner: macos-15-intel
+            runner: macos-15
           - platform: linux
             runner: ubuntu-latest
     runs-on: ${{ matrix.runner }}
@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           if [ '${{ matrix.platform }}' = 'mac' ]; then
-            export SPARE_ROOM_TEST_ANGLE=swiftshader
+            export SPARE_ROOM_TEST_ANGLE=default
             APP='platform-build/mac-universal/The Spare Room.app/Contents/MacOS/The Spare Room'
             codesign --verify --deep --strict 'platform-build/mac-universal/The Spare Room.app'
           else
