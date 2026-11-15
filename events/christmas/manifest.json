@@ -1,0 +1,30 @@
+{
+  "id": "ashfield-christmas-2026",
+  "title": "The Last Bus — Christmas in Ashfield",
+  "status": "prepared-unreleased",
+  "enabled": false,
+  "automaticActivation": false,
+  "releaseDate": null,
+  "originalBaseTag": "v.3.0.0",
+  "robloxLiveBaseline": {
+    "lobby": 66,
+    "run": 13
+  },
+  "content": [
+    "light snow and passing snow squalls",
+    "modest warm garlands and winter dressing",
+    "five optional seasonal clues",
+    "shelter-aware weather sanity pressure",
+    "subtle seasonal anomaly pacing"
+  ],
+  "preserve": [
+    "all existing endings and save slots",
+    "safe lobby with no sanity death",
+    "boarding capacity and countdown readability"
+  ],
+  "rewards": {
+    "newBadges": false,
+    "newPaidProducts": false
+  }
+}
+
