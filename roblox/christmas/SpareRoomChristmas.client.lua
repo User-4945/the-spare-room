@@ -1,7 +1,7 @@
 -- Install in StarterPlayerScripts. Only a bounded local snow volume is rendered.
 local RS=game:GetService("ReplicatedStorage")
 local config=require(RS:WaitForChild("SpareRoomChristmasConfig"))
-if not require(RS:WaitForChild("SpareRoomChristmasBootstrap")).active() or not config.Snow then return end
+if not config.Snow then return end
 local Players=game:GetService("Players")local Run=game:GetService("RunService")
 local player=Players.LocalPlayer local UIS=game:GetService("UserInputService")
 local volume=Instance.new("Part")volume.Name="AshfieldLocalSnow"volume.Transparency=1

@@ -1,4 +1,3 @@
--- ServerScriptService.SpareRoomWeatherCycle
 local RS=game:GetService("ReplicatedStorage")
 local Run=game:GetService("RunService")
 require(RS.SpareRoomPlaceLayout).configure()
@@ -17,7 +16,7 @@ end
 apply("Rain")
 Run.Heartbeat:Connect(function(dt)
  tick+=dt if tick<1 then return end tick=0
- local override=Run:IsStudio()and workspace:GetAttribute("SpareRoomWeatherTest")or nil
+ local override=workspace:GetAttribute("SpareRoomAdminWeather")or(Run:IsStudio()and workspace:GetAttribute("SpareRoomWeatherTest")or nil)
  if override and W.Profiles[override]then if current~=override then apply(override)end
  elseif os.clock()>=nextChange then
   local choices={"Rain","Rain","Mist","Wind","Clear","Storm"}

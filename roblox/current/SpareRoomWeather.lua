@@ -1,4 +1,3 @@
--- ReplicatedStorage.SpareRoomWeather
 local W={}
 W.Profiles={
  Clear={rain=0,wind=.15,light=1,density=.28,drain=1,pacing=1},
@@ -7,7 +6,9 @@ W.Profiles={
  Mist={rain=0,wind=.1,light=.8,density=.55,drain=1.1,pacing=.85},
  Wind={rain=0,wind=1,light=.9,density=.34,drain=1.12,pacing=.9},
 }
-function W.profile(name)return W.Profiles[name or workspace:GetAttribute("SpareRoomWeather")]or W.Profiles.Rain end
+function W.profile(name)W.Profiles.Snow={rain=0,wind=.2,light=.9,density=.42,drain=1.05,pacing=1}
+W.Profiles.Snowstorm={rain=0,wind=.7,light=.76,density=.52,drain=1.15,pacing=.9}
+return W.Profiles[name or workspace:GetAttribute("SpareRoomWeather")]or W.Profiles.Rain end
 function W.effects(name,sheltered,night)
  local p=W.profile(name)
  return {drain=sheltered and 1 or p.drain*(night and 1.08 or 1),pacing=p.pacing,light=p.light,density=p.density}

@@ -1,4 +1,3 @@
--- ServerScriptService.SpareRoomServer
 -- ServerScriptService/SpareRoomServer
 local Players = game:GetService("Players")
 -- Death stays final until a free restart or a verified single-use revive is selected.
@@ -581,6 +580,9 @@ remote.OnServerEvent:Connect(function(player, action, data)
    remote:FireClient(player,"AdminRoster",{players=roster,details=details})
    return
   end
+  if command=="Weather"or command=="Fog"or command=="Clock"or command=="AtmosphereReset"then
+   local ok,message=require(ReplicatedStorage.SpareRoomEnvironment).apply(player.UserId,command,data.value)reply(ok,message)return
+  end
   if typeof(data.targetId)~="number" or data.targetId%1~=0 then reply(false,"Choose a player in this run.") return end
   local target=Players:GetPlayerByUserId(data.targetId)
   local ts=target and states[target]
@@ -739,6 +741,7 @@ RunService.Heartbeat:Connect(function(dt)
  worldSeconds+=dt
  worldDay=math.floor(((isRun and 8 or 19.2)+worldSeconds/30)/24)+1
  local hour=((isRun and 8 or 19.2)+worldSeconds/30)%24
+ hour=workspace:GetAttribute("SpareRoomAdminHour")or hour
  Lighting.ClockTime=hour
  local daylight=math.clamp(math.sin((hour-6)/12*math.pi),0,1)
  local weather=Weather.profile()
@@ -748,7 +751,7 @@ RunService.Heartbeat:Connect(function(dt)
  Lighting.ExposureCompensation=-.12+daylight*.12
  local atmosphere=Lighting:FindFirstChild("SpareRoomAtmosphere")
  if not atmosphere then atmosphere=Instance.new("Atmosphere")atmosphere.Name="SpareRoomAtmosphere"atmosphere.Parent=Lighting end
- atmosphere.Density=weather.density atmosphere.Offset=.12 atmosphere.Haze=2.4 atmosphere.Color=Color3.fromRGB(117,134,124)atmosphere.Decay=Color3.fromRGB(63,78,70)atmosphere.Glare=.04
+ atmosphere.Density=workspace:GetAttribute("SpareRoomAdminFog")or weather.density atmosphere.Offset=.12 atmosphere.Haze=2.4 atmosphere.Color=Color3.fromRGB(117,134,124)atmosphere.Decay=Color3.fromRGB(63,78,70)atmosphere.Glare=.04
  lobbyAccumulator+=dt
  if lobbyAccumulator>=0.2 then
   local elapsed=lobbyAccumulator lobbyAccumulator=0
