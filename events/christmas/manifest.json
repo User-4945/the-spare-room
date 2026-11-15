@@ -4,18 +4,20 @@
   "status": "prepared-unreleased",
   "enabled": false,
   "automaticActivation": false,
-  "releaseDate": null,
+  "releaseDate": "2026-12-11T20:00:00Z",
   "originalBaseTag": "v.3.0.0",
   "robloxLiveBaseline": {
     "lobby": 66,
     "run": 13
   },
   "content": [
-    "light snow and passing snow squalls",
-    "modest warm garlands and winter dressing",
-    "five optional seasonal clues",
-    "shelter-aware weather sanity pressure",
-    "subtle seasonal anomaly pacing"
+    "six persistent seasonal secrets",
+    "three gated Christmas endings",
+    "three winter classes",
+    "Santa-themed anomalies",
+    "snow and snow squalls",
+    "warm transit decorations",
+    "55 percent normal sanity drain"
   ],
   "preserve": [
     "all existing endings and save slots",
@@ -25,6 +27,7 @@
   "rewards": {
     "newBadges": false,
     "newPaidProducts": false
-  }
+  },
+  "githubVersion": "3.5.0",
+  "robloxVersion": "3.7.0"
 }
-

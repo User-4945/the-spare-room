@@ -1,7 +1,7 @@
 -- Install in StarterPlayerScripts. Only a bounded local snow volume is rendered.
 local RS=game:GetService("ReplicatedStorage")
 local config=require(RS:WaitForChild("SpareRoomChristmasConfig"))
-if not config.Enabled or not config.Snow then return end
+if not require(RS:WaitForChild("SpareRoomChristmasBootstrap")).active() or not config.Snow then return end
 local Players=game:GetService("Players")local Run=game:GetService("RunService")
 local player=Players.LocalPlayer local UIS=game:GetService("UserInputService")
 local volume=Instance.new("Part")volume.Name="AshfieldLocalSnow"volume.Transparency=1
@@ -20,9 +20,9 @@ Run.RenderStepped:Connect(function(dt)
   sheltered=root.Position.Y< -6 or workspace:Raycast(root.Position+Vector3.new(0,1.8,0),Vector3.new(0,45,0),params)~=nil
  end
  volume.CFrame=CFrame.new(root.Position+Vector3.new(0,16,0))
- snow.Enabled=not sheltered if sheltered then snow:Clear()end
+ if sheltered and snow.Enabled then snow:Clear()end snow.Enabled=not sheltered
  local weather=workspace:GetAttribute("SpareRoomWeather")
- local factor=weather=="Storm"and 1 or weather=="Clear"and .2 or .55
+ local factor=weather=="Snowstorm"and 1 or weather=="Snow"and .6 or 0
  snow.Rate=(UIS.TouchEnabled and config.MobileSnowRate or config.DesktopSnowRate)*factor
  snow.Acceleration=Vector3.new(weather=="Storm"and 2 or .3,-1,0)
 end)

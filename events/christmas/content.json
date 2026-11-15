@@ -1,0 +1,124 @@
+{
+  "launchUTC": "2026-12-11T20:00:00Z",
+  "githubVersion": "3.5.0",
+  "githubTag": "v.3.5.0",
+  "robloxVersion": "3.7.0",
+  "robloxCurrentVersion": "3.5.0",
+  "sanityMultiplier": 0.55,
+  "secrets": [
+    {
+      "id": "ribbon",
+      "name": "The fifth ribbon",
+      "text": "Four names on the parcels. A fifth ribbon is already tied."
+    },
+    {
+      "id": "timetable",
+      "name": "The Christmas timetable",
+      "text": "The last service is listed for tomorrow. Its destination has been rubbed away."
+    },
+    {
+      "id": "card",
+      "name": "A place at the table",
+      "text": "Leave a place for whoever comes home. The card has no signature."
+    },
+    {
+      "id": "footprints",
+      "name": "Soot in the snow",
+      "text": "Heavy boots lead from the chimney to the bus stop. There are no footprints back."
+    },
+    {
+      "id": "bell",
+      "name": "The silent bell",
+      "text": "The bell has no clapper. You hear it only after you put it down."
+    },
+    {
+      "id": "stocking",
+      "name": "The empty stocking",
+      "text": "Your old stocking is warm. Something inside it remembers your name."
+    }
+  ],
+  "endings": [
+    {
+      "id": "christmas:place",
+      "title": "A Place for Christmas",
+      "requires": [
+        "ribbon",
+        "card"
+      ],
+      "text": "You set the fifth place without choosing a name. Mother brings another cup. Outside, the bus waits until the kitchen window lights up."
+    },
+    {
+      "id": "christmas:silent",
+      "title": "A Silent Night in Ashfield",
+      "requires": [
+        "bell",
+        "stocking",
+        "footprints"
+      ],
+      "text": "You leave the silent bell beneath the chimney. The footsteps stop above the spare room. For one night, every bedroom stays its proper size."
+    },
+    {
+      "id": "christmas:lastgift",
+      "title": "The Last Gift Home",
+      "requires": [
+        "ribbon",
+        "timetable",
+        "card",
+        "footprints",
+        "bell",
+        "stocking"
+      ],
+      "text": "You return the parcel to the empty seat. Its ribbon loosens by itself. At the next stop, someone turns on a light in a room nobody remembers building."
+    }
+  ],
+  "classes": [
+    {
+      "id": "Lamplighter",
+      "name": "Lamplighter",
+      "cost": 350,
+      "drain": 0.85,
+      "stamina": 1,
+      "recovery": 1,
+      "food": 0,
+      "description": "Christmas class. Keeps memories steady: 15% less sanity loss."
+    },
+    {
+      "id": "WinterCourier",
+      "name": "Winter Courier",
+      "cost": 550,
+      "drain": 1,
+      "stamina": 0.8,
+      "recovery": 1.1,
+      "food": 0,
+      "description": "Christmas class. 20% lower sprint cost and 10% faster recovery."
+    },
+    {
+      "id": "Hearthkeeper",
+      "name": "Hearthkeeper",
+      "cost": 700,
+      "drain": 0.95,
+      "stamina": 1,
+      "recovery": 1,
+      "food": 5,
+      "description": "Christmas class. Sandwiches restore 5 extra sanity; 5% less sanity loss."
+    }
+  ],
+  "anomalies": [
+    {
+      "base": "watcher",
+      "title": "The Red Coat Waiting",
+      "text": "A tall shape in a faded red coat waits by the last bus. The hat moves, though there is no wind."
+    },
+    {
+      "base": "footprints",
+      "title": "Soot on the Snow",
+      "text": "Heavy bootprints cross the untouched snow. They end beneath a chimney with no fireplace."
+    },
+    {
+      "base": "knocks",
+      "title": "The Wrong Chimney",
+      "text": "Three knocks above the ceiling. A soft bell answers from the spare room."
+    }
+  ]
+}
+

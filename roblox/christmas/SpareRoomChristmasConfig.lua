@@ -1,9 +1,1 @@
--- Staged only. Enable in a separate Studio test copy after installation.
-return {
- Enabled=false,
- EventName="Christmas in Ashfield",
- Snow=true,
- DesktopSnowRate=100,
- MobileSnowRate=45,
-}
-
+return {Enabled=false,StudioPreview=false,StartUTC=1797019200,Version="3.7.0",Snow=true,DesktopSnowRate=100,MobileSnowRate=45}
