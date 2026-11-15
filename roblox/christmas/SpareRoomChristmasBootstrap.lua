@@ -1,8 +1,37 @@
 local RS=game:GetService("ReplicatedStorage")local Run=game:GetService("RunService")
 local cfg=require(RS:WaitForChild("SpareRoomChristmasConfig"))
 local B={}
+local ownerPreview=nil local resolving=false
+local function privatePreview()
+ if Run:IsClient()then
+  if game.PrivateServerId==""then return false end
+  local deadline=os.clock()+20
+  while workspace:GetAttribute("SpareRoomPreviewResolved")==nil and os.clock()<deadline do task.wait(.1)end
+  return workspace:GetAttribute("SpareRoomOwnerChristmasPreview")==true
+ end
+ if ownerPreview~=nil then return ownerPreview end
+ if resolving then while ownerPreview==nil do task.wait()end return ownerPreview end
+ if game.PrivateServerId=="" or game.PrivateServerOwnerId~=0 then ownerPreview=false return false end
+ resolving=true
+ local Players=game:GetService("Players")local Access=require(RS:WaitForChild("SpareRoomChristmasAccess"))
+ local deadline=os.clock()+20 local player=Players:GetPlayers()[1]
+ while not player and os.clock()<deadline do task.wait(.1)player=Players:GetPlayers()[1]end
+ local allowed=false
+ if player then
+  local join=player:GetJoinData()
+  allowed=Access.canEnter(player.UserId,game.PrivateServerId,game.PrivateServerOwnerId,join.SourcePlaceId,join.SourceGameId,game.GameId,join.TeleportData)
+ end
+ ownerPreview=allowed
+ workspace:SetAttribute("SpareRoomOwnerChristmasPreview",ownerPreview)
+ workspace:SetAttribute("SpareRoomPreviewResolved",true)
+ if ownerPreview then
+  local function guard(p)if p.UserId~=Access.OwnerUserId then p:Kick("This preview is private.")end end
+  Players.PlayerAdded:Connect(guard)for _,p in Players:GetPlayers()do guard(p)end
+ end
+ return ownerPreview
+end
 function B.active()
- return cfg.Enabled and(os.time()>=1797019200 or(Run:IsStudio()and cfg.StudioPreview==true))
+ return (cfg.Enabled and(os.time()>=1797019200 or(Run:IsStudio()and cfg.StudioPreview==true)))or privatePreview()
 end
 function B.apply(C)
  if not B.active()or C.ChristmasApplied then return end C.ChristmasApplied=true
