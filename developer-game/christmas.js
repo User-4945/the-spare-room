@@ -52,7 +52,8 @@
   const exposed=outside(),fx=effects(weather,!exposed);
   if(exposed)drainSanity(dt/30*fx.extraDrain);
   if(snow){
-   snow.visible=exposed;
+   const adminWeather=window.SpareRoomEnvironment?.status().weather;
+   snow.visible=exposed&&(!adminWeather||adminWeather==='Auto');
    snow.position.set(house.x,0,-house.z);
    if(exposed){for(let i=0;i<count;i++){positions[i*3+1]-=dt*(weather==='squall'?1.8:.8);positions[i*3]+=dt*.12;
     if(positions[i*3+1]<0)positions[i*3+1]=10;if(positions[i*3]>9)positions[i*3]=-9;}

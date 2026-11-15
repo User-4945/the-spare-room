@@ -1,7 +1,7 @@
 // Private configuration is injected through runtime secrets, never source or static assets.
 export function createAdminService(options={}){
  const now=options.now||Date.now,webcrypto=options.crypto||globalThis.crypto,attempts=new Map(),sessionsTTL=600000;
- const actions=new Set(['start','sanity','sanityDelta','revive','teleport','toggle','spawn','clear','sandwich','stamina','sweets','day','time','midnight']);
+ const actions=new Set(['start','sanity','sanityDelta','revive','teleport','toggle','spawn','clear','sandwich','stamina','sweets','day','time','midnight','weather','fog','environmentReset']);
  const bytes=s=>new TextEncoder().encode(s),fromHex=s=>Uint8Array.from(s.match(/../g)||[],v=>parseInt(v,16));
  const encode=data=>btoa(String.fromCharCode(...new Uint8Array(data))).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');
  const decode=s=>Uint8Array.from(atob(s.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));
