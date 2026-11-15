@@ -1,3 +1,19 @@
+# The Spare Room v.3.0.0 — Beneath the House
+
+**[Download the Latest release](https://github.com/User-4945/the-spare-room/releases/latest)** · [v.3.0.0 release notes](https://github.com/User-4945/the-spare-room/releases/tag/v.3.0.0)
+
+v.3.0.0 is now the Latest GitHub release. Explore ten basement areas, twenty sibling-diary entries and thirty new permanent ending paths, for 61 permanent endings in the original game. The family mystery remains unresolved. This chapter is still under active development; see the release notes for known limitations.
+
+Windows x64, macOS universal, Linux x64 and offline web downloads are attached to the release. The v3 story uses its separate `spare-room-beneath-v3` save slot. Older save slots and ending journals remain separate.
+
+Christmas preparation is on a separate, disabled development branch. It is **not included in the current release and has not been launched**. Roblox remains a separate experience with its own release versions.
+
+---
+
+## Earlier release history
+
+The notes below describe older versions and their original Halloween events.
+
 # The Spare Room v.2.7.5 — Halloween Departs: The Last Knock
 
 See RELEASE_NOTES.md for the Week 3 farewell quest, three new endings, the third-person camera and native download details.
@@ -8,7 +24,7 @@ Week 1: play now. Week 2: 30 October 2026 at 17:00 GMT. Week 3: 3 November 2026 
 
 A first-person psychological horror game built with Three.js. A house remembers someone else wearing your face; the neighbourhood has dressed for a Halloween that never ends.
 
-[Download the latest release](https://github.com/User-4945/the-spare-room/releases/tag/v.2.5.0) · [Play online](https://the-spare-room.sunsetjelly6.chatgpt.site/)
+[Download the v2.5.0 archive](https://github.com/User-4945/the-spare-room/releases/tag/v.2.5.0) · [Play online](https://the-spare-room.sunsetjelly6.chatgpt.site/)
 
 ## This update
 
