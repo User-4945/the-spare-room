@@ -32,6 +32,13 @@
  const hour=select('Daylight time',days);for(const [n,label]of [[6,'Dawn · 06:00'],[12,'Noon · 12:00'],[18,'Dusk · 18:00'],[0,'Midnight · 00:00']])option(hour,String(n),label);
  button('Set daylight time',()=>run('time',{hour:Number(hour.value)}),days);if(typeof halloweenState==='function')button('Trigger Halloween midnight',()=>run('midnight'),days);
  el('small','','Story nights are 1–3. Changing daylight does not complete quests or advance their separate clocks.',days);
+ const environment=group('Weather and fog',controls),weatherChoice=select('Weather',environment);
+ for(const name of ['Auto','Clear','Rain','Storm','Mist','Wind','Snow','Snowstorm'])option(weatherChoice,name,name);
+ button('Apply weather',()=>run('weather',{value:weatherChoice.value}),environment);
+ const fogValue=number('Fog density %',0,80,42,environment);
+ button('Apply fog',()=>run('fog',{value:Number(fogValue.value)/100}),environment);
+ button('Restore automatic environment',()=>run('environmentReset'),environment);
+ el('small','','Environment overrides apply to this session and clear when admin locks. Use Day and time above to set or freeze daylight.',environment);
  const cheats=group('Session tools',controls),toggles={};for(const [key,label]of [['freezeSanity','Freeze sanity loss'],['infiniteStamina','Infinite stamina'],['freezeDaylight','Freeze daylight clock'],['fly','Fly / pass through walls']]){const row=el('label','admin-toggle',label,cheats),input=document.createElement('input');input.type='checkbox';row.prepend(input);input.onchange=()=>run('toggle',{key,value:input.checked});toggles[key]=input;}
  el('small','','Flight: WASD move, Space rise, Ctrl descend, Shift move faster. Turning flight off returns you to your take-off point. Toggles turn off when you lock the panel, the session expires, or the game reloads.',cheats);
  gameScene.append(panel);
@@ -55,7 +62,7 @@
  function number(label,min,max,value,parent){const l=el('label','',label,parent),i=el('input','','',l);i.type='number';i.min=String(min);i.max=String(max);i.step='1';i.value=String(value);return i;}
  function stopFlight(){if(!takeoff)return;Object.assign(house,takeoff.house);s.room=takeoff.room;s.cityOpen=takeoff.city;house.jumpVelocity=0;house.keys={};takeoff=null;house.dirty=true;buildHouse();}
  function revokePreview(){const week=eventBypass;eventBypass=null;if(week&&typeof releaseAccess!=='undefined'&&releaseAccess===week&&((week==='week2'&&eventTimeRemaining()>0)||(week==='week3'&&week3Remaining()>0))){house.keys={};house.x=0;house.z=2;house.jumpHeight=0;house.jumpVelocity=0;s.room='hall';releaseAccess='locked';buildHouse();showReleaseEvent();}}
- function clearToggles(){stopFlight();revokePreview();for(const key of Object.keys(options)){options[key]=false;toggles[key].checked=false;}}
+ function clearToggles(){window.SpareRoomEnvironment?.clear();stopFlight();revokePreview();for(const key of Object.keys(options)){options[key]=false;toggles[key].checked=false;}}
  function lock(){auth.lock();clearToggles();password.value='';feedback='Admin session locked.';updateView();if(!panel.hidden)password.focus();}
  function destinations(){
   const result=[];for(const id of ['hall','kitchen','bedroom','spare','garden','shed'])if(spawn[id])result.push({id,label:'House · '+rooms[id],p:spawn[id],y:0});
@@ -84,6 +91,11 @@
  }
  function dispatchLocal(action,data={}){
   if(!auth.isAuthenticated()){clearToggles();return reply(false,'Sign in to use admin tools.');}auth.touch();
+  if(action==='weather'||action==='fog'||action==='environmentReset'){
+   const env=window.SpareRoomEnvironment;if(!env)return reply(false,'Environment controls are unavailable.');
+   const ok=action==='weather'?env.setWeather(data.value):action==='fog'?env.setFog(data.value):env.reset();
+   if(ok)changed();return reply(ok,ok?'Environment updated for this session.':'Invalid environment setting.');
+  }
   if(action==='start'){
    if(s.ending)return reply(false,'This story has ended. Start a new run from the game menu.');if(s.sanityLost)return reply(false,'Use Full heal / revive first.');
    if(data.week!==undefined){
@@ -125,7 +137,7 @@
   if(action==='midnight'&&typeof halloweenState==='function'){const h=halloweenState();h.midnight=true;h.elapsed=Math.max(90,h.elapsed);changed();return reply(true,'Halloween midnight triggered. Quest requirements still apply.');}
   return reply(false,'Unknown admin action.');
  }
- async function dispatch(action,data={}){const allowed=await auth.authorize(action);if(!allowed.ok){auth.lock();clearToggles();return reply(false,allowed.message);}try{return dispatchLocal(action,data);}catch{return reply(false,'The command could not be applied to this game state.');}}
+ async function dispatch(action,data={}){const allowed=await auth.authorize(["weather","fog","environmentReset"].includes(action)?"time":action);if(!allowed.ok){auth.lock();clearToggles();return reply(false,allowed.message);}try{return dispatchLocal(action,data);}catch{return reply(false,'The command could not be applied to this game state.');}}
  async function run(action,data){const result=await dispatch(action,data);for(const [key,input]of Object.entries(toggles))input.checked=options[key];return result;}
  const originalResetAdmin=reset;reset=function(){stopFlight();options.fly=false;toggles.fly.checked=false;return originalResetAdmin.apply(this,arguments);};
  const originalPaused=paused;paused=function(){return !panel.hidden||originalPaused();};

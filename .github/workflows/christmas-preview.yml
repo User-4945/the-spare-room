@@ -1,0 +1,39 @@
+name: Build Christmas prerelease
+on:
+  push:
+    branches: [release-christmas-2026]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: spare-room-christmas-preview
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/prepare-christmas.cjs
+      - run: npm test
+      - run: node tests/christmas.cjs && node tests/christmas-gameplay.cjs
+      - run: node scripts/build-christmas-preview.cjs --preview
+      - name: Package preview
+        run: |
+          cd christmas-build/web
+          zip -qr ../The-Spare-Room-v3.5.0-Christmas-preview-web.zip .
+          cd ../..
+          git archive --format=zip --output=christmas-build/The-Spare-Room-v3.5.0-Christmas-source.zip HEAD
+          cd christmas-build
+          sha256sum *.zip > SHA256SUMS.txt
+      - name: Update prerelease assets only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v.3.5.0 --repo "$GITHUB_REPOSITORY" || gh release create v.3.5.0 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false --title "THE SPARE ROOM v.3.5.0 — Christmas in Ashfield · Preview" --notes-file events/christmas/PRERELEASE_NOTES.md
+          gh release upload v.3.5.0 christmas-build/*.zip christmas-build/SHA256SUMS.txt christmas-build/release.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit v.3.5.0 --repo "$GITHUB_REPOSITORY" --prerelease --latest=false --title 'THE SPARE ROOM v.3.5.0 - Christmas Prerelease Refresh' --notes-file events/christmas/PRERELEASE_NOTES.md
+
+          gh release upload v.3.5.0 events/christmas/V3.7.0-OVERHAUL-DESIGN.md --repo "$GITHUB_REPOSITORY" --clobber
