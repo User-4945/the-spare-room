@@ -34,5 +34,6 @@ jobs:
         run: |
           gh release view v.3.5.0 --repo "$GITHUB_REPOSITORY" || gh release create v.3.5.0 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false --title "THE SPARE ROOM v.3.5.0 — Christmas in Ashfield · Preview" --notes-file events/christmas/PRERELEASE_NOTES.md
           gh release upload v.3.5.0 christmas-build/*.zip christmas-build/SHA256SUMS.txt christmas-build/release.json --repo "$GITHUB_REPOSITORY" --clobber
-          gh release edit v.3.5.0 --repo "$GITHUB_REPOSITORY" --prerelease --latest=false
+          gh release edit v.3.5.0 --repo "$GITHUB_REPOSITORY" --prerelease --latest=false --title 'THE SPARE ROOM v.3.5.0 - Christmas Prerelease Refresh' --notes-file events/christmas/PRERELEASE_NOTES.md
 
+          gh release upload v.3.5.0 events/christmas/V3.7.0-OVERHAUL-DESIGN.md --repo "$GITHUB_REPOSITORY" --clobber

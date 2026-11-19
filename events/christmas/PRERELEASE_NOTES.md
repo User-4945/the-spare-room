@@ -2,6 +2,10 @@
 
 Christmas Week 1 preview. Public launch and promotion to Latest: **11 December 2026 at 20:00 GMT**. v.3.0.0 remains Latest until then. Roblox Christmas is a separate **v3.7.0** release.
 
+## Prerelease refresh
+
+A new winter favicon marks this build. The attached Roblox overhaul design covers the public winter rollout and the developer-only Christmas Week 1 preview, including the ending and anomaly roadmaps.
+
 ## Downloads
 
 - Windows x64: The-Spare-Room-Setup-3.5.0-x64.exe

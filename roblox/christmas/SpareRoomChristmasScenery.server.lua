@@ -1,5 +1,6 @@
 local RS=game:GetService("ReplicatedStorage")
-if not require(RS:WaitForChild("SpareRoomChristmasBootstrap")).active()then return end
+local seasonal=require(RS.SpareRoomChristmasBootstrap).active()
+if not seasonal and not require(RS.SpareRoomChristmasConfig).PublicWinter then return end
 local isRun=require(RS.SpareRoomPlaceLayout).configure()
 local world=workspace:WaitForChild("SpareRoomWorld")
 if world:FindFirstChild("ChristmasSnowScenery")then return end
@@ -22,7 +23,7 @@ for i,p in candidates do
  if not workspace:Raycast(top,Vector3.new(0,100,0),params)then
   local cap=part("OutdoorSnowCover",Vector3.new(p.Size.X,.12,p.Size.Z),p.CFrame*CFrame.new(0,p.Size.Y/2+.07,0),Color3.fromRGB(192,204,199),Enum.Material.Snow)
   count+=1
-  if p.Position.Y>7 and p.Size.X>=12 and decorated<34 then
+  if seasonal and p.Position.Y>7 and p.Size.X>=12 and decorated<34 then
    decorated+=1
    local n=math.min(8,math.floor(p.Size.X/3))
    for j=0,n do local cf=p.CFrame*CFrame.new(-p.Size.X/2+j*p.Size.X/n,p.Size.Y/2-.3,p.Size.Z/2+.08)
@@ -32,6 +33,10 @@ for i,p in candidates do
   end
  end
  if count>=260 then break end if i%75==0 then task.wait()end
+end
+if not seasonal then
+ folder:SetAttribute("SnowSurfaceCount",count)
+ return
 end
 local centers=isRun and {Vector3.new(-19,0,30),Vector3.new(19,0,30),Vector3.new(-48,0,-42),Vector3.new(48,0,-42)}or {Vector3.new(416,0,18),Vector3.new(450,0,18)}
 for _,point in centers do

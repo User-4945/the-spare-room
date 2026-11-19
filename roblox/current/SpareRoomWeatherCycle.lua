@@ -13,7 +13,8 @@ local function apply(name)
  workspace:SetAttribute("SpareRoomWeatherEndsAt",workspace:GetServerTimeNow()+duration)
  nextChange=os.clock()+duration
 end
-apply("Rain")
+local winter=require(RS.SpareRoomChristmasConfig).PublicWinter
+apply(winter and "Snow" or "Rain")
 Run.Heartbeat:Connect(function(dt)
  tick+=dt if tick<1 then return end tick=0
  local override=workspace:GetAttribute("SpareRoomAdminWeather")or(Run:IsStudio()and workspace:GetAttribute("SpareRoomWeatherTest")or nil)
@@ -21,8 +22,9 @@ Run.Heartbeat:Connect(function(dt)
  elseif os.clock()>=nextChange then
   local choices={"Rain","Rain","Mist","Wind","Clear","Storm"}
   if workspace:GetAttribute("SpareRoomChristmasActive")then choices={"Snow","Snow","Snowstorm","Mist","Clear"}end
-local nextName=choices[rng:NextInteger(1,#choices)]
-  if nextName==current then nextName=current=="Rain"and "Mist"or "Rain"end
+  if winter and not workspace:GetAttribute("SpareRoomChristmasActive") then choices={"Snow","Snow","Clear","Mist","Rain"} end
+  local nextName=choices[rng:NextInteger(1,#choices)]
+  if nextName==current then nextName=choices[(table.find(choices,current) or 1)%#choices+1] end
   apply(nextName)
  end
 end)
